@@ -1,39 +1,43 @@
-☕ CafeOps
+# ☕ CafeOps
 
 Modern cafe operations management platform for employee performance tracking, recipe management, and team communication.
 
-📱 Overview
+## 📱 Overview
 
 CafeOps is a mobile-first application designed to help cafes manage employees, performance scores, recipes, and operational updates in one place.
 
 Built with React Native (Expo) and Supabase.
 
+## Project Workspace
+
+[Notion](https://app.notion.com/p/fedev-genie/Twilight-CafeOps-383cbf6924e68039b918ecf483dff162?source=copy_link)
+
 ⸻
 
-✨ Features
+### ✨ Features
 
-👥 Employee Management
+#### 👥 Employee Management
 
 * Employee onboarding
 * Location assignment
 * Role-based permissions
 * Staff, Supervisor, Manager, and Owner roles
 
-📊 Performance Tracking
+#### 📊 Performance Tracking
 
 * 14-day evaluation cycles
 * Score history
 * Ranking leaderboard
 * Transparent performance records
 
-📖 Recipe Management
+#### 📖 Recipe Management
 
 * Centralized recipe library
 * Recipe updates and version history
 * Image support
 * Instant update notifications
 
-🔔 Notifications
+#### 🔔 Notifications
 
 * Score update notifications
 * Recipe update notifications
@@ -42,44 +46,33 @@ Built with React Native (Expo) and Supabase.
 
 ⸻
 
-🏢 Multi-Location Support
+### 🛠 Tech Stack
 
-Manage multiple cafe locations from a single platform.
-
-* Downtown
-* North York
-* Scarborough
-* Custom locations
-
-⸻
-
-🛠 Tech Stack
-
-Frontend
+#### Frontend
 
 * React Native
 * Expo
 * TypeScript
 * Expo Router
 
-Backend
+#### Backend
 
 * Supabase
 * PostgreSQL
 * Row Level Security (RLS)
 
-State Management
+#### State Management
 
 * Zustand
 * TanStack Query
 
-Notifications
+#### Notifications
 
 * Expo Notifications
 
 ⸻
 
-🎯 MVP Scope
+### 🎯 MVP Scope
 
 * Authentication
 * Employee Management
@@ -91,7 +84,7 @@ Notifications
 
 ⸻
 
-🚀 Future Plans
+### 🚀 Future Plans
 
 * Push Notifications
 * Advanced Analytics
@@ -102,12 +95,12 @@ Notifications
 
 ⸻
 
-📸 Screenshots
+### 📸 Screenshots
 
 Coming Soon
 
 ⸻
 
-📄 License
+### 📄 License
 
 MIT
