@@ -9,6 +9,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { router } from 'expo-router';
+
+import { signIn } from '@/services/authService';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -16,16 +19,21 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function handleLogin() {
+  async function handleLogin() {
     if (!email || !password) {
       setError('이메일과 비밀번호를 입력해주세요.');
       return;
     }
     setError(null);
     setIsLoading(true);
-    // TODO: authService.signIn 연결
-    console.log('login:', email);
-    setIsLoading(false);
+    try {
+      await signIn(email, password);
+      router.replace('/');
+    } catch {
+      setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
