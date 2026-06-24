@@ -317,6 +317,25 @@ Rule of Three applies:
 
 > Only abstract after the same pattern appears at least three times.
 
+## Task Completion Rules
+
+After every completed task:
+
+* Provide a summary
+* List created files
+* List modified files
+* Report TypeScript status
+* Report lint status
+* Suggest a git commit message
+
+Format:
+
+Recommended Commit Message:
+feat: add employee service
+
+Do not execute git commit.
+Do not execute git push.
+
 ## MVP Priority
 
 Build features in this order:
