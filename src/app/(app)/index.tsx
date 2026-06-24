@@ -19,7 +19,7 @@ export default function HomeScreen() {
       <Text style={styles.email}>{email ?? '불러오는 중...'}</Text>
 
       {/* TODO: remove after routing is set up */}
-      <Pressable style={styles.button} onPress={() => router.push('/employees')}>
+      <Pressable style={styles.button} onPress={() => router.navigate('/employees')}>
         <Text style={styles.buttonText}>Employees</Text>
       </Pressable>
     </View>

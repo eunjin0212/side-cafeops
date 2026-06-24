@@ -27,6 +27,10 @@ export default function AppTabs() {
           <TabTrigger name="explore" href="/explore" asChild>
             <TabButton>Explore</TabButton>
           </TabTrigger>
+          {/* hidden: registers /employees route without appearing in tab bar */}
+          <View style={{ display: 'none' }}>
+            <TabTrigger name="employees" href="/employees" />
+          </View>
         </CustomTabList>
       </TabList>
     </Tabs>
