@@ -41,7 +41,7 @@ export default function LoginScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.inner}>
+      <View style={styles.inner} role="form">
         <Text style={styles.title}>CafeOps</Text>
 
         <TextInput
