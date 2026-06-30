@@ -1,4 +1,5 @@
 export type EmployeeRole =
+  | 'trainee'
   | 'staff'
   | 'supervisor'
   | 'location_manager'

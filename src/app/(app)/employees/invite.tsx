@@ -19,6 +19,7 @@ import { useLocations } from '@/hooks/useLocations';
 import { EmployeeRole } from '@/types/employee';
 
 const ROLE_OPTIONS: { value: EmployeeRole; label: string }[] = [
+  { value: 'trainee', label: 'Trainee' },
   { value: 'staff', label: 'Staff' },
   { value: 'supervisor', label: 'Supervisor' },
   { value: 'location_manager', label: 'Location Manager' },
@@ -30,8 +31,12 @@ const inviteSchema = z.object({
   email: z
     .string()
     .min(1, '이메일을 입력해주세요')
-    .email('올바른 이메일 형식이 아닙니다'),
+    .refine(
+      (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+      '올바른 이메일 형식이 아닙니다',
+    ),
   role: z.enum([
+    'trainee',
     'staff',
     'supervisor',
     'location_manager',

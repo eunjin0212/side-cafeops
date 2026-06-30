@@ -12,6 +12,7 @@ import { useEmployees } from '@/hooks/useEmployees';
 import { Employee, EmployeeRole } from '@/types/employee';
 
 const ROLE_LABEL: Record<EmployeeRole, string> = {
+  trainee: 'Trainee',
   staff: 'Staff',
   supervisor: 'Supervisor',
   location_manager: 'Location Manager',
