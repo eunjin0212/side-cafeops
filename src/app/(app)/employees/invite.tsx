@@ -61,7 +61,7 @@ export default function InviteEmployeeScreen() {
         locationId: data.locationId,
       });
       Alert.alert('초대 완료', `${data.email}로 초대를 보냈습니다.`, [
-        { text: '확인', onPress: () => router.back() },
+        { text: '확인', onPress: () => router.navigate('/employees') },
       ]);
     } catch (err) {
       setSubmitError(
