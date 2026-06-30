@@ -6,11 +6,17 @@ import {
   InvitationStatus,
 } from '@/types/invitation';
 
+type LocationResult =
+  | { id: string; name: string }
+  | { id: string; name: string }[]
+  | null;
+
 type InvitationRow = {
   id: string;
   email: string;
   role: string;
   location_id: string | null;
+  locations: LocationResult;
   invited_by: string;
   token: string;
   status: string;
@@ -20,12 +26,19 @@ type InvitationRow = {
   updated_at: string;
 };
 
+function resolveLocationName(locations: LocationResult): string | null {
+  if (!locations) return null;
+  const loc = Array.isArray(locations) ? locations[0] : locations;
+  return loc?.name ?? null;
+}
+
 function mapInvitation(row: InvitationRow): Invitation {
   return {
     id: row.id,
     email: row.email,
     role: row.role as EmployeeRole,
     locationId: row.location_id,
+    locationName: resolveLocationName(row.locations),
     invitedBy: row.invited_by,
     token: row.token,
     status: row.status as InvitationStatus,
@@ -56,7 +69,7 @@ export async function createInvitation(
       location_id: input.locationId ?? null,
       invited_by: user.id,
     })
-    .select()
+    .select('*, locations(id, name)')
     .single();
 
   if (error) {
@@ -67,4 +80,17 @@ export async function createInvitation(
   }
 
   return mapInvitation(data as InvitationRow);
+}
+
+export async function getInvitations(): Promise<Invitation[]> {
+  const { data, error } = await supabase
+    .from('invitations')
+    .select('*, locations(id, name)')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw new Error('초대 목록을 불러오지 못했습니다.');
+  }
+
+  return (data as InvitationRow[]).map(mapInvitation);
 }

@@ -53,12 +53,19 @@ export default function EmployeeListScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>직원</Text>
-        <Pressable
-          style={styles.inviteButton}
-          onPress={() => router.navigate('/employees/invite')}
-        >
-          <Text style={styles.inviteButtonText}>직원 초대</Text>
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            onPress={() => router.navigate('/employees/invitations')}
+          >
+            <Text style={styles.headerLink}>초대 목록</Text>
+          </Pressable>
+          <Pressable
+            style={styles.inviteButton}
+            onPress={() => router.navigate('/employees/invite')}
+          >
+            <Text style={styles.inviteButtonText}>직원 초대</Text>
+          </Pressable>
+        </View>
       </View>
       <FlatList
         style={styles.list}
@@ -95,6 +102,15 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: '#111827',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerLink: {
+    fontSize: 13,
+    color: '#6B7280',
   },
   inviteButton: {
     paddingHorizontal: 14,

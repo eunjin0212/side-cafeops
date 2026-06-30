@@ -7,6 +7,7 @@ export type Invitation = {
   email: string;
   role: EmployeeRole;
   locationId: string | null;
+  locationName: string | null;
   invitedBy: string;
   token: string;
   status: InvitationStatus;
