@@ -16,16 +16,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 import { useLocations } from '@/hooks/useLocations';
-import { EmployeeRole } from '@/types/employee';
-
-const ROLE_OPTIONS: { value: EmployeeRole; label: string }[] = [
-  { value: 'trainee', label: 'Trainee' },
-  { value: 'staff', label: 'Staff' },
-  { value: 'supervisor', label: 'Supervisor' },
-  { value: 'location_manager', label: 'Location Manager' },
-  { value: 'general_manager', label: 'General Manager' },
-  { value: 'owner', label: 'Owner' },
-];
+import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
 
 const inviteSchema = z.object({
   email: z
@@ -35,14 +26,7 @@ const inviteSchema = z.object({
       (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
       '올바른 이메일 형식이 아닙니다',
     ),
-  role: z.enum([
-    'trainee',
-    'staff',
-    'supervisor',
-    'location_manager',
-    'general_manager',
-    'owner',
-  ]),
+  role: z.enum(EMPLOYEE_ROLES),
   locationId: z.string().optional(),
 });
 

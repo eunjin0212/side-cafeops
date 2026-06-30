@@ -9,16 +9,8 @@ import {
 import { router } from 'expo-router';
 
 import { useEmployees } from '@/hooks/useEmployees';
-import { Employee, EmployeeRole } from '@/types/employee';
-
-const ROLE_LABEL: Record<EmployeeRole, string> = {
-  trainee: 'Trainee',
-  staff: 'Staff',
-  supervisor: 'Supervisor',
-  location_manager: 'Location Manager',
-  general_manager: 'General Manager',
-  owner: 'Owner',
-};
+import { Employee } from '@/types/employee';
+import { ROLE_LABELS } from '@/constants/roles';
 
 interface EmployeeRowProps {
   employee: Employee;
@@ -29,7 +21,7 @@ function EmployeeRow({ employee }: EmployeeRowProps) {
     <View style={styles.row}>
       <View style={styles.rowMain}>
         <Text style={styles.name}>{employee.fullName ?? employee.email}</Text>
-        <Text style={styles.role}>{ROLE_LABEL[employee.role]}</Text>
+        <Text style={styles.role}>{ROLE_LABELS[employee.role]}</Text>
       </View>
       <View style={[styles.badge, employee.isActive ? styles.badgeActive : styles.badgeInactive]}>
         <Text style={styles.badgeText}>{employee.isActive ? '재직' : '퇴직'}</Text>
