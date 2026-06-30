@@ -16,11 +16,12 @@ import { can } from '@/constants/permissions';
 
 interface EmployeeRowProps {
   employee: Employee;
+  onPress: () => void;
 }
 
-function EmployeeRow({ employee }: EmployeeRowProps) {
+function EmployeeRow({ employee, onPress }: EmployeeRowProps) {
   return (
-    <View style={styles.row}>
+    <Pressable style={styles.row} onPress={onPress}>
       <View style={styles.rowMain}>
         <Text style={styles.name}>{employee.fullName ?? employee.email}</Text>
         <Text style={styles.role}>{ROLE_LABELS[employee.role]}</Text>
@@ -28,7 +29,7 @@ function EmployeeRow({ employee }: EmployeeRowProps) {
       <View style={[styles.badge, employee.isActive ? styles.badgeActive : styles.badgeInactive]}>
         <Text style={styles.badgeText}>{employee.isActive ? '재직' : '퇴직'}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -77,7 +78,12 @@ export default function EmployeeListScreen() {
         style={styles.list}
         data={employees}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <EmployeeRow employee={item} />}
+        renderItem={({ item }) => (
+          <EmployeeRow
+            employee={item}
+            onPress={() => router.navigate(`/employees/${item.id}`)}
+          />
+        )}
         ListEmptyComponent={
           <View style={styles.center}>
             <Text style={styles.emptyText}>등록된 직원이 없습니다.</Text>
