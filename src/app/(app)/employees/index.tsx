@@ -1,10 +1,12 @@
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { router } from 'expo-router';
 
 import { useEmployees } from '@/hooks/useEmployees';
 import { Employee, EmployeeRole } from '@/types/employee';
@@ -55,23 +57,63 @@ export default function EmployeeListScreen() {
   }
 
   return (
-    <FlatList
-      style={styles.list}
-      data={employees}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <EmployeeRow employee={item} />}
-      ListEmptyComponent={
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>등록된 직원이 없습니다.</Text>
-        </View>
-      }
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
-      contentContainerStyle={employees.length === 0 ? styles.emptyContainer : styles.listContent}
-    />
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>직원</Text>
+        <Pressable
+          style={styles.inviteButton}
+          onPress={() => router.navigate('/employees/invite')}
+        >
+          <Text style={styles.inviteButtonText}>직원 초대</Text>
+        </Pressable>
+      </View>
+      <FlatList
+        style={styles.list}
+        data={employees}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <EmployeeRow employee={item} />}
+        ListEmptyComponent={
+          <View style={styles.center}>
+            <Text style={styles.emptyText}>등록된 직원이 없습니다.</Text>
+          </View>
+        }
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        contentContainerStyle={employees.length === 0 ? styles.emptyContainer : styles.listContent}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 16,
+    backgroundColor: '#fff',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  inviteButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: '#111827',
+    borderRadius: 8,
+  },
+  inviteButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#fff',
+  },
   list: {
     flex: 1,
     backgroundColor: '#fff',
