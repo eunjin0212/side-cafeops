@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -17,6 +18,7 @@ import { z } from 'zod';
 
 import { useLocations } from '@/hooks/useLocations';
 import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
+import { createInvitation } from '@/services/invitationService';
 
 const inviteSchema = z.object({
   email: z
@@ -53,10 +55,18 @@ export default function InviteEmployeeScreen() {
     setSubmitError(null);
     setIsSubmitting(true);
     try {
-      // TODO: connect to invitationService.createInvitation(data)
-      console.log('Invitation form data:', data);
-    } catch {
-      setSubmitError('초대 중 오류가 발생했습니다. 다시 시도해주세요.');
+      await createInvitation({
+        email: data.email,
+        role: data.role,
+        locationId: data.locationId,
+      });
+      Alert.alert('초대 완료', `${data.email}로 초대를 보냈습니다.`, [
+        { text: '확인', onPress: () => router.back() },
+      ]);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : '초대 중 오류가 발생했습니다.',
+      );
     } finally {
       setIsSubmitting(false);
     }
