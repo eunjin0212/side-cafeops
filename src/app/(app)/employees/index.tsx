@@ -35,7 +35,7 @@ function EmployeeRow({ employee }: EmployeeRowProps) {
 export default function EmployeeListScreen() {
   const { employees, isLoading, error } = useEmployees();
   const { profile } = useCurrentProfile();
-  const canInvite = profile !== null && can(profile.role, 'invite_employee');
+  const canInvite = profile !== null && can(profile.role, 'inviteEmployee');
 
   if (isLoading) {
     return (

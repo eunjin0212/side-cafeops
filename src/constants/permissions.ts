@@ -1,9 +1,18 @@
 import { EmployeeRole } from '@/types/employee';
 
-export type Permission = 'invite_employee';
+export type Permission =
+  | 'inviteEmployee'
+  | 'viewInvitations'
+  | 'manageScores'
+  | 'manageScoreCategories'
+  | 'manageLocations';
 
 const PERMISSIONS: Record<Permission, EmployeeRole[]> = {
-  invite_employee: ['location_manager', 'general_manager', 'owner'],
+  inviteEmployee: ['location_manager', 'general_manager', 'owner'],
+  viewInvitations: ['location_manager', 'general_manager', 'owner'],
+  manageScores: ['supervisor', 'location_manager', 'general_manager', 'owner'],
+  manageScoreCategories: ['general_manager', 'owner'],
+  manageLocations: ['general_manager', 'owner'],
 };
 
 export function can(role: EmployeeRole, permission: Permission): boolean {
