@@ -9,8 +9,11 @@ import {
 import { router } from 'expo-router';
 
 import { useEmployees } from '@/hooks/useEmployees';
-import { Employee } from '@/types/employee';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { Employee, EmployeeRole } from '@/types/employee';
 import { ROLE_LABELS } from '@/constants/roles';
+
+const CAN_INVITE: EmployeeRole[] = ['location_manager', 'general_manager', 'owner'];
 
 interface EmployeeRowProps {
   employee: Employee;
@@ -32,6 +35,8 @@ function EmployeeRow({ employee }: EmployeeRowProps) {
 
 export default function EmployeeListScreen() {
   const { employees, isLoading, error } = useEmployees();
+  const { profile } = useCurrentProfile();
+  const canInvite = profile !== null && CAN_INVITE.includes(profile.role);
 
   if (isLoading) {
     return (
@@ -59,12 +64,14 @@ export default function EmployeeListScreen() {
           >
             <Text style={styles.headerLink}>초대 목록</Text>
           </Pressable>
-          <Pressable
-            style={styles.inviteButton}
-            onPress={() => router.navigate('/employees/invite')}
-          >
-            <Text style={styles.inviteButtonText}>직원 초대</Text>
-          </Pressable>
+          {canInvite && (
+            <Pressable
+              style={styles.inviteButton}
+              onPress={() => router.navigate('/employees/invite')}
+            >
+              <Text style={styles.inviteButtonText}>직원 초대</Text>
+            </Pressable>
+          )}
         </View>
       </View>
       <FlatList
