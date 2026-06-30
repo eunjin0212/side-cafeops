@@ -10,10 +10,9 @@ import { router } from 'expo-router';
 
 import { useEmployees } from '@/hooks/useEmployees';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
-import { Employee, EmployeeRole } from '@/types/employee';
+import { Employee } from '@/types/employee';
 import { ROLE_LABELS } from '@/constants/roles';
-
-const CAN_INVITE: EmployeeRole[] = ['location_manager', 'general_manager', 'owner'];
+import { can } from '@/constants/permissions';
 
 interface EmployeeRowProps {
   employee: Employee;
@@ -36,7 +35,7 @@ function EmployeeRow({ employee }: EmployeeRowProps) {
 export default function EmployeeListScreen() {
   const { employees, isLoading, error } = useEmployees();
   const { profile } = useCurrentProfile();
-  const canInvite = profile !== null && CAN_INVITE.includes(profile.role);
+  const canInvite = profile !== null && can(profile.role, 'invite_employee');
 
   if (isLoading) {
     return (
