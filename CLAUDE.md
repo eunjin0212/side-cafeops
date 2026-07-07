@@ -336,6 +336,20 @@ feat: add employee service
 Do not execute git commit.
 Do not execute git push.
 
+## Technical Backlog
+
+Items deferred from MVP. Do not implement until noted.
+
+### RLS: Add target-rank enforcement on profiles UPDATE
+
+**Context:** The current `profiles` UPDATE policy checks only the actor's role (`location_manager+`), not the target's rank. The frontend prevents same-level or upward edits via `canEditEmployeeRole` / `canEditEmployeeLocation`, but RLS alone does not enforce this.
+
+**Why deferred:** All writes currently go through the app UI, which applies the rank check before any DB call. Risk is low for MVP.
+
+**When to address:** Before opening any direct API access, adding a public-facing integration, or exposing a service-role endpoint. At that point, add a `get_profile_role(uuid)` helper and tighten the UPDATE WITH CHECK to also verify `actor.rank > target.rank`.
+
+---
+
 ## MVP Priority
 
 Build features in this order:
