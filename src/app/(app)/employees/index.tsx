@@ -24,7 +24,12 @@ function EmployeeRow({ employee, onPress }: EmployeeRowProps) {
     <Pressable style={styles.row} onPress={onPress}>
       <View style={styles.rowMain}>
         <Text style={styles.name}>{employee.fullName ?? employee.email}</Text>
-        <Text style={styles.role}>{ROLE_LABELS[employee.role]}</Text>
+        <Text style={styles.role}>
+          {ROLE_LABELS[employee.role]}
+          {employee.locations.length > 0
+            ? `  ·  ${employee.locations.map((l) => l.locationName).join(', ')}`
+            : ''}
+        </Text>
       </View>
       <View style={[styles.badge, employee.isActive ? styles.badgeActive : styles.badgeInactive]}>
         <Text style={styles.badgeText}>{employee.isActive ? 'Active' : 'Inactive'}</Text>
