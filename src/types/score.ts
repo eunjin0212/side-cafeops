@@ -14,6 +14,34 @@ export type ScoreCategory = {
   updatedAt: string;
 };
 
+export type ScoreCycle = {
+  id: string;
+  startedAt: string;
+  endedAt: string;
+  isActive: boolean;
+  createdAt: string;
+};
+
+export type ScoreEntry = {
+  id: string;
+  cycleId: string;
+  profileId: string;
+  categoryId: string;
+  points: number;
+  notes: string | null;
+  submittedBy: string;
+  correctionFor: string | null;
+  createdAt: string;
+};
+
+export type CreateScoreEntryInput = {
+  profileId: string;
+  categoryId: string;
+  points: number;
+  notes?: string;
+  correctionFor?: string;
+};
+
 export type CreateScoreCategoryInput = {
   name: string;
   section: ScoreSection;

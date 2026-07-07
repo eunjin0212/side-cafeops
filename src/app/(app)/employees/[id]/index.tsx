@@ -15,6 +15,7 @@ import {
   canEditEmployeeRole,
   canEditEmployeeLocation,
   canEditOwnProfile,
+  can,
 } from '@/constants/permissions';
 import { goBack } from '@/utils/navigation';
 
@@ -52,6 +53,12 @@ export default function EmployeeDetailScreen() {
       canEditEmployeeRole(currentProfile.role, employee?.role ?? 'owner') ||
       canEditEmployeeLocation(currentProfile.role, employee?.role ?? 'owner'));
 
+  const showScoreButton =
+    currentProfile !== null &&
+    employee !== null &&
+    currentProfile.id !== id &&
+    can(currentProfile.role, 'manageScores');
+
   if (isLoading) {
     return (
       <View style={styles.center}>
@@ -82,14 +89,24 @@ export default function EmployeeDetailScreen() {
         <Pressable onPress={() => goBack('/employees')} hitSlop={8}>
           <Text style={styles.backText}>← Back</Text>
         </Pressable>
-        {showEditButton && (
-          <Pressable
-            onPress={() => router.navigate(`/employees/${id}/edit`)}
-            hitSlop={8}
-          >
-            <Text style={styles.editText}>Edit</Text>
-          </Pressable>
-        )}
+        <View style={styles.headerActions}>
+          {showScoreButton && (
+            <Pressable
+              onPress={() => router.navigate(`/employees/${id}/score`)}
+              hitSlop={8}
+            >
+              <Text style={styles.scoreText}>Score</Text>
+            </Pressable>
+          )}
+          {showEditButton && (
+            <Pressable
+              onPress={() => router.navigate(`/employees/${id}/edit`)}
+              hitSlop={8}
+            >
+              <Text style={styles.editText}>Edit</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       <View style={styles.profile}>
@@ -156,6 +173,16 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: 15,
     color: '#6B7280',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  scoreText: {
+    fontSize: 15,
+    color: '#111827',
+    fontWeight: '600',
   },
   editText: {
     fontSize: 15,

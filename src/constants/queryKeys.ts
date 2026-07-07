@@ -5,4 +5,5 @@ export const QUERY_KEYS = {
   invitations: ['invitations'] as const,
   locations: ['locations'] as const,
   scoreCategories: ['scoreCategories'] as const,
+  scoreEntries: (profileId: string) => ['scoreEntries', profileId] as const,
 } as const;
