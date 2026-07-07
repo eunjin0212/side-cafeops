@@ -21,7 +21,7 @@ export default function LoginScreen() {
 
   async function handleLogin() {
     if (!email || !password) {
-      setError('이메일과 비밀번호를 입력해주세요.');
+      setError('Please enter your email and password.');
       return;
     }
     setError(null);
@@ -30,7 +30,7 @@ export default function LoginScreen() {
       await signIn(email, password);
       router.replace('/');
     } catch {
-      setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+      setError('Invalid email or password.');
     } finally {
       setIsLoading(false);
     }
@@ -46,7 +46,7 @@ export default function LoginScreen() {
 
         <TextInput
           style={styles.input}
-          placeholder="이메일"
+          placeholder="Email"
           placeholderTextColor="#9CA3AF"
           value={email}
           onChangeText={setEmail}
@@ -58,7 +58,7 @@ export default function LoginScreen() {
 
         <TextInput
           style={styles.input}
-          placeholder="비밀번호"
+          placeholder="Password"
           placeholderTextColor="#9CA3AF"
           value={password}
           onChangeText={setPassword}
@@ -78,7 +78,7 @@ export default function LoginScreen() {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>로그인</Text>
+            <Text style={styles.buttonText}>Sign In</Text>
           )}
         </Pressable>
       </View>

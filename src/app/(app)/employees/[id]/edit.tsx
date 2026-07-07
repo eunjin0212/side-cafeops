@@ -119,7 +119,7 @@ export default function EmployeeEditScreen() {
       router.replace(`/employees/${id}`);
     } catch (err) {
       setSubmitError(
-        err instanceof Error ? err.message : '저장 중 오류가 발생했습니다.',
+        err instanceof Error ? err.message : 'Failed to save. Please try again.',
       );
     } finally {
       setIsSubmitting(false);
@@ -145,9 +145,9 @@ export default function EmployeeEditScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text style={styles.title}>직원 편집</Text>
+          <Text style={styles.title}>Edit Employee</Text>
           <Pressable onPress={() => router.back()} hitSlop={8}>
-            <Text style={styles.cancelText}>취소</Text>
+            <Text style={styles.cancelText}>Cancel</Text>
           </Pressable>
         </View>
 
@@ -159,7 +159,7 @@ export default function EmployeeEditScreen() {
 
         {/* Email — always read-only */}
         <View style={styles.field}>
-          <Text style={styles.label}>이메일</Text>
+          <Text style={styles.label}>Email</Text>
           <View style={[styles.input, styles.inputDisabled]}>
             <Text style={styles.inputDisabledText}>{employee.email}</Text>
           </View>
@@ -168,14 +168,14 @@ export default function EmployeeEditScreen() {
         {/* Full Name — only if canEditSelf */}
         {canSelf && (
           <View style={styles.field}>
-            <Text style={styles.label}>이름</Text>
+            <Text style={styles.label}>Full Name</Text>
             <Controller
               control={control}
               name="fullName"
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   style={[styles.input, errors.fullName ? styles.inputError : null]}
-                  placeholder="홍길동"
+                  placeholder="John Doe"
                   placeholderTextColor="#9CA3AF"
                   onBlur={onBlur}
                   onChangeText={onChange}
@@ -192,7 +192,7 @@ export default function EmployeeEditScreen() {
         {/* Phone — only if canEditSelf */}
         {canSelf && (
           <View style={styles.field}>
-            <Text style={styles.label}>연락처</Text>
+            <Text style={styles.label}>Phone</Text>
             <Controller
               control={control}
               name="phone"
@@ -214,7 +214,7 @@ export default function EmployeeEditScreen() {
         {/* Role — only if canEditRole */}
         {canRole && availableRoles.length > 0 && (
           <View style={styles.field}>
-            <Text style={styles.label}>역할</Text>
+            <Text style={styles.label}>Role</Text>
             <Controller
               control={control}
               name="role"
@@ -248,14 +248,14 @@ export default function EmployeeEditScreen() {
         {/* Location — only if canEditLocation */}
         {canLocation && (
           <View style={styles.field}>
-            <Text style={styles.label}>위치</Text>
+            <Text style={styles.label}>Location</Text>
             <Controller
               control={control}
               name="locationId"
               render={({ field: { onChange, value } }) =>
                 locations.length === 0 ? (
                   <View style={[styles.input, styles.inputDisabled]}>
-                    <Text style={styles.inputDisabledText}>등록된 위치가 없습니다</Text>
+                    <Text style={styles.inputDisabledText}>No locations available</Text>
                   </View>
                 ) : (
                   <View style={styles.locationList}>
@@ -298,7 +298,7 @@ export default function EmployeeEditScreen() {
           {isSubmitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitText}>저장</Text>
+            <Text style={styles.submitText}>Save</Text>
           )}
         </Pressable>
       </ScrollView>

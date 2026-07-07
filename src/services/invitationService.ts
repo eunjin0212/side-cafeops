@@ -58,7 +58,7 @@ export async function createInvitation(
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error('로그인이 필요합니다.');
+    throw new Error('Authentication required.');
   }
 
   const { data, error } = await supabase
@@ -74,9 +74,9 @@ export async function createInvitation(
 
   if (error) {
     if (error.code === '42501') {
-      throw new Error('초대 권한이 없습니다. 위치 관리자 이상만 초대할 수 있습니다.');
+      throw new Error('You do not have permission to invite employees.');
     }
-    throw new Error('초대 중 오류가 발생했습니다. 다시 시도해주세요.');
+    throw new Error('Failed to send invitation. Please try again.');
   }
 
   return mapInvitation(data as InvitationRow);
@@ -89,7 +89,7 @@ export async function getInvitations(): Promise<Invitation[]> {
     .order('created_at', { ascending: false });
 
   if (error) {
-    throw new Error('초대 목록을 불러오지 못했습니다.');
+    throw new Error('Failed to load invitations.');
   }
 
   return (data as InvitationRow[]).map(mapInvitation);

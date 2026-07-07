@@ -16,6 +16,7 @@ import {
   canEditEmployeeLocation,
   canEditOwnProfile,
 } from '@/constants/permissions';
+import { goBack } from '@/utils/navigation';
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -70,7 +71,7 @@ export default function EmployeeDetailScreen() {
   if (!employee) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyText}>직원 정보를 찾을 수 없습니다.</Text>
+        <Text style={styles.emptyText}>Employee not found.</Text>
       </View>
     );
   }
@@ -82,14 +83,14 @@ export default function EmployeeDetailScreen() {
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Text style={styles.backText}>← 뒤로</Text>
+          <Text style={styles.backText}>← Back</Text>
         </Pressable>
         {showEditButton && (
           <Pressable
             onPress={() => router.navigate(`/employees/${id}/edit`)}
             hitSlop={8}
           >
-            <Text style={styles.editText}>편집</Text>
+            <Text style={styles.editText}>Edit</Text>
           </Pressable>
         )}
       </View>
@@ -107,23 +108,23 @@ export default function EmployeeDetailScreen() {
             ]}
           >
             <Text style={styles.statusBadgeText}>
-              {employee.isActive ? '재직' : '퇴직'}
+              {employee.isActive ? 'Active' : 'Inactive'}
             </Text>
           </View>
         </View>
       </View>
 
       <View style={styles.section}>
-        <InfoRow label="이메일" value={employee.email} />
+        <InfoRow label="Email" value={employee.email} />
         <View style={styles.divider} />
-        <InfoRow label="연락처" value={employee.phone ?? '미등록'} />
+        <InfoRow label="Phone" value={employee.phone ?? 'Not set'} />
         <View style={styles.divider} />
         <InfoRow
-          label="위치"
-          value={primaryLocation ? primaryLocation.locationName : '미지정'}
+          label="Location"
+          value={primaryLocation ? primaryLocation.locationName : 'Unassigned'}
         />
         <View style={styles.divider} />
-        <InfoRow label="등록일" value={formatDate(employee.createdAt)} />
+        <InfoRow label="Joined" value={formatDate(employee.createdAt)} />
       </View>
     </ScrollView>
   );

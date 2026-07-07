@@ -17,7 +17,7 @@ export function useEmployee(id: string): {
       .then(setEmployee)
       .catch((err) =>
         setError(
-          err instanceof Error ? err.message : '불러오는 중 오류가 발생했습니다.',
+          err instanceof Error ? err.message : 'Failed to load employee.',
         ),
       )
       .finally(() => setIsLoading(false));

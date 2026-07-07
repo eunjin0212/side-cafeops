@@ -15,8 +15,8 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>로그인된 사용자</Text>
-      <Text style={styles.email}>{email ?? '불러오는 중...'}</Text>
+      <Text style={styles.label}>Signed in as</Text>
+      <Text style={styles.email}>{email ?? 'Loading...'}</Text>
 
       {/* TODO: remove after routing is set up */}
       <Pressable style={styles.button} onPress={() => router.navigate('/employees')}>

@@ -27,7 +27,7 @@ function EmployeeRow({ employee, onPress }: EmployeeRowProps) {
         <Text style={styles.role}>{ROLE_LABELS[employee.role]}</Text>
       </View>
       <View style={[styles.badge, employee.isActive ? styles.badgeActive : styles.badgeInactive]}>
-        <Text style={styles.badgeText}>{employee.isActive ? '재직' : '퇴직'}</Text>
+        <Text style={styles.badgeText}>{employee.isActive ? 'Active' : 'Inactive'}</Text>
       </View>
     </Pressable>
   );
@@ -57,19 +57,19 @@ export default function EmployeeListScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>직원</Text>
+        <Text style={styles.headerTitle}>Employees</Text>
         <View style={styles.headerActions}>
           <Pressable
             onPress={() => router.navigate('/employees/invitations')}
           >
-            <Text style={styles.headerLink}>초대 목록</Text>
+            <Text style={styles.headerLink}>Invitations</Text>
           </Pressable>
           {canInvite && (
             <Pressable
               style={styles.inviteButton}
               onPress={() => router.navigate('/employees/invite')}
             >
-              <Text style={styles.inviteButtonText}>직원 초대</Text>
+              <Text style={styles.inviteButtonText}>Invite</Text>
             </Pressable>
           )}
         </View>
@@ -86,7 +86,7 @@ export default function EmployeeListScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text style={styles.emptyText}>등록된 직원이 없습니다.</Text>
+            <Text style={styles.emptyText}>No employees yet.</Text>
           </View>
         }
         ItemSeparatorComponent={() => <View style={styles.separator} />}

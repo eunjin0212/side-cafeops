@@ -23,10 +23,10 @@ import { createInvitation } from '@/services/invitationService';
 const inviteSchema = z.object({
   email: z
     .string()
-    .min(1, '이메일을 입력해주세요')
+    .min(1, 'Email is required')
     .refine(
       (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
-      '올바른 이메일 형식이 아닙니다',
+      'Invalid email address',
     ),
   role: z.enum(EMPLOYEE_ROLES),
   locationId: z.string().optional(),
@@ -60,12 +60,12 @@ export default function InviteEmployeeScreen() {
         role: data.role,
         locationId: data.locationId,
       });
-      Alert.alert('초대 완료', `${data.email}로 초대를 보냈습니다.`, [
-        { text: '확인', onPress: () => router.navigate('/employees') },
+      Alert.alert('Invitation Sent', `Invitation sent to ${data.email}.`, [
+        { text: 'OK', onPress: () => router.navigate('/employees') },
       ]);
     } catch (err) {
       setSubmitError(
-        err instanceof Error ? err.message : '초대 중 오류가 발생했습니다.',
+        err instanceof Error ? err.message : 'Failed to send invitation.',
       );
     } finally {
       setIsSubmitting(false);
@@ -83,9 +83,9 @@ export default function InviteEmployeeScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text style={styles.title}>직원 초대</Text>
+          <Text style={styles.title}>Invite Employee</Text>
           <Pressable onPress={() => router.back()} hitSlop={8}>
-            <Text style={styles.cancelText}>취소</Text>
+            <Text style={styles.cancelText}>Cancel</Text>
           </Pressable>
         </View>
 
@@ -97,7 +97,7 @@ export default function InviteEmployeeScreen() {
 
         {/* Email */}
         <View style={styles.field}>
-          <Text style={styles.label}>이메일 *</Text>
+          <Text style={styles.label}>Email *</Text>
           <Controller
             control={control}
             name="email"
@@ -122,7 +122,7 @@ export default function InviteEmployeeScreen() {
 
         {/* Role */}
         <View style={styles.field}>
-          <Text style={styles.label}>역할 *</Text>
+          <Text style={styles.label}>Role *</Text>
           <Controller
             control={control}
             name="role"
@@ -154,14 +154,14 @@ export default function InviteEmployeeScreen() {
 
         {/* Location */}
         <View style={styles.field}>
-          <Text style={styles.label}>위치</Text>
+          <Text style={styles.label}>Location</Text>
           <Controller
             control={control}
             name="locationId"
             render={({ field: { onChange, value } }) =>
               locations.length === 0 ? (
                 <View style={[styles.input, styles.inputDisabled]}>
-                  <Text style={styles.placeholderText}>등록된 위치가 없습니다</Text>
+                  <Text style={styles.placeholderText}>No locations available</Text>
                 </View>
               ) : (
                 <View style={styles.locationList}>
@@ -204,7 +204,7 @@ export default function InviteEmployeeScreen() {
           {isSubmitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitText}>초대 보내기</Text>
+            <Text style={styles.submitText}>Send Invite</Text>
           )}
         </Pressable>
       </ScrollView>

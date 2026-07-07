@@ -14,10 +14,10 @@ import { Invitation, InvitationStatus } from '@/types/invitation';
 import { ROLE_LABELS } from '@/constants/roles';
 
 const STATUS_LABEL: Record<InvitationStatus, string> = {
-  pending: '대기 중',
-  accepted: '수락됨',
-  expired: '만료됨',
-  cancelled: '취소됨',
+  pending: 'Pending',
+  accepted: 'Accepted',
+  expired: 'Expired',
+  cancelled: 'Cancelled',
 };
 
 const STATUS_COLORS: Record<InvitationStatus, { bg: string; text: string }> = {
@@ -58,7 +58,7 @@ function InvitationRow({ invitation }: InvitationRowProps) {
         {invitation.locationName ? ` · ${invitation.locationName}` : ''}
       </Text>
       <Text style={styles.dates}>
-        초대 {formatDate(invitation.createdAt)} · 만료{' '}
+        Invited {formatDate(invitation.createdAt)} · Expires{' '}
         {formatDate(invitation.expiresAt)}
       </Text>
     </View>
@@ -88,9 +88,9 @@ export default function InvitationsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>초대 목록</Text>
+        <Text style={styles.title}>Invitations</Text>
         <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Text style={styles.closeText}>닫기</Text>
+          <Text style={styles.closeText}>Close</Text>
         </Pressable>
       </View>
       <FlatList
@@ -100,7 +100,7 @@ export default function InvitationsScreen() {
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text style={styles.emptyText}>초대 내역이 없습니다.</Text>
+            <Text style={styles.emptyText}>No invitations yet.</Text>
           </View>
         }
         contentContainerStyle={
