@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -27,7 +26,6 @@ import {
   canEditOwnProfile,
   ROLE_HIERARCHY,
 } from '@/constants/permissions';
-import { EmployeeRole } from '@/types/employee';
 import { UpdateEmployeeInput } from '@/types/employee';
 
 const editSchema = z.object({
@@ -75,7 +73,7 @@ export default function EmployeeEditScreen() {
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<EditFormValues>({
     resolver: zodResolver(editSchema),
     defaultValues: {
@@ -103,8 +101,8 @@ export default function EmployeeEditScreen() {
     try {
       const profileInput: UpdateEmployeeInput = {};
       if (canSelf) {
-        profileInput.fullName = data.fullName || undefined;
-        profileInput.phone = data.phone || undefined;
+        profileInput.fullName = data.fullName !== '' ? data.fullName : undefined;
+        profileInput.phone = data.phone !== '' ? data.phone : undefined;
       }
       if (canRole && data.role) {
         profileInput.role = data.role;
@@ -118,9 +116,7 @@ export default function EmployeeEditScreen() {
         await updateEmployeeLocation(id, data.locationId);
       }
 
-      Alert.alert('저장 완료', '직원 정보가 수정되었습니다.', [
-        { text: '확인', onPress: () => router.back() },
-      ]);
+      router.replace(`/employees/${id}`);
     } catch (err) {
       setSubmitError(
         err instanceof Error ? err.message : '저장 중 오류가 발생했습니다.',
@@ -203,11 +199,11 @@ export default function EmployeeEditScreen() {
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   style={styles.input}
-                  placeholder="010-0000-0000"
+                  placeholder="01012345678"
                   placeholderTextColor="#9CA3AF"
-                  keyboardType="phone-pad"
+                  keyboardType="number-pad"
                   onBlur={onBlur}
-                  onChangeText={onChange}
+                  onChangeText={(text) => onChange(text.replace(/[^0-9]/g, ''))}
                   value={value}
                 />
               )}
@@ -295,9 +291,9 @@ export default function EmployeeEditScreen() {
         )}
 
         <Pressable
-          style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+          style={[styles.submitButton, (!isDirty || isSubmitting) && styles.submitButtonDisabled]}
           onPress={handleSubmit(onSubmit)}
-          disabled={isSubmitting}
+          disabled={!isDirty || isSubmitting}
         >
           {isSubmitting ? (
             <ActivityIndicator color="#fff" />
