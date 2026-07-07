@@ -29,6 +29,7 @@ export type ScoreEntry = {
   categoryId: string;
   points: number;
   notes: string | null;
+  imageUrls: string[];
   submittedBy: string;
   correctionFor: string | null;
   createdAt: string;
@@ -46,6 +47,7 @@ export type CreateScoreEntriesBatchInput = {
   profileIds: string[];
   selections: { categoryId: string; points: number }[];
   notes?: string;
+  imageUris?: string[];
 };
 
 export type CreateScoreCategoryInput = {

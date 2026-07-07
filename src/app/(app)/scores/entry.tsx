@@ -20,6 +20,7 @@ import { ROLE_LABELS } from '@/constants/roles';
 import { goBack } from '@/utils/navigation';
 import { ScoreSection } from '@/types/score';
 import { Employee } from '@/types/employee';
+import { ImagePickerField } from '@/components/molecules/ImagePickerField';
 
 function formatPoints(pts: number): string {
   return pts > 0 ? `+${pts}` : String(pts);
@@ -39,6 +40,7 @@ export default function ScoreEntryScreen() {
   );
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
+  const [imageUris, setImageUris] = useState<string[]>([]);
   const [employeeSearch, setEmployeeSearch] = useState('');
   const [expandedSections, setExpandedSections] = useState<Set<ScoreSection>>(new Set());
   const [submitted, setSubmitted] = useState(false);
@@ -115,11 +117,13 @@ export default function ScoreEntryScreen() {
           points: c.points,
         })),
         notes: notes.trim() || undefined,
+        imageUris: imageUris.length > 0 ? imageUris : undefined,
       },
       {
         onSuccess: () => {
           setSelectedCategoryIds([]);
           setNotes('');
+          setImageUris([]);
           setSubmitted(true);
           setTimeout(() => {
             setSubmitted(false);
@@ -379,6 +383,15 @@ export default function ScoreEntryScreen() {
               multiline
               numberOfLines={3}
               textAlignVertical="top"
+            />
+            <ImagePickerField
+              images={imageUris}
+              onAdd={(uri) => setImageUris((prev) => [...prev, uri])}
+              onRemove={(idx) =>
+                setImageUris((prev) => prev.filter((_, i) => i !== idx))
+              }
+              maxImages={2}
+              disabled={isPending}
             />
           </View>
         )}

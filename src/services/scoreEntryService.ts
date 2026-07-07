@@ -4,9 +4,10 @@ import {
   CreateScoreEntryInput,
   CreateScoreEntriesBatchInput,
 } from '@/types/score';
+import { uploadScoreImages } from '@/services/storageService';
 
 const ENTRY_QUERY =
-  'id, cycle_id, profile_id, category_id, points, notes, submitted_by, correction_for, created_at' as const;
+  'id, cycle_id, profile_id, category_id, points, notes, image_urls, submitted_by, correction_for, created_at' as const;
 
 function mapScoreEntry(row: {
   id: string;
@@ -15,6 +16,7 @@ function mapScoreEntry(row: {
   category_id: string;
   points: number;
   notes: string | null;
+  image_urls: string[];
   submitted_by: string;
   correction_for: string | null;
   created_at: string;
@@ -26,6 +28,7 @@ function mapScoreEntry(row: {
     categoryId: row.category_id,
     points: row.points,
     notes: row.notes,
+    imageUrls: row.image_urls,
     submittedBy: row.submitted_by,
     correctionFor: row.correction_for,
     createdAt: row.created_at,
@@ -58,6 +61,7 @@ export async function createScoreEntry(
       category_id: input.categoryId,
       points: input.points,
       notes: input.notes ?? null,
+      image_urls: [],
       submitted_by: user.id,
       correction_for: input.correctionFor ?? null,
     })
@@ -86,6 +90,11 @@ export async function createScoreEntries(
 
   if (userError || !user) throw new Error('Authentication required.');
 
+  const imageUrls =
+    input.imageUris && input.imageUris.length > 0
+      ? await uploadScoreImages(input.imageUris, user.id)
+      : [];
+
   const rows = input.profileIds.flatMap((profileId) =>
     input.selections.map((s) => ({
       cycle_id: cycleId,
@@ -93,6 +102,7 @@ export async function createScoreEntries(
       category_id: s.categoryId,
       points: s.points,
       notes: input.notes ?? null,
+      image_urls: imageUrls,
       submitted_by: user.id,
       correction_for: null,
     })),
