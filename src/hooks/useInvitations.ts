@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { getInvitations } from '@/services/invitationService';
 import { Invitation } from '@/types/invitation';
@@ -11,7 +11,6 @@ export function useInvitations(): {
   error: string | null;
   refetch: () => void;
 } {
-  const queryClient = useQueryClient();
   const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: QUERY_KEYS.invitations,
     queryFn: getInvitations,
@@ -22,8 +21,6 @@ export function useInvitations(): {
     isLoading,
     isRefreshing: !isLoading && isFetching,
     error: error instanceof Error ? error.message : error ? 'Failed to load invitations.' : null,
-    refetch: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invitations });
-    },
+    refetch,
   };
 }

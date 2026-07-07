@@ -28,17 +28,6 @@ export type Employee = {
   locations: EmployeeLocation[];
 };
 
-export type CreateEmployeeInput = {
-  id: string; // must match an existing auth.users id
-  email: string;
-  fullName?: string;
-  phone?: string;
-  role?: EmployeeRole;
-  locationId: string;
-  isPrimary?: boolean;
-  hiredAt?: string;
-};
-
 export type UpdateEmployeeInput = {
   fullName?: string;
   phone?: string;

@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { router } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,6 +20,7 @@ import { z } from 'zod';
 import { useLocations } from '@/hooks/useLocations';
 import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
 import { createInvitation } from '@/services/invitationService';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
 
 const inviteSchema = z.object({
@@ -37,6 +39,7 @@ type InviteFormValues = z.infer<typeof inviteSchema>;
 
 export default function InviteEmployeeScreen() {
   const { locations } = useLocations();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -61,6 +64,7 @@ export default function InviteEmployeeScreen() {
         role: data.role,
         locationId: data.locationId,
       });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invitations });
       Alert.alert('Invitation Sent', `Invitation sent to ${data.email}.`, [
         { text: 'OK', onPress: () => router.navigate('/employees') },
       ]);

@@ -21,7 +21,7 @@ function RootLayoutNav() {
     } else if (session && inAuthGroup) {
       router.replace('/');
     }
-  }, [session, isLoading, segments]);
+  }, [session, isLoading, segments, router]);
 
   if (isLoading) return null;
 

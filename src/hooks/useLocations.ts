@@ -1,23 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { getLocations } from '@/services/locationService';
 import { Location } from '@/types/location';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export function useLocations(): {
   locations: Location[];
   isLoading: boolean;
   error: string | null;
 } {
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useQuery({
+    queryKey: QUERY_KEYS.locations,
+    queryFn: getLocations,
+  });
 
-  useEffect(() => {
-    getLocations()
-      .then(setLocations)
-      .catch(() => setError('Failed to load locations.'))
-      .finally(() => setIsLoading(false));
-  }, []);
-
-  return { locations, isLoading, error };
+  return {
+    locations: data ?? [],
+    isLoading,
+    error: error instanceof Error ? error.message : error ? 'Failed to load locations.' : null,
+  };
 }

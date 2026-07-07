@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase';
 import {
-  CreateEmployeeInput,
   Employee,
   EmployeeLocation,
   UpdateEmployeeInput,
@@ -84,29 +83,6 @@ export async function getEmployee(id: string): Promise<Employee> {
 
   if (error) throw error;
   return mapEmployee(data);
-}
-
-export async function createEmployee(input: CreateEmployeeInput): Promise<Employee> {
-  const { error: profileError } = await supabase.from('profiles').insert({
-    id: input.id,
-    email: input.email,
-    full_name: input.fullName ?? null,
-    phone: input.phone ?? null,
-    role: input.role ?? 'staff',
-  });
-
-  if (profileError) throw profileError;
-
-  const { error: locationError } = await supabase.from('employee_locations').insert({
-    profile_id: input.id,
-    location_id: input.locationId,
-    is_primary: input.isPrimary ?? true,
-    hired_at: input.hiredAt ?? null,
-  });
-
-  if (locationError) throw locationError;
-
-  return getEmployee(input.id);
 }
 
 export async function updateEmployeeLocations(

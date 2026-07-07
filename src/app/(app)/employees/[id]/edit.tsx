@@ -20,7 +20,7 @@ import { useEmployee } from '@/hooks/useEmployee';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useLocations } from '@/hooks/useLocations';
 import { updateEmployee, updateEmployeeLocations } from '@/services/employeeService';
-import { ROLE_OPTIONS } from '@/constants/roles';
+import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
 import {
   canEditEmployeeRole,
   canEditEmployeeLocation,
@@ -34,7 +34,7 @@ import { goBack } from '@/utils/navigation';
 const editSchema = z.object({
   fullName: z.string(),
   phone: z.string(),
-  role: z.enum(['trainee', 'staff', 'supervisor', 'location_manager', 'general_manager', 'owner']),
+  role: z.enum(EMPLOYEE_ROLES),
   locationIds: z.array(z.string()),
 });
 
@@ -92,7 +92,7 @@ export default function EmployeeEditScreen() {
         locationIds: employee.locations.map((l) => l.locationId),
       });
     }
-  }, [employee]);
+  }, [employee, reset]);
 
   async function onSubmit(data: EditFormValues): Promise<void> {
     setSubmitError(null);
@@ -117,6 +117,7 @@ export default function EmployeeEditScreen() {
 
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.employee(id) });
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.employees });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentProfile });
       router.replace(`/employees/${id}`);
     } catch (err) {
       setSubmitError(
