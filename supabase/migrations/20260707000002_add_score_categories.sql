@@ -3,7 +3,7 @@
 -- Soft delete only (is_active). No DELETE RLS policy by design.
 -- ============================================================
 
-CREATE TYPE score_section AS ENUM (
+CREATE TYPE IF NOT EXISTS score_section AS ENUM (
   'daily_performance',
   'manager_review',
   'positive_addup',
