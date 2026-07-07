@@ -27,14 +27,20 @@ export function canEditEmployeeRole(
   currentUserRole: EmployeeRole,
   targetUserRole: EmployeeRole,
 ): boolean {
-  return ROLE_HIERARCHY[currentUserRole] > ROLE_HIERARCHY[targetUserRole];
+  return (
+    ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY['location_manager'] &&
+    ROLE_HIERARCHY[currentUserRole] > ROLE_HIERARCHY[targetUserRole]
+  );
 }
 
 export function canEditEmployeeLocation(
   currentUserRole: EmployeeRole,
   targetUserRole: EmployeeRole,
 ): boolean {
-  return ROLE_HIERARCHY[currentUserRole] > ROLE_HIERARCHY[targetUserRole];
+  return (
+    ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY['location_manager'] &&
+    ROLE_HIERARCHY[currentUserRole] > ROLE_HIERARCHY[targetUserRole]
+  );
 }
 
 export function canEditOwnProfile(
