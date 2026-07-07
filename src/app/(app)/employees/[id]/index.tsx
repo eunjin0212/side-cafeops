@@ -9,7 +9,13 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { useEmployee } from '@/hooks/useEmployee';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ROLE_LABELS } from '@/constants/roles';
+import {
+  canEditEmployeeRole,
+  canEditEmployeeLocation,
+  canEditOwnProfile,
+} from '@/constants/permissions';
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -36,6 +42,14 @@ function InfoRow({ label, value }: InfoRowProps) {
 export default function EmployeeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { employee, isLoading, error } = useEmployee(id);
+  const { profile: currentProfile } = useCurrentProfile();
+
+  const showEditButton =
+    currentProfile !== null &&
+    employee !== null &&
+    (canEditOwnProfile(currentProfile.id, id) ||
+      canEditEmployeeRole(currentProfile.role, employee?.role ?? 'owner') ||
+      canEditEmployeeLocation(currentProfile.role, employee?.role ?? 'owner'));
 
   if (isLoading) {
     return (
@@ -70,6 +84,14 @@ export default function EmployeeDetailScreen() {
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Text style={styles.backText}>← 뒤로</Text>
         </Pressable>
+        {showEditButton && (
+          <Pressable
+            onPress={() => router.navigate(`/employees/${id}/edit`)}
+            hitSlop={8}
+          >
+            <Text style={styles.editText}>편집</Text>
+          </Pressable>
+        )}
       </View>
 
       <View style={styles.profile}>
@@ -78,7 +100,12 @@ export default function EmployeeDetailScreen() {
           <View style={styles.roleBadge}>
             <Text style={styles.roleBadgeText}>{ROLE_LABELS[employee.role]}</Text>
           </View>
-          <View style={[styles.statusBadge, employee.isActive ? styles.statusActive : styles.statusInactive]}>
+          <View
+            style={[
+              styles.statusBadge,
+              employee.isActive ? styles.statusActive : styles.statusInactive,
+            ]}
+          >
             <Text style={styles.statusBadgeText}>
               {employee.isActive ? '재직' : '퇴직'}
             </Text>
@@ -119,11 +146,19 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 28,
   },
   backText: {
     fontSize: 15,
     color: '#6B7280',
+  },
+  editText: {
+    fontSize: 15,
+    color: '#111827',
+    fontWeight: '600',
   },
   profile: {
     marginBottom: 32,

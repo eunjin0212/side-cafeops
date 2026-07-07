@@ -1,0 +1,396 @@
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+import { useEmployee } from '@/hooks/useEmployee';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { useLocations } from '@/hooks/useLocations';
+import { updateEmployee, updateEmployeeLocation } from '@/services/employeeService';
+import { ROLE_OPTIONS } from '@/constants/roles';
+import {
+  canEditEmployeeRole,
+  canEditEmployeeLocation,
+  canEditOwnProfile,
+  ROLE_HIERARCHY,
+} from '@/constants/permissions';
+import { EmployeeRole } from '@/types/employee';
+import { UpdateEmployeeInput } from '@/types/employee';
+
+const editSchema = z.object({
+  fullName: z.string(),
+  phone: z.string(),
+  role: z.enum(['trainee', 'staff', 'supervisor', 'location_manager', 'general_manager', 'owner']),
+  locationId: z.string().optional(),
+});
+
+type EditFormValues = z.infer<typeof editSchema>;
+
+export default function EmployeeEditScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { employee, isLoading: employeeLoading } = useEmployee(id);
+  const { profile: currentProfile } = useCurrentProfile();
+  const { locations } = useLocations();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const canSelf =
+    currentProfile !== null && canEditOwnProfile(currentProfile.id, id);
+  const canRole =
+    currentProfile !== null &&
+    employee !== null &&
+    currentProfile.id !== id &&
+    canEditEmployeeRole(currentProfile.role, employee.role);
+  const canLocation =
+    currentProfile !== null &&
+    employee !== null &&
+    currentProfile.id !== id &&
+    canEditEmployeeLocation(currentProfile.role, employee.role);
+
+  const availableRoles = currentProfile
+    ? ROLE_OPTIONS.filter(
+        (opt) => ROLE_HIERARCHY[opt.value] < ROLE_HIERARCHY[currentProfile.role],
+      )
+    : [];
+
+  const primaryLocation =
+    employee?.locations.find((l) => l.isPrimary) ??
+    employee?.locations[0] ??
+    null;
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<EditFormValues>({
+    resolver: zodResolver(editSchema),
+    defaultValues: {
+      fullName: '',
+      phone: '',
+      role: 'staff',
+      locationId: undefined,
+    },
+  });
+
+  useEffect(() => {
+    if (employee) {
+      reset({
+        fullName: employee.fullName ?? '',
+        phone: employee.phone ?? '',
+        role: employee.role,
+        locationId: primaryLocation?.locationId ?? undefined,
+      });
+    }
+  }, [employee]);
+
+  async function onSubmit(data: EditFormValues): Promise<void> {
+    setSubmitError(null);
+    setIsSubmitting(true);
+    try {
+      const profileInput: UpdateEmployeeInput = {};
+      if (canSelf) {
+        profileInput.fullName = data.fullName || undefined;
+        profileInput.phone = data.phone || undefined;
+      }
+      if (canRole && data.role) {
+        profileInput.role = data.role;
+      }
+
+      if (Object.keys(profileInput).length > 0) {
+        await updateEmployee(id, profileInput);
+      }
+
+      if (canLocation && data.locationId) {
+        await updateEmployeeLocation(id, data.locationId);
+      }
+
+      Alert.alert('저장 완료', '직원 정보가 수정되었습니다.', [
+        { text: '확인', onPress: () => router.back() },
+      ]);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : '저장 중 오류가 발생했습니다.',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  if (employeeLoading || !employee || !currentProfile) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>직원 편집</Text>
+          <Pressable onPress={() => router.back()} hitSlop={8}>
+            <Text style={styles.cancelText}>취소</Text>
+          </Pressable>
+        </View>
+
+        {submitError !== null && (
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorBannerText}>{submitError}</Text>
+          </View>
+        )}
+
+        {/* Email — always read-only */}
+        <View style={styles.field}>
+          <Text style={styles.label}>이메일</Text>
+          <View style={[styles.input, styles.inputDisabled]}>
+            <Text style={styles.inputDisabledText}>{employee.email}</Text>
+          </View>
+        </View>
+
+        {/* Full Name — only if canEditSelf */}
+        {canSelf && (
+          <View style={styles.field}>
+            <Text style={styles.label}>이름</Text>
+            <Controller
+              control={control}
+              name="fullName"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.input, errors.fullName ? styles.inputError : null]}
+                  placeholder="홍길동"
+                  placeholderTextColor="#9CA3AF"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {errors.fullName && (
+              <Text style={styles.fieldError}>{errors.fullName.message}</Text>
+            )}
+          </View>
+        )}
+
+        {/* Phone — only if canEditSelf */}
+        {canSelf && (
+          <View style={styles.field}>
+            <Text style={styles.label}>연락처</Text>
+            <Controller
+              control={control}
+              name="phone"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  placeholder="010-0000-0000"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="phone-pad"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+          </View>
+        )}
+
+        {/* Role — only if canEditRole */}
+        {canRole && availableRoles.length > 0 && (
+          <View style={styles.field}>
+            <Text style={styles.label}>역할</Text>
+            <Controller
+              control={control}
+              name="role"
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.roleGrid}>
+                  {availableRoles.map((option) => (
+                    <Pressable
+                      key={option.value}
+                      style={[
+                        styles.rolePill,
+                        value === option.value && styles.rolePillSelected,
+                      ]}
+                      onPress={() => onChange(option.value)}
+                    >
+                      <Text
+                        style={[
+                          styles.rolePillText,
+                          value === option.value && styles.rolePillTextSelected,
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            />
+          </View>
+        )}
+
+        {/* Location — only if canEditLocation */}
+        {canLocation && (
+          <View style={styles.field}>
+            <Text style={styles.label}>위치</Text>
+            <Controller
+              control={control}
+              name="locationId"
+              render={({ field: { onChange, value } }) =>
+                locations.length === 0 ? (
+                  <View style={[styles.input, styles.inputDisabled]}>
+                    <Text style={styles.inputDisabledText}>등록된 위치가 없습니다</Text>
+                  </View>
+                ) : (
+                  <View style={styles.locationList}>
+                    {locations.map((loc) => (
+                      <Pressable
+                        key={loc.id}
+                        style={[
+                          styles.locationRow,
+                          value === loc.id && styles.locationRowSelected,
+                        ]}
+                        onPress={() =>
+                          onChange(value === loc.id ? undefined : loc.id)
+                        }
+                      >
+                        <Text
+                          style={[
+                            styles.locationRowText,
+                            value === loc.id && styles.locationRowTextSelected,
+                          ]}
+                        >
+                          {loc.name}
+                        </Text>
+                        {value === loc.id && (
+                          <Text style={styles.checkmark}>✓</Text>
+                        )}
+                      </Pressable>
+                    ))}
+                  </View>
+                )
+              }
+            />
+          </View>
+        )}
+
+        <Pressable
+          style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+          onPress={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.submitText}>저장</Text>
+          )}
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: { flex: 1, backgroundColor: '#fff' },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  scroll: { flex: 1 },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 40,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 32,
+  },
+  title: { fontSize: 22, fontWeight: '700', color: '#111827' },
+  cancelText: { fontSize: 15, color: '#6B7280' },
+  errorBanner: {
+    backgroundColor: '#FEF2F2',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
+  },
+  errorBannerText: { fontSize: 13, color: '#EF4444' },
+  field: { marginBottom: 24 },
+  label: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 },
+  input: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#111827',
+    backgroundColor: '#fff',
+  },
+  inputError: { borderColor: '#EF4444' },
+  inputDisabled: { backgroundColor: '#F9FAFB', justifyContent: 'center' },
+  inputDisabledText: { fontSize: 15, color: '#9CA3AF' },
+  fieldError: { fontSize: 12, color: '#EF4444', marginTop: 4 },
+  roleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  rolePill: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#fff',
+  },
+  rolePillSelected: { backgroundColor: '#111827', borderColor: '#111827' },
+  rolePillText: { fontSize: 13, fontWeight: '500', color: '#374151' },
+  rolePillTextSelected: { color: '#fff' },
+  locationList: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    backgroundColor: '#fff',
+  },
+  locationRowSelected: { backgroundColor: '#F9FAFB' },
+  locationRowText: { flex: 1, fontSize: 15, color: '#111827' },
+  locationRowTextSelected: { fontWeight: '600' },
+  checkmark: { fontSize: 15, color: '#111827' },
+  submitButton: {
+    backgroundColor: '#111827',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  submitButtonDisabled: { opacity: 0.5 },
+  submitText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+});

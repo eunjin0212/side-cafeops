@@ -109,6 +109,19 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Employ
   return getEmployee(input.id);
 }
 
+export async function updateEmployeeLocation(
+  profileId: string,
+  locationId: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from('employee_locations')
+    .update({ location_id: locationId })
+    .eq('profile_id', profileId)
+    .eq('is_primary', true);
+
+  if (error) throw error;
+}
+
 export async function updateEmployee(
   id: string,
   input: UpdateEmployeeInput
