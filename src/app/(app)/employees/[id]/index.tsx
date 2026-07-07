@@ -76,9 +76,6 @@ export default function EmployeeDetailScreen() {
     );
   }
 
-  const primaryLocation =
-    employee.locations.find((l) => l.isPrimary) ?? employee.locations[0] ?? null;
-
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
@@ -121,7 +118,11 @@ export default function EmployeeDetailScreen() {
         <View style={styles.divider} />
         <InfoRow
           label="Location"
-          value={primaryLocation ? primaryLocation.locationName : 'Unassigned'}
+          value={
+            employee.locations.length > 0
+              ? employee.locations.map((l) => l.locationName).join(', ')
+              : 'Unassigned'
+          }
         />
         <View style={styles.divider} />
         <InfoRow label="Joined" value={formatDate(employee.createdAt)} />
