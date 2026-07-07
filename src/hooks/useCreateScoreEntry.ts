@@ -15,6 +15,8 @@ export function useCreateScoreEntry() {
           queryKey: QUERY_KEYS.scoreEntries(profileId),
         });
       });
+      // Refresh all leaderboard views (all location filters)
+      void queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
     },
   });
 }
