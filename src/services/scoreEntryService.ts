@@ -78,6 +78,32 @@ export async function createScoreEntry(
   return mapScoreEntry(data);
 }
 
+// Read-only fetch — does NOT call get_or_create_current_cycle.
+// Returns [] when no active cycle exists.
+export async function getMyScoreEntries(profileId: string): Promise<ScoreEntry[]> {
+  const { data: cycle, error: cycleError } = await supabase
+    .from('score_cycles')
+    .select('id')
+    .eq('is_active', true)
+    .gt('ended_at', new Date().toISOString())
+    .order('started_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (cycleError) throw new Error('Failed to load current score cycle.');
+  if (!cycle) return [];
+
+  const { data, error } = await supabase
+    .from('score_entries')
+    .select(ENTRY_QUERY)
+    .eq('profile_id', profileId)
+    .eq('cycle_id', cycle.id)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error('Failed to load score entries.');
+  return data.map(mapScoreEntry);
+}
+
 export async function createScoreEntries(
   input: CreateScoreEntriesBatchInput,
 ): Promise<ScoreEntry[]> {

@@ -34,6 +34,10 @@ export default function HomeScreen() {
         <Text style={styles.buttonText}>Employees</Text>
       </Pressable>
 
+      <Pressable style={styles.button} onPress={() => router.navigate('/scores/my')}>
+        <Text style={styles.buttonText}>My Scores</Text>
+      </Pressable>
+
       <Pressable style={styles.button} onPress={() => router.navigate('/scores/leaderboard')}>
         <Text style={styles.buttonText}>Leaderboard</Text>
       </Pressable>
