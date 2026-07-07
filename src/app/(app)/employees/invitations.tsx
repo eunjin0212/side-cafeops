@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -7,9 +8,13 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
+
 import { useInvitations } from '@/hooks/useInvitations';
+import { cancelInvitation, resendInvitation } from '@/services/invitationService';
 import { Invitation, InvitationStatus } from '@/types/invitation';
 import { ROLE_LABELS } from '@/constants/roles';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
 
 const STATUS_LABEL: Record<InvitationStatus, string> = {
@@ -39,7 +44,43 @@ interface InvitationRowProps {
 }
 
 function InvitationRow({ invitation }: InvitationRowProps) {
+  const queryClient = useQueryClient();
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const canCancel = invitation.status === 'pending';
+  const canResend = invitation.status === 'pending' || invitation.status === 'expired';
+  const isAnyBusy = isCancelling || isResending;
+
+  async function handleCancel(): Promise<void> {
+    setActionError(null);
+    setIsCancelling(true);
+    try {
+      await cancelInvitation(invitation.id);
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invitations });
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to cancel.');
+    } finally {
+      setIsCancelling(false);
+    }
+  }
+
+  async function handleResend(): Promise<void> {
+    setActionError(null);
+    setIsResending(true);
+    try {
+      await resendInvitation(invitation.id);
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invitations });
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to resend.');
+    } finally {
+      setIsResending(false);
+    }
+  }
+
   const colors = STATUS_COLORS[invitation.status];
+
   return (
     <View style={styles.row}>
       <View style={styles.rowTop}>
@@ -60,6 +101,49 @@ function InvitationRow({ invitation }: InvitationRowProps) {
         Invited {formatDate(invitation.createdAt)} · Expires{' '}
         {formatDate(invitation.expiresAt)}
       </Text>
+
+      {(canCancel || canResend) && (
+        <View style={styles.actions}>
+          {canCancel && (
+            <Pressable
+              style={[
+                styles.actionButton,
+                styles.cancelButton,
+                isAnyBusy && styles.actionButtonDisabled,
+              ]}
+              onPress={handleCancel}
+              disabled={isAnyBusy}
+            >
+              {isCancelling ? (
+                <ActivityIndicator size="small" color="#EF4444" />
+              ) : (
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              )}
+            </Pressable>
+          )}
+          {canResend && (
+            <Pressable
+              style={[
+                styles.actionButton,
+                styles.resendButton,
+                isAnyBusy && styles.actionButtonDisabled,
+              ]}
+              onPress={handleResend}
+              disabled={isAnyBusy}
+            >
+              {isResending ? (
+                <ActivityIndicator size="small" color="#374151" />
+              ) : (
+                <Text style={styles.resendButtonText}>Resend</Text>
+              )}
+            </Pressable>
+          )}
+        </View>
+      )}
+
+      {actionError !== null && (
+        <Text style={styles.actionError}>{actionError}</Text>
+      )}
     </View>
   );
 }
@@ -181,6 +265,45 @@ const styles = StyleSheet.create({
   dates: {
     fontSize: 12,
     color: '#9CA3AF',
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  actionButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    minWidth: 76,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 32,
+  },
+  cancelButton: {
+    borderColor: '#FCA5A5',
+  },
+  resendButton: {
+    borderColor: '#E5E7EB',
+  },
+  actionButtonDisabled: {
+    opacity: 0.5,
+  },
+  cancelButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#EF4444',
+  },
+  resendButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  actionError: {
+    fontSize: 12,
+    color: '#EF4444',
+    marginTop: 4,
   },
   separator: {
     height: 1,

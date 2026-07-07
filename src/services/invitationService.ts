@@ -82,6 +82,40 @@ export async function createInvitation(
   return mapInvitation(data as InvitationRow);
 }
 
+export async function cancelInvitation(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('invitations')
+    .update({ status: 'cancelled' })
+    .eq('id', id)
+    .eq('status', 'pending');
+
+  if (error) {
+    if (error.code === '42501') {
+      throw new Error('You do not have permission to cancel this invitation.');
+    }
+    throw new Error('Failed to cancel invitation. Please try again.');
+  }
+}
+
+export async function resendInvitation(id: string): Promise<void> {
+  // TODO: Trigger email delivery when email sending is implemented.
+  // At that point, also generate a new token here before updating.
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { error } = await supabase
+    .from('invitations')
+    .update({ status: 'pending', expires_at: expiresAt })
+    .eq('id', id)
+    .in('status', ['pending', 'expired']);
+
+  if (error) {
+    if (error.code === '42501') {
+      throw new Error('You do not have permission to resend this invitation.');
+    }
+    throw new Error('Failed to resend invitation. Please try again.');
+  }
+}
+
 export async function getInvitations(): Promise<Invitation[]> {
   const { data, error } = await supabase
     .from('invitations')
