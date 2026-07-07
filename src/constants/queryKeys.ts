@@ -4,4 +4,5 @@ export const QUERY_KEYS = {
   employee: (id: string) => ['employee', id] as const,
   invitations: ['invitations'] as const,
   locations: ['locations'] as const,
+  scoreCategories: ['scoreCategories'] as const,
 } as const;

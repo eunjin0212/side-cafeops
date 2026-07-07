@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { signOut } from '@/services/authService';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { can } from '@/constants/permissions';
 
 export default function HomeScreen() {
   const { profile } = useCurrentProfile();
@@ -29,10 +30,15 @@ export default function HomeScreen() {
       <Text style={styles.label}>Signed in as</Text>
       <Text style={styles.email}>{profile?.email ?? 'Loading...'}</Text>
 
-      {/* TODO: remove after routing is set up */}
       <Pressable style={styles.button} onPress={() => router.navigate('/employees')}>
         <Text style={styles.buttonText}>Employees</Text>
       </Pressable>
+
+      {profile !== null && can(profile.role, 'manageScoreCategories') && (
+        <Pressable style={styles.button} onPress={() => router.navigate('/scores/categories')}>
+          <Text style={styles.buttonText}>Score Categories</Text>
+        </Pressable>
+      )}
 
       {error !== null && <Text style={styles.error}>{error}</Text>}
 
