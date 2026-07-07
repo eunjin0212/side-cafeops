@@ -82,7 +82,7 @@ export default function EmployeeDetailScreen() {
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
+        <Pressable onPress={() => goBack('/employees')} hitSlop={8}>
           <Text style={styles.backText}>← Back</Text>
         </Pressable>
         {showEditButton && (

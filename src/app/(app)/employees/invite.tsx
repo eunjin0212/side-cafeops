@@ -19,6 +19,7 @@ import { z } from 'zod';
 import { useLocations } from '@/hooks/useLocations';
 import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
 import { createInvitation } from '@/services/invitationService';
+import { goBack } from '@/utils/navigation';
 
 const inviteSchema = z.object({
   email: z
@@ -84,7 +85,7 @@ export default function InviteEmployeeScreen() {
       >
         <View style={styles.header}>
           <Text style={styles.title}>Invite Employee</Text>
-          <Pressable onPress={() => router.back()} hitSlop={8}>
+          <Pressable onPress={() => goBack('/employees')} hitSlop={8}>
             <Text style={styles.cancelText}>Cancel</Text>
           </Pressable>
         </View>

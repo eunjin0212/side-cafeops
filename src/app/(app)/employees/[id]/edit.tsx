@@ -27,6 +27,7 @@ import {
   ROLE_HIERARCHY,
 } from '@/constants/permissions';
 import { UpdateEmployeeInput } from '@/types/employee';
+import { goBack } from '@/utils/navigation';
 
 const editSchema = z.object({
   fullName: z.string(),
@@ -146,7 +147,7 @@ export default function EmployeeEditScreen() {
       >
         <View style={styles.header}>
           <Text style={styles.title}>Edit Employee</Text>
-          <Pressable onPress={() => router.back()} hitSlop={8}>
+          <Pressable onPress={() => goBack(`/employees/${id}`)} hitSlop={8}>
             <Text style={styles.cancelText}>Cancel</Text>
           </Pressable>
         </View>

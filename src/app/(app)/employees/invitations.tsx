@@ -7,11 +7,10 @@ import {
   Text,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
-
 import { useInvitations } from '@/hooks/useInvitations';
 import { Invitation, InvitationStatus } from '@/types/invitation';
 import { ROLE_LABELS } from '@/constants/roles';
+import { goBack } from '@/utils/navigation';
 
 const STATUS_LABEL: Record<InvitationStatus, string> = {
   pending: 'Pending',
@@ -89,7 +88,7 @@ export default function InvitationsScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Invitations</Text>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
+        <Pressable onPress={() => goBack('/employees')} hitSlop={8}>
           <Text style={styles.closeText}>Close</Text>
         </Pressable>
       </View>
