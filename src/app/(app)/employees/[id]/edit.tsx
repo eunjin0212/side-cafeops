@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -25,6 +27,7 @@ import {
   canEditEmployeeRole,
   canEditEmployeeLocation,
   canEditOwnProfile,
+  canDeactivateEmployee,
   ROLE_HIERARCHY,
 } from '@/constants/permissions';
 import { UpdateEmployeeInput } from '@/types/employee';
@@ -36,6 +39,7 @@ const editSchema = z.object({
   phone: z.string(),
   role: z.enum(EMPLOYEE_ROLES),
   locationIds: z.array(z.string()),
+  isActive: z.boolean(),
 });
 
 type EditFormValues = z.infer<typeof editSchema>;
@@ -61,6 +65,11 @@ export default function EmployeeEditScreen() {
     employee !== null &&
     currentProfile.id !== id &&
     canEditEmployeeLocation(currentProfile.role, employee.role);
+  const canDeactivate =
+    currentProfile !== null &&
+    employee !== null &&
+    currentProfile.id !== id &&
+    canDeactivateEmployee(currentProfile.role, employee.role);
 
   const availableRoles = currentProfile
     ? ROLE_OPTIONS.filter(
@@ -80,6 +89,7 @@ export default function EmployeeEditScreen() {
       phone: '',
       role: 'staff',
       locationIds: [],
+      isActive: true,
     },
   });
 
@@ -90,11 +100,12 @@ export default function EmployeeEditScreen() {
         phone: employee.phone ?? '',
         role: employee.role,
         locationIds: employee.locations.map((l) => l.locationId),
+        isActive: employee.isActive,
       });
     }
   }, [employee, reset]);
 
-  async function onSubmit(data: EditFormValues): Promise<void> {
+  async function performSave(data: EditFormValues): Promise<void> {
     setSubmitError(null);
     setIsSubmitting(true);
     try {
@@ -105,6 +116,9 @@ export default function EmployeeEditScreen() {
       }
       if (canRole && data.role) {
         profileInput.role = data.role;
+      }
+      if (canDeactivate) {
+        profileInput.isActive = data.isActive;
       }
 
       if (Object.keys(profileInput).length > 0) {
@@ -126,6 +140,28 @@ export default function EmployeeEditScreen() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function onSubmit(data: EditFormValues): void {
+    const isDeactivating = canDeactivate && !data.isActive && employee?.isActive === true;
+
+    if (isDeactivating) {
+      Alert.alert(
+        'Deactivate Employee',
+        `${employee?.fullName ?? employee?.email} will no longer be able to log in. Continue?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Deactivate',
+            style: 'destructive',
+            onPress: () => { void performSave(data); },
+          },
+        ],
+      );
+      return;
+    }
+
+    void performSave(data);
   }
 
   if (employeeLoading || !employee || !currentProfile) {
@@ -299,6 +335,30 @@ export default function EmployeeEditScreen() {
           </View>
         )}
 
+        {/* Active status — only if canDeactivate */}
+        {canDeactivate && (
+          <View style={[styles.field, styles.switchRow]}>
+            <View style={styles.switchLabel}>
+              <Text style={styles.label}>Active</Text>
+              <Text style={styles.switchHint}>
+                Inactive employees cannot log in.
+              </Text>
+            </View>
+            <Controller
+              control={control}
+              name="isActive"
+              render={({ field: { onChange, value } }) => (
+                <Switch
+                  value={value}
+                  onValueChange={onChange}
+                  trackColor={{ false: '#E5E7EB', true: '#111827' }}
+                  thumbColor="#fff"
+                />
+              )}
+            />
+          </View>
+        )}
+
         <Pressable
           style={[styles.submitButton, (!isDirty || isSubmitting) && styles.submitButtonDisabled]}
           onPress={handleSubmit(onSubmit)}
@@ -389,6 +449,13 @@ const styles = StyleSheet.create({
   locationRowText: { flex: 1, fontSize: 15, color: '#111827' },
   locationRowTextSelected: { fontWeight: '600' },
   checkmark: { fontSize: 15, color: '#111827' },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  switchLabel: { flex: 1, marginRight: 16 },
+  switchHint: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
   submitButton: {
     backgroundColor: '#111827',
     borderRadius: 8,
