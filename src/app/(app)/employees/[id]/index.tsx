@@ -92,7 +92,7 @@ export default function EmployeeDetailScreen() {
         <View style={styles.headerActions}>
           {showScoreButton && (
             <Pressable
-              onPress={() => router.navigate(`/employees/${id}/score`)}
+              onPress={() => router.navigate(`/scores/entry?profileId=${id}`)}
               hitSlop={8}
             >
               <Text style={styles.scoreText}>Score</Text>

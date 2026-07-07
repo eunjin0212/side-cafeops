@@ -1,5 +1,9 @@
 import { supabase } from '@/lib/supabase';
-import { ScoreEntry, CreateScoreEntryInput } from '@/types/score';
+import {
+  ScoreEntry,
+  CreateScoreEntryInput,
+  CreateScoreEntriesBatchInput,
+} from '@/types/score';
 
 const ENTRY_QUERY =
   'id, cycle_id, profile_id, category_id, points, notes, submitted_by, correction_for, created_at' as const;
@@ -68,4 +72,43 @@ export async function createScoreEntry(
   }
 
   return mapScoreEntry(data);
+}
+
+export async function createScoreEntries(
+  input: CreateScoreEntriesBatchInput,
+): Promise<ScoreEntry[]> {
+  const cycleId = await getCurrentCycleId();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) throw new Error('Authentication required.');
+
+  const rows = input.profileIds.flatMap((profileId) =>
+    input.selections.map((s) => ({
+      cycle_id: cycleId,
+      profile_id: profileId,
+      category_id: s.categoryId,
+      points: s.points,
+      notes: input.notes ?? null,
+      submitted_by: user.id,
+      correction_for: null,
+    })),
+  );
+
+  const { data, error } = await supabase
+    .from('score_entries')
+    .insert(rows)
+    .select(ENTRY_QUERY);
+
+  if (error) {
+    if (error.code === '42501') {
+      throw new Error('You do not have permission to submit score entries.');
+    }
+    throw new Error('Failed to submit score entries. Please try again.');
+  }
+
+  return data.map(mapScoreEntry);
 }

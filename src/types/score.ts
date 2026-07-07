@@ -42,6 +42,12 @@ export type CreateScoreEntryInput = {
   correctionFor?: string;
 };
 
+export type CreateScoreEntriesBatchInput = {
+  profileIds: string[];
+  selections: { categoryId: string; points: number }[];
+  notes?: string;
+};
+
 export type CreateScoreCategoryInput = {
   name: string;
   section: ScoreSection;

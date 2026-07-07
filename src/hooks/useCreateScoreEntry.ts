@@ -1,17 +1,19 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { createScoreEntry } from '@/services/scoreEntryService';
-import { CreateScoreEntryInput, ScoreEntry } from '@/types/score';
+import { createScoreEntries } from '@/services/scoreEntryService';
+import { CreateScoreEntriesBatchInput, ScoreEntry } from '@/types/score';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export function useCreateScoreEntry() {
   const queryClient = useQueryClient();
 
-  return useMutation<ScoreEntry, Error, CreateScoreEntryInput>({
-    mutationFn: createScoreEntry,
+  return useMutation<ScoreEntry[], Error, CreateScoreEntriesBatchInput>({
+    mutationFn: createScoreEntries,
     onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.scoreEntries(variables.profileId),
+      variables.profileIds.forEach((profileId) => {
+        void queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.scoreEntries(profileId),
+        });
       });
     },
   });

@@ -34,6 +34,12 @@ export default function HomeScreen() {
         <Text style={styles.buttonText}>Employees</Text>
       </Pressable>
 
+      {profile !== null && can(profile.role, 'manageScores') && (
+        <Pressable style={styles.button} onPress={() => router.navigate('/scores/entry')}>
+          <Text style={styles.buttonText}>Score Entry</Text>
+        </Pressable>
+      )}
+
       {profile !== null && can(profile.role, 'manageScoreCategories') && (
         <Pressable style={styles.button} onPress={() => router.navigate('/scores/categories')}>
           <Text style={styles.buttonText}>Score Categories</Text>
