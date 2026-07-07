@@ -1,27 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { getEmployee } from '@/services/employeeService';
 import { Employee } from '@/types/employee';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export function useEmployee(id: string): {
   employee: Employee | null;
   isLoading: boolean;
   error: string | null;
 } {
-  const [employee, setEmployee] = useState<Employee | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useQuery({
+    queryKey: QUERY_KEYS.employee(id),
+    queryFn: () => getEmployee(id),
+    enabled: !!id,
+  });
 
-  useEffect(() => {
-    getEmployee(id)
-      .then(setEmployee)
-      .catch((err) =>
-        setError(
-          err instanceof Error ? err.message : 'Failed to load employee.',
-        ),
-      )
-      .finally(() => setIsLoading(false));
-  }, [id]);
-
-  return { employee, isLoading, error };
+  return {
+    employee: data ?? null,
+    isLoading,
+    error: error instanceof Error ? error.message : error ? 'Failed to load employee.' : null,
+  };
 }

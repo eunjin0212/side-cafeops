@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { getInvitations } from '@/services/invitationService';
 import { Invitation } from '@/types/invitation';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export function useInvitations(): {
   invitations: Invitation[];
@@ -10,36 +11,19 @@ export function useInvitations(): {
   error: string | null;
   refetch: () => void;
 } {
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function fetchInvitations(refresh = false): Promise<void> {
-    if (refresh) setIsRefreshing(true);
-    try {
-      setError(null);
-      const data = await getInvitations();
-      setInvitations(data);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to load invitations.',
-      );
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchInvitations();
-  }, []);
+  const queryClient = useQueryClient();
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
+    queryKey: QUERY_KEYS.invitations,
+    queryFn: getInvitations,
+  });
 
   return {
-    invitations,
+    invitations: data ?? [],
     isLoading,
-    isRefreshing,
-    error,
-    refetch: () => fetchInvitations(true),
+    isRefreshing: !isLoading && isFetching,
+    error: error instanceof Error ? error.message : error ? 'Failed to load invitations.' : null,
+    refetch: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invitations });
+    },
   };
 }

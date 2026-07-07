@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -27,6 +28,7 @@ import {
   ROLE_HIERARCHY,
 } from '@/constants/permissions';
 import { UpdateEmployeeInput } from '@/types/employee';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
 
 const editSchema = z.object({
@@ -43,6 +45,7 @@ export default function EmployeeEditScreen() {
   const { employee, isLoading: employeeLoading } = useEmployee(id);
   const { profile: currentProfile } = useCurrentProfile();
   const { locations } = useLocations();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -112,6 +115,8 @@ export default function EmployeeEditScreen() {
         await updateEmployeeLocations(id, data.locationIds);
       }
 
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.employee(id) });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.employees });
       router.replace(`/employees/${id}`);
     } catch (err) {
       setSubmitError(

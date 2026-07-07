@@ -1,20 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { getCurrentProfile, CurrentProfile } from '@/services/authService';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export function useCurrentProfile(): {
   profile: CurrentProfile | null;
   isLoading: boolean;
 } {
-  const [profile, setProfile] = useState<CurrentProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useQuery({
+    queryKey: QUERY_KEYS.currentProfile,
+    queryFn: getCurrentProfile,
+  });
 
-  useEffect(() => {
-    getCurrentProfile()
-      .then(setProfile)
-      .catch(() => setProfile(null))
-      .finally(() => setIsLoading(false));
-  }, []);
-
-  return { profile, isLoading };
+  return { profile: data ?? null, isLoading };
 }
