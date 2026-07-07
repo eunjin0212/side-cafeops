@@ -109,17 +109,55 @@ export async function createEmployee(input: CreateEmployeeInput): Promise<Employ
   return getEmployee(input.id);
 }
 
-export async function updateEmployeeLocation(
+export async function updateEmployeeLocations(
   profileId: string,
-  locationId: string,
+  locationIds: string[],
 ): Promise<void> {
-  const { error } = await supabase
+  const { data: current, error: fetchError } = await supabase
     .from('employee_locations')
-    .update({ location_id: locationId })
-    .eq('profile_id', profileId)
-    .eq('is_primary', true);
+    .select('location_id, is_primary')
+    .eq('profile_id', profileId);
 
-  if (error) throw error;
+  if (fetchError) throw fetchError;
+
+  const currentRows = current ?? [];
+  const currentIds = currentRows.map((r) => r.location_id as string);
+  const toAdd = locationIds.filter((id) => !currentIds.includes(id));
+  const toRemove = currentIds.filter((id) => !locationIds.includes(id));
+
+  if (toRemove.length > 0) {
+    const { error } = await supabase
+      .from('employee_locations')
+      .delete()
+      .eq('profile_id', profileId)
+      .in('location_id', toRemove);
+    if (error) throw error;
+  }
+
+  if (toAdd.length > 0) {
+    const { error } = await supabase
+      .from('employee_locations')
+      .insert(toAdd.map((locationId) => ({
+        profile_id: profileId,
+        location_id: locationId,
+        is_primary: false,
+      })));
+    if (error) throw error;
+  }
+
+  if (locationIds.length > 0) {
+    const primaryStillExists = currentRows.some(
+      (r) => r.is_primary && locationIds.includes(r.location_id as string),
+    );
+    if (!primaryStillExists) {
+      const { error } = await supabase
+        .from('employee_locations')
+        .update({ is_primary: true })
+        .eq('profile_id', profileId)
+        .eq('location_id', locationIds[0]);
+      if (error) throw error;
+    }
+  }
 }
 
 export async function updateEmployee(

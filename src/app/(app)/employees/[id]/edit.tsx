@@ -18,7 +18,7 @@ import { z } from 'zod';
 import { useEmployee } from '@/hooks/useEmployee';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useLocations } from '@/hooks/useLocations';
-import { updateEmployee, updateEmployeeLocation } from '@/services/employeeService';
+import { updateEmployee, updateEmployeeLocations } from '@/services/employeeService';
 import { ROLE_OPTIONS } from '@/constants/roles';
 import {
   canEditEmployeeRole,
@@ -33,7 +33,7 @@ const editSchema = z.object({
   fullName: z.string(),
   phone: z.string(),
   role: z.enum(['trainee', 'staff', 'supervisor', 'location_manager', 'general_manager', 'owner']),
-  locationId: z.string().optional(),
+  locationIds: z.array(z.string()),
 });
 
 type EditFormValues = z.infer<typeof editSchema>;
@@ -65,11 +65,6 @@ export default function EmployeeEditScreen() {
       )
     : [];
 
-  const primaryLocation =
-    employee?.locations.find((l) => l.isPrimary) ??
-    employee?.locations[0] ??
-    null;
-
   const {
     control,
     handleSubmit,
@@ -81,7 +76,7 @@ export default function EmployeeEditScreen() {
       fullName: '',
       phone: '',
       role: 'staff',
-      locationId: undefined,
+      locationIds: [],
     },
   });
 
@@ -91,7 +86,7 @@ export default function EmployeeEditScreen() {
         fullName: employee.fullName ?? '',
         phone: employee.phone ?? '',
         role: employee.role,
-        locationId: primaryLocation?.locationId ?? undefined,
+        locationIds: employee.locations.map((l) => l.locationId),
       });
     }
   }, [employee]);
@@ -113,8 +108,8 @@ export default function EmployeeEditScreen() {
         await updateEmployee(id, profileInput);
       }
 
-      if (canLocation && data.locationId) {
-        await updateEmployeeLocation(id, data.locationId);
+      if (canLocation) {
+        await updateEmployeeLocations(id, data.locationIds);
       }
 
       router.replace(`/employees/${id}`);
@@ -252,7 +247,7 @@ export default function EmployeeEditScreen() {
             <Text style={styles.label}>Location</Text>
             <Controller
               control={control}
-              name="locationId"
+              name="locationIds"
               render={({ field: { onChange, value } }) =>
                 locations.length === 0 ? (
                   <View style={[styles.input, styles.inputDisabled]}>
@@ -260,30 +255,37 @@ export default function EmployeeEditScreen() {
                   </View>
                 ) : (
                   <View style={styles.locationList}>
-                    {locations.map((loc) => (
-                      <Pressable
-                        key={loc.id}
-                        style={[
-                          styles.locationRow,
-                          value === loc.id && styles.locationRowSelected,
-                        ]}
-                        onPress={() =>
-                          onChange(value === loc.id ? undefined : loc.id)
-                        }
-                      >
-                        <Text
+                    {locations.map((loc) => {
+                      const selected = value.includes(loc.id);
+                      return (
+                        <Pressable
+                          key={loc.id}
                           style={[
-                            styles.locationRowText,
-                            value === loc.id && styles.locationRowTextSelected,
+                            styles.locationRow,
+                            selected && styles.locationRowSelected,
                           ]}
+                          onPress={() =>
+                            onChange(
+                              selected
+                                ? value.filter((id) => id !== loc.id)
+                                : [...value, loc.id],
+                            )
+                          }
                         >
-                          {loc.name}
-                        </Text>
-                        {value === loc.id && (
-                          <Text style={styles.checkmark}>✓</Text>
-                        )}
-                      </Pressable>
-                    ))}
+                          <Text
+                            style={[
+                              styles.locationRowText,
+                              selected && styles.locationRowTextSelected,
+                            ]}
+                          >
+                            {loc.name}
+                          </Text>
+                          {selected && (
+                            <Text style={styles.checkmark}>✓</Text>
+                          )}
+                        </Pressable>
+                      );
+                    })}
                   </View>
                 )
               }
