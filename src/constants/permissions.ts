@@ -39,7 +39,7 @@ export function canEditEmployeeLocation(
 ): boolean {
   return (
     ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY['location_manager'] &&
-    ROLE_HIERARCHY[currentUserRole] > ROLE_HIERARCHY[targetUserRole]
+    ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY[targetUserRole]
   );
 }
 

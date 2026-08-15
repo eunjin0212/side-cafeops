@@ -133,6 +133,10 @@ describe('canEditEmployeeLocation()', () => {
       expect(canEditEmployeeLocation('location_manager', 'staff')).toBe(true);
     });
 
+    it('can edit another location_manager location', () => {
+      expect(canEditEmployeeLocation('location_manager', 'location_manager')).toBe(true);
+    });
+
     it('cannot edit general_manager location', () => {
       expect(canEditEmployeeLocation('location_manager', 'general_manager')).toBe(false);
     });
@@ -141,6 +145,10 @@ describe('canEditEmployeeLocation()', () => {
   describe('general_manager', () => {
     it('can edit location_manager location', () => {
       expect(canEditEmployeeLocation('general_manager', 'location_manager')).toBe(true);
+    });
+
+    it('can edit another general_manager location', () => {
+      expect(canEditEmployeeLocation('general_manager', 'general_manager')).toBe(true);
     });
 
     it('cannot edit owner location', () => {
@@ -153,8 +161,8 @@ describe('canEditEmployeeLocation()', () => {
       expect(canEditEmployeeLocation('owner', 'general_manager')).toBe(true);
     });
 
-    it('cannot edit owner location', () => {
-      expect(canEditEmployeeLocation('owner', 'owner')).toBe(false);
+    it('can edit another owner location', () => {
+      expect(canEditEmployeeLocation('owner', 'owner')).toBe(true);
     });
   });
 });
