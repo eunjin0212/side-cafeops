@@ -12,6 +12,7 @@ import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { useLocations } from '@/hooks/useLocations';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ROLE_LABELS } from '@/constants/roles';
+import { BASE_SCORE } from '@/constants/scoring';
 import { goBack } from '@/utils/navigation';
 import { LeaderboardEntry } from '@/types/leaderboard';
 import { useState } from 'react';
@@ -21,14 +22,9 @@ function formatCycleDate(iso: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function formatPoints(pts: number): string {
-  if (pts > 0) return `+${pts}`;
-  return String(pts);
-}
-
 function pointsColor(pts: number): string {
-  if (pts > 0) return '#16A34A';
-  if (pts < 0) return '#DC2626';
+  if (pts > BASE_SCORE) return '#16A34A';
+  if (pts < BASE_SCORE) return '#DC2626';
   return '#9CA3AF';
 }
 
@@ -79,7 +75,7 @@ function EntryRow({ entry, isCurrentUser }: EntryRowProps) {
       </View>
 
       <Text style={[styles.points, { color: pointsColor(entry.totalPoints) }]}>
-        {formatPoints(entry.totalPoints)}
+        {entry.totalPoints}
       </Text>
     </View>
   );

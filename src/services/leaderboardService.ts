@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { LeaderboardEntry, CycleSummary } from '@/types/leaderboard';
 import { EmployeeRole } from '@/types/employee';
+import { BASE_SCORE } from '@/constants/scoring';
 
 type RpcRow = {
   profile_id: string;
@@ -21,7 +22,7 @@ function mapEntry(row: RpcRow): LeaderboardEntry {
     role: row.role as EmployeeRole,
     locationId: row.location_id,
     locationName: row.location_name,
-    totalPoints: Number(row.total_points),
+    totalPoints: BASE_SCORE + Number(row.total_points),
     rank: Number(row.rank),
   };
 }
