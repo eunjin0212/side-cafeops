@@ -121,6 +121,8 @@ export default function ScoreEntryScreen() {
       },
       {
         onSuccess: () => {
+          setSelectedProfileIds([]);
+          setEmployeeSearch('');
           setSelectedCategoryIds([]);
           setNotes('');
           setImageUris([]);
