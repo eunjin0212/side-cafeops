@@ -17,6 +17,8 @@ import { goBack } from '@/utils/navigation';
 import { LeaderboardEntry } from '@/types/leaderboard';
 import { useState } from 'react';
 
+const LOCATIONS_UNRESTRICTED_ROLES = ['general_manager', 'owner'];
+
 function formatCycleDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -88,6 +90,8 @@ export default function LeaderboardScreen() {
     useLeaderboard(selectedLocationId);
   const { locations } = useLocations();
   const { profile: currentProfile } = useCurrentProfile();
+  const canBrowseAllLocations =
+    currentProfile !== null && LOCATIONS_UNRESTRICTED_ROLES.includes(currentProfile.role);
 
   const cycleLabel =
     cycle
@@ -114,8 +118,8 @@ export default function LeaderboardScreen() {
           </View>
         </View>
 
-        {/* Location filter */}
-        {locations.length > 1 && (
+        {/* Location filter — only GM/owner may browse other locations */}
+        {canBrowseAllLocations && locations.length > 1 && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
