@@ -16,6 +16,7 @@ import { Invitation, InvitationStatus } from '@/types/invitation';
 import { ROLE_LABELS } from '@/constants/roles';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
+import { FormHeader } from '@/components/molecules/FormHeader';
 
 const STATUS_LABEL: Record<InvitationStatus, string> = {
   pending: 'Pending',
@@ -171,10 +172,7 @@ export default function InvitationsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Invitations</Text>
-        <Pressable onPress={() => goBack('/employees')} hitSlop={8}>
-          <Text style={styles.closeText}>Close</Text>
-        </Pressable>
+        <FormHeader title="Invitations" dismissLabel="Close" onDismiss={() => goBack('/employees')} />
       </View>
       <FlatList
         data={invitations}
@@ -203,22 +201,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 60,
-    paddingBottom: 16,
     backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  closeText: {
-    fontSize: 15,
-    color: '#6B7280',
   },
   center: {
     flex: 1,

@@ -10,10 +10,10 @@ import { router } from 'expo-router';
 
 import { useEmployees } from '@/hooks/useEmployees';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { Employee } from '@/types/employee';
 import { ROLE_LABELS } from '@/constants/roles';
 import { can } from '@/constants/permissions';
-import { goBack } from '@/utils/navigation';
 
 interface EmployeeRowProps {
   employee: Employee;
@@ -63,27 +63,25 @@ export default function EmployeeListScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={() => goBack('/')} hitSlop={8}>
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
-        <View style={styles.headerTitleRow}>
-          <Text style={styles.headerTitle}>Employees</Text>
-          <View style={styles.headerActions}>
-            <Pressable
-              onPress={() => router.navigate('/employees/invitations')}
-            >
-              <Text style={styles.headerLink}>Invitations</Text>
-            </Pressable>
-            {canInvite && (
-              <Pressable
-                style={styles.inviteButton}
-                onPress={() => router.navigate('/employees/invite')}
-              >
-                <Text style={styles.inviteButtonText}>Invite</Text>
+        <ScreenHeader
+          backHref="/"
+          title="Employees"
+          right={
+            <>
+              <Pressable onPress={() => router.navigate('/employees/invitations')}>
+                <Text style={styles.headerLink}>Invitations</Text>
               </Pressable>
-            )}
-          </View>
-        </View>
+              {canInvite && (
+                <Pressable
+                  style={styles.inviteButton}
+                  onPress={() => router.navigate('/employees/invite')}
+                >
+                  <Text style={styles.inviteButtonText}>Invite</Text>
+                </Pressable>
+              )}
+            </>
+          }
+        />
       </View>
       <FlatList
         style={styles.list}
@@ -117,26 +115,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 16,
     backgroundColor: '#fff',
-    gap: 12,
-  },
-  backText: {
-    fontSize: 15,
-    color: '#6B7280',
-  },
-  headerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
   },
   headerLink: {
     fontSize: 13,

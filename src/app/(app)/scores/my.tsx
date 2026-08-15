@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -9,7 +8,7 @@ import {
 } from 'react-native';
 
 import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
-import { goBack } from '@/utils/navigation';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 
 // ─── helpers ────────────────────────────────────────────────
 
@@ -122,16 +121,7 @@ export default function MyScoreScreen() {
         />
       }
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => goBack('/')} hitSlop={8}>
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
-        <View style={styles.headerRight}>
-          <Text style={styles.title}>My Scores</Text>
-          {cycleLabel && <Text style={styles.cycleLabel}>{cycleLabel}</Text>}
-        </View>
-      </View>
+      <ScreenHeader backHref="/" title="My Scores" subtitle={cycleLabel ?? undefined} />
 
       {isLoading ? (
         <ActivityIndicator style={styles.loader} size="large" />
@@ -201,30 +191,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 48,
     gap: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-  backText: {
-    fontSize: 15,
-    color: '#6B7280',
-    paddingTop: 3,
-  },
-  headerRight: {
-    alignItems: 'flex-end',
-    gap: 2,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  cycleLabel: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    fontWeight: '500',
   },
   loader: {
     marginTop: 60,

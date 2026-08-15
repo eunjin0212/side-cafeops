@@ -10,10 +10,10 @@ import { router } from 'expo-router';
 
 import { useScoreCategories } from '@/hooks/useScoreCategories';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { can } from '@/constants/permissions';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { ScoreCategory } from '@/types/score';
-import { goBack } from '@/utils/navigation';
 
 function formatPoints(points: number): string {
   return points >= 0 ? `+${points}` : `${points}`;
@@ -71,20 +71,21 @@ export default function ScoreCategoriesScreen() {
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
-        <Pressable onPress={() => goBack('/')} hitSlop={8}>
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
-        {canManage && (
-          <Pressable
-            onPress={() => router.navigate('/scores/categories/new')}
-            hitSlop={8}
-          >
-            <Text style={styles.addText}>+ Add</Text>
-          </Pressable>
-        )}
+        <ScreenHeader
+          backHref="/"
+          title="Score Categories"
+          right={
+            canManage && (
+              <Pressable
+                onPress={() => router.navigate('/scores/categories/new')}
+                hitSlop={8}
+              >
+                <Text style={styles.addText}>+ Add</Text>
+              </Pressable>
+            )
+          }
+        />
       </View>
-
-      <Text style={styles.title}>Score Categories</Text>
 
       {SCORE_SECTIONS.map((section) => {
         const rows = visible.filter((c) => c.section === section);
@@ -128,15 +129,8 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 40,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 28,
-  },
-  backText: { fontSize: 15, color: '#6B7280' },
+  header: { marginBottom: 28 },
   addText: { fontSize: 15, color: '#111827', fontWeight: '600' },
-  title: { fontSize: 24, fontWeight: '700', color: '#111827', marginBottom: 28 },
   section: { marginBottom: 24 },
   sectionLabel: {
     fontSize: 12,

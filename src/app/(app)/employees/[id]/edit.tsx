@@ -33,6 +33,7 @@ import {
 import { UpdateEmployeeInput } from '@/types/employee';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
+import { FormHeader } from '@/components/molecules/FormHeader';
 
 const editSchema = z.object({
   fullName: z.string(),
@@ -182,12 +183,7 @@ export default function EmployeeEditScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Edit Employee</Text>
-          <Pressable onPress={() => goBack(`/employees/${id}`)} hitSlop={8}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </Pressable>
-        </View>
+        <FormHeader title="Edit Employee" onDismiss={() => goBack(`/employees/${id}`)} />
 
         {submitError !== null && (
           <View style={styles.errorBanner}>
@@ -389,14 +385,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 40,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 32,
-  },
-  title: { fontSize: 22, fontWeight: '700', color: '#111827' },
-  cancelText: { fontSize: 15, color: '#6B7280' },
   errorBanner: {
     backgroundColor: '#FEF2F2',
     borderRadius: 8,

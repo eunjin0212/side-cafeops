@@ -22,6 +22,7 @@ import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
 import { createInvitation } from '@/services/invitationService';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
+import { FormHeader } from '@/components/molecules/FormHeader';
 
 const inviteSchema = z.object({
   email: z
@@ -87,12 +88,7 @@ export default function InviteEmployeeScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Invite Employee</Text>
-          <Pressable onPress={() => goBack('/employees')} hitSlop={8}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </Pressable>
-        </View>
+        <FormHeader title="Invite Employee" onDismiss={() => goBack('/employees')} />
 
         {submitError !== null && (
           <View style={styles.errorBanner}>
@@ -229,21 +225,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 40,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  cancelText: {
-    fontSize: 15,
-    color: '#6B7280',
   },
   errorBanner: {
     backgroundColor: '#FEF2F2',

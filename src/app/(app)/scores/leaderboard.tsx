@@ -11,9 +11,9 @@ import {
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { useLocations } from '@/hooks/useLocations';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { ROLE_LABELS } from '@/constants/roles';
 import { BASE_SCORE } from '@/constants/scoring';
-import { goBack } from '@/utils/navigation';
 import { LeaderboardEntry } from '@/types/leaderboard';
 import { useState } from 'react';
 
@@ -107,16 +107,7 @@ export default function LeaderboardScreen() {
           <RefreshControl refreshing={isFetching && !isLoading} onRefresh={refetch} />
         }
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Pressable onPress={() => goBack('/')} hitSlop={8}>
-            <Text style={styles.backText}>← Back</Text>
-          </Pressable>
-          <View style={styles.headerRight}>
-            <Text style={styles.title}>Leaderboard</Text>
-            <Text style={styles.cycleLabel}>{cycleLabel}</Text>
-          </View>
-        </View>
+        <ScreenHeader backHref="/" title="Leaderboard" subtitle={cycleLabel} />
 
         {/* Location filter — only GM/owner may browse other locations */}
         {canBrowseAllLocations && locations.length > 1 && (
@@ -198,30 +189,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 40,
     gap: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-  backText: {
-    fontSize: 15,
-    color: '#6B7280',
-    paddingTop: 3,
-  },
-  headerRight: {
-    alignItems: 'flex-end',
-    gap: 2,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  cycleLabel: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    fontWeight: '500',
   },
   filterRow: {
     gap: 8,

@@ -10,6 +10,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 import { useEmployee } from '@/hooks/useEmployee';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { ROLE_LABELS } from '@/constants/roles';
 import {
   canEditEmployeeRole,
@@ -17,7 +18,6 @@ import {
   canEditOwnProfile,
   can,
 } from '@/constants/permissions';
-import { goBack } from '@/utils/navigation';
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -85,28 +85,30 @@ export default function EmployeeDetailScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-      <View style={styles.header}>
-        <Pressable onPress={() => goBack('/employees')} hitSlop={8}>
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
-        <View style={styles.headerActions}>
-          {showScoreButton && (
-            <Pressable
-              onPress={() => router.navigate(`/scores/entry?profileId=${id}`)}
-              hitSlop={8}
-            >
-              <Text style={styles.scoreText}>Score</Text>
-            </Pressable>
-          )}
-          {showEditButton && (
-            <Pressable
-              onPress={() => router.navigate(`/employees/${id}/edit`)}
-              hitSlop={8}
-            >
-              <Text style={styles.editText}>Edit</Text>
-            </Pressable>
-          )}
-        </View>
+      <View style={styles.headerSpacer}>
+        <ScreenHeader
+          backHref="/employees"
+          right={
+            <>
+              {showScoreButton && (
+                <Pressable
+                  onPress={() => router.navigate(`/scores/entry?profileId=${id}`)}
+                  hitSlop={8}
+                >
+                  <Text style={styles.scoreText}>Score</Text>
+                </Pressable>
+              )}
+              {showEditButton && (
+                <Pressable
+                  onPress={() => router.navigate(`/employees/${id}/edit`)}
+                  hitSlop={8}
+                >
+                  <Text style={styles.editText}>Edit</Text>
+                </Pressable>
+              )}
+            </>
+          }
+        />
       </View>
 
       <View style={styles.profile}>
@@ -164,20 +166,8 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 40,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  headerSpacer: {
     marginBottom: 28,
-  },
-  backText: {
-    fontSize: 15,
-    color: '#6B7280',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
   },
   scoreText: {
     fontSize: 15,

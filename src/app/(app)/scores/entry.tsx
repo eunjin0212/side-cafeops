@@ -17,10 +17,10 @@ import { useCreateScoreEntry } from '@/hooks/useCreateScoreEntry';
 import { can } from '@/constants/permissions';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { ROLE_LABELS } from '@/constants/roles';
-import { goBack } from '@/utils/navigation';
 import { ScoreSection } from '@/types/score';
 import { Employee } from '@/types/employee';
 import { ImagePickerField } from '@/components/molecules/ImagePickerField';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 
 function formatPoints(pts: number): string {
   return pts > 0 ? `+${pts}` : String(pts);
@@ -159,13 +159,7 @@ export default function ScoreEntryScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Pressable onPress={() => goBack('/')} hitSlop={8}>
-            <Text style={styles.backText}>← Back</Text>
-          </Pressable>
-          <Text style={styles.title}>Score Entry</Text>
-        </View>
+        <ScreenHeader backHref="/" title="Score Entry" />
 
         {/* ── Employees ── */}
         <View style={styles.block}>
@@ -449,20 +443,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 20,
     gap: 24,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  backText: {
-    fontSize: 15,
-    color: '#6B7280',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
   },
   block: {
     gap: 10,

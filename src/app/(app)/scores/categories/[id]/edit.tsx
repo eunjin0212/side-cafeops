@@ -24,6 +24,7 @@ import { can } from '@/constants/permissions';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
+import { FormHeader } from '@/components/molecules/FormHeader';
 
 const editCategorySchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -119,12 +120,7 @@ export default function EditScoreCategoryScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Edit Category</Text>
-          <Pressable onPress={() => goBack('/scores/categories')} hitSlop={8}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </Pressable>
-        </View>
+        <FormHeader title="Edit Category" onDismiss={() => goBack('/scores/categories')} />
 
         {submitError !== null && (
           <View style={styles.errorBanner}>
@@ -243,14 +239,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 40,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 32,
-  },
-  title: { fontSize: 22, fontWeight: '700', color: '#111827' },
-  cancelText: { fontSize: 15, color: '#6B7280' },
   errorBanner: {
     backgroundColor: '#FEF2F2',
     borderRadius: 8,
