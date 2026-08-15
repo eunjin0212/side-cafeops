@@ -16,6 +16,7 @@ import { signIn } from '@/services/authService';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,17 +57,28 @@ export default function LoginScreen() {
           editable={!isLoading}
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#9CA3AF"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          returnKeyType="done"
-          onSubmitEditing={handleLogin}
-          editable={!isLoading}
-        />
+        <View style={styles.passwordWrapper}>
+          <TextInput
+            style={[styles.input, styles.passwordInput]}
+            placeholder="Password"
+            placeholderTextColor="#9CA3AF"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!isPasswordVisible}
+            returnKeyType="done"
+            onSubmitEditing={handleLogin}
+            editable={!isLoading}
+          />
+          <Pressable
+            style={styles.passwordToggle}
+            onPress={() => setIsPasswordVisible((visible) => !visible)}
+            hitSlop={8}
+          >
+            <Text style={styles.passwordToggleText}>
+              {isPasswordVisible ? 'Hide' : 'Show'}
+            </Text>
+          </Pressable>
+        </View>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -113,6 +125,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#111827',
     backgroundColor: '#F9FAFB',
+  },
+  passwordWrapper: {
+    justifyContent: 'center',
+  },
+  passwordInput: {
+    paddingRight: 64,
+  },
+  passwordToggle: {
+    position: 'absolute',
+    right: 16,
+  },
+  passwordToggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
   },
   error: {
     fontSize: 14,
