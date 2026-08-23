@@ -88,10 +88,16 @@ export default function LeaderboardScreen() {
 
   const { entries, cycle, isLoading, isFetching, error, refetch } =
     useLeaderboard(selectedLocationId);
-  const { locations } = useLocations();
+  const { locations: allLocations } = useLocations();
   const { profile: currentProfile } = useCurrentProfile();
   const canBrowseAllLocations =
     currentProfile !== null && LOCATIONS_UNRESTRICTED_ROLES.includes(currentProfile.role);
+
+  // GM/owner may filter across every location; everyone else may only
+  // switch between the locations they themselves work at (if more than one).
+  const filterLocations = canBrowseAllLocations
+    ? allLocations
+    : (currentProfile?.locations ?? []);
 
   const cycleLabel =
     cycle
@@ -109,8 +115,9 @@ export default function LeaderboardScreen() {
       >
         <ScreenHeader backHref="/" title="Leaderboard" subtitle={cycleLabel} />
 
-        {/* Location filter — only GM/owner may browse other locations */}
-        {canBrowseAllLocations && locations.length > 1 && (
+        {/* Location filter — GM/owner browse every location; everyone
+            else may only switch between locations they work at */}
+        {filterLocations.length > 1 && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -129,7 +136,7 @@ export default function LeaderboardScreen() {
                 All
               </Text>
             </Pressable>
-            {locations.map((loc) => (
+            {filterLocations.map((loc) => (
               <Pressable
                 key={loc.id}
                 style={[

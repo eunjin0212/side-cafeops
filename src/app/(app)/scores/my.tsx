@@ -78,7 +78,10 @@ function EntryRow({ entry, isLast }: EntryRowProps) {
               {entry.notes}
             </Text>
           )}
-          <Text style={styles.entryDate}>{formatDate(entry.createdAt)}</Text>
+          <Text style={styles.entryDate}>
+            {entry.locationName ? `${entry.locationName} · ` : ''}
+            {formatDate(entry.createdAt)}
+          </Text>
         </View>
         <Text style={[styles.entryPoints, { color: pointsColor(entry.points) }]}>
           {formatPoints(entry.points)}

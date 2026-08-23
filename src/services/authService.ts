@@ -12,17 +12,33 @@ export type CurrentProfile = {
   avatarUrl: string | null;
   locationId: string | null;
   locationName: string | null;
+  locations: { id: string; name: string }[];
 };
 
 type LocationRow = { name: string } | { name: string }[] | null;
 
+type EmployeeLocationRow = {
+  is_primary: boolean;
+  is_active: boolean;
+  location_id: string;
+  locations: LocationRow;
+};
+
+function resolveActiveLocations(
+  employeeLocations: EmployeeLocationRow[],
+): { id: string; name: string }[] {
+  return employeeLocations
+    .filter((el) => el.is_active)
+    .map((el) => {
+      const loc = el.locations;
+      const resolved = Array.isArray(loc) ? (loc[0] ?? null) : loc;
+      return resolved ? { id: el.location_id, name: resolved.name } : null;
+    })
+    .filter((loc): loc is { id: string; name: string } => loc !== null);
+}
+
 function resolvePrimaryLocation(
-  employeeLocations: {
-    is_primary: boolean;
-    is_active: boolean;
-    location_id: string;
-    locations: LocationRow;
-  }[],
+  employeeLocations: EmployeeLocationRow[],
 ): { id: string; name: string } | null {
   const primary = employeeLocations.find((el) => el.is_primary && el.is_active);
   if (!primary) return null;
@@ -72,9 +88,8 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
 
   if (error || !data) return null;
 
-  const primaryLocation = resolvePrimaryLocation(
-    data.employee_locations as Parameters<typeof resolvePrimaryLocation>[0],
-  );
+  const employeeLocations = data.employee_locations as EmployeeLocationRow[];
+  const primaryLocation = resolvePrimaryLocation(employeeLocations);
 
   return {
     id: data.id as string,
@@ -85,5 +100,6 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
     avatarUrl: data.avatar_url as string | null,
     locationId: primaryLocation?.id ?? null,
     locationName: primaryLocation?.name ?? null,
+    locations: resolveActiveLocations(employeeLocations),
   };
 }

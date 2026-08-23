@@ -103,7 +103,9 @@ function ActivityRow({ entry, isLast }: ActivityRowProps) {
             {entry.categoryName}
           </Text>
           <Text style={styles.activityMeta} numberOfLines={1}>
-            {SCORE_SECTION_LABELS[entry.section]} · {formatEntryDateTime(entry.createdAt)}
+            {SCORE_SECTION_LABELS[entry.section]}
+            {entry.locationName ? ` · ${entry.locationName}` : ''} ·{' '}
+            {formatEntryDateTime(entry.createdAt)}
           </Text>
         </View>
 
@@ -146,8 +148,12 @@ export default function HomeScreen() {
     isLoading,
     error,
   } = useMyScores();
+  const [selectedRankLocationId, setSelectedRankLocationId] = useState<string | undefined>(
+    undefined,
+  );
+  const effectiveRankLocationId = selectedRankLocationId ?? profile?.locationId ?? undefined;
   const { entries: locationLeaderboard, isLoading: isRankLoading } = useLeaderboard(
-    profile?.locationId ?? undefined,
+    effectiveRankLocationId,
   );
   const queryClient = useQueryClient();
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -168,12 +174,15 @@ export default function HomeScreen() {
   const showScoreDashboard = profile !== null && profile.role !== 'owner';
   const recentEntries = entries.slice(0, 3);
   // A multi-location caller's query can return rows for more than one
-  // location, so scope both the rank lookup and the "of Y" count to the
-  // profile's own primary location (the one named in the banner text).
+  // location, so scope both the rank lookup and the "of Y" count to
+  // whichever location is currently selected.
   const myLocationEntries = locationLeaderboard.filter(
-    (e) => e.locationId === profile?.locationId,
+    (e) => e.locationId === effectiveRankLocationId,
   );
   const myRankEntry = myLocationEntries.find((e) => e.profileId === profile?.id);
+  const rankLocationName =
+    profile?.locations.find((l) => l.id === effectiveRankLocationId)?.name ??
+    profile?.locationName;
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
@@ -207,6 +216,34 @@ export default function HomeScreen() {
       {/* Score dashboard — not shown for owner */}
       {showScoreDashboard && (
         <>
+          {profile && profile.locations.length > 1 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.rankLocationRow}
+            >
+              {profile.locations.map((loc) => {
+                const isActive = effectiveRankLocationId === loc.id;
+                return (
+                  <Pressable
+                    key={loc.id}
+                    style={[styles.rankLocationChip, isActive && styles.rankLocationChipActive]}
+                    onPress={() => setSelectedRankLocationId(loc.id)}
+                  >
+                    <Text
+                      style={[
+                        styles.rankLocationChipText,
+                        isActive && styles.rankLocationChipTextActive,
+                      ]}
+                    >
+                      {loc.name}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          )}
+
           {!isRankLoading && myRankEntry && (
             <Pressable
               style={styles.rankCard}
@@ -231,7 +268,7 @@ export default function HomeScreen() {
                 <Text style={styles.rankCardTitle}>🏆 Team Ranking</Text>
                 <Text style={styles.rankCardSubtitle} numberOfLines={1}>
                   of {myLocationEntries.length}
-                  {profile?.locationName ? ` at ${profile.locationName}` : ''}
+                  {rankLocationName ? ` at ${rankLocationName}` : ''}
                 </Text>
               </View>
               <Text style={styles.chevron}>›</Text>
@@ -425,6 +462,30 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     padding: 18,
     gap: 16,
+  },
+  rankLocationRow: {
+    gap: 8,
+    paddingVertical: 2,
+  },
+  rankLocationChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#fff',
+  },
+  rankLocationChipActive: {
+    backgroundColor: '#111827',
+    borderColor: '#111827',
+  },
+  rankLocationChipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  rankLocationChipTextActive: {
+    color: '#fff',
   },
   rankCard: {
     flexDirection: 'row',

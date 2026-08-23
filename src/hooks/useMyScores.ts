@@ -5,6 +5,7 @@ import { getMyScoreEntries } from '@/services/scoreEntryService';
 import { getCurrentCycle } from '@/services/leaderboardService';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useScoreCategories } from '@/hooks/useScoreCategories';
+import { useLocations } from '@/hooks/useLocations';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { BASE_SCORE } from '@/constants/scoring';
 import { ScoreEntry, ScoreSection } from '@/types/score';
@@ -13,6 +14,7 @@ import { CycleSummary } from '@/types/leaderboard';
 export type EnrichedEntry = ScoreEntry & {
   categoryName: string;
   section: ScoreSection;
+  locationName: string | null;
 };
 
 export type MyScores = {
@@ -32,6 +34,7 @@ export type MyScores = {
 export function useMyScores(): MyScores {
   const { profile } = useCurrentProfile();
   const { categories } = useScoreCategories();
+  const { locations } = useLocations();
 
   const cycleResult = useQuery({
     queryKey: QUERY_KEYS.currentCycle,
@@ -49,6 +52,11 @@ export function useMyScores(): MyScores {
     return map;
   }, [categories]);
 
+  const locationMap = useMemo(() => {
+    const map = new Map(locations.map((l) => [l.id, l.name]));
+    return map;
+  }, [locations]);
+
   const entries: EnrichedEntry[] = useMemo(() => {
     return (entriesResult.data ?? []).map((entry) => {
       const cat = categoryMap.get(entry.categoryId);
@@ -56,9 +64,10 @@ export function useMyScores(): MyScores {
         ...entry,
         categoryName: cat?.name ?? 'Unknown Category',
         section: cat?.section ?? 'daily_performance',
+        locationName: entry.locationId ? (locationMap.get(entry.locationId) ?? null) : null,
       };
     });
-  }, [entriesResult.data, categoryMap]);
+  }, [entriesResult.data, categoryMap, locationMap]);
 
   const positivePoints = useMemo(
     () => entries.reduce((sum, e) => (e.points > 0 ? sum + e.points : sum), 0),
