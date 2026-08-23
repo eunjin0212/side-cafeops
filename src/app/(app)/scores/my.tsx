@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -8,7 +9,9 @@ import {
 } from 'react-native';
 
 import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { LocationTabs } from '@/components/molecules/LocationTabs';
 
 // ─── helpers ────────────────────────────────────────────────
 
@@ -31,6 +34,24 @@ function formatDate(iso: string): string {
 function formatCycleDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+type LocationStats = {
+  entries: EnrichedEntry[];
+  positive: number;
+  negative: number;
+  score: number;
+};
+
+function computeLocationStats(
+  entries: EnrichedEntry[],
+  locationId: string,
+  base: number,
+): LocationStats {
+  const locEntries = entries.filter((e) => e.locationId === locationId);
+  const positive = locEntries.reduce((sum, e) => (e.points > 0 ? sum + e.points : sum), 0);
+  const negative = locEntries.reduce((sum, e) => (e.points < 0 ? sum + e.points : sum), 0);
+  return { entries: locEntries, positive, negative, score: base + positive + negative };
 }
 
 // ─── sub-components ─────────────────────────────────────────
@@ -78,10 +99,7 @@ function EntryRow({ entry, isLast }: EntryRowProps) {
               {entry.notes}
             </Text>
           )}
-          <Text style={styles.entryDate}>
-            {entry.locationName ? `${entry.locationName} · ` : ''}
-            {formatDate(entry.createdAt)}
-          </Text>
+          <Text style={styles.entryDate}>{formatDate(entry.createdAt)}</Text>
         </View>
         <Text style={[styles.entryPoints, { color: pointsColor(entry.points) }]}>
           {formatPoints(entry.points)}
@@ -95,23 +113,20 @@ function EntryRow({ entry, isLast }: EntryRowProps) {
 // ─── screen ─────────────────────────────────────────────────
 
 export default function MyScoreScreen() {
-  const {
-    cycle,
-    entries,
-    base,
-    positivePoints,
-    negativePoints,
-    performanceScore,
-    isLoading,
-    isFetching,
-    error,
-    refetch,
-  } = useMyScores();
+  const { profile } = useCurrentProfile();
+  const { cycle, entries, base, isLoading, isFetching, error, refetch } = useMyScores();
+  const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(undefined);
 
   const cycleLabel =
     cycle
       ? `${formatCycleDate(cycle.startedAt)} – ${formatCycleDate(cycle.endedAt)}`
       : null;
+
+  const locations = profile?.locations ?? [];
+  const effectiveLocationId = selectedLocationId ?? profile?.locationId ?? locations[0]?.id;
+  const stats = effectiveLocationId
+    ? computeLocationStats(entries, effectiveLocationId, base)
+    : null;
 
   return (
     <ScrollView
@@ -126,51 +141,61 @@ export default function MyScoreScreen() {
     >
       <ScreenHeader backHref="/" title="My Scores" subtitle={cycleLabel ?? undefined} />
 
+      {locations.length > 1 && (
+        <LocationTabs
+          locations={locations}
+          selectedId={effectiveLocationId}
+          onSelect={setSelectedLocationId}
+        />
+      )}
+
       {isLoading ? (
         <ActivityIndicator style={styles.loader} size="large" />
       ) : error ? (
         <Text style={styles.errorText}>{error}</Text>
+      ) : !stats ? (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>No location assigned yet.</Text>
+        </View>
       ) : (
         <>
-          {/* Stats card */}
           <View style={styles.statsCard}>
             <StatCol label="Base" value={String(base)} />
             <View style={styles.statDivider} />
             <StatCol
               label="Positive"
-              value={positivePoints > 0 ? `+${positivePoints}` : '0'}
-              color={positivePoints > 0 ? '#16A34A' : '#6B7280'}
+              value={stats.positive > 0 ? `+${stats.positive}` : '0'}
+              color={stats.positive > 0 ? '#16A34A' : '#6B7280'}
             />
             <View style={styles.statDivider} />
             <StatCol
               label="Negative"
-              value={negativePoints < 0 ? String(negativePoints) : '0'}
-              color={negativePoints < 0 ? '#DC2626' : '#6B7280'}
+              value={stats.negative < 0 ? String(stats.negative) : '0'}
+              color={stats.negative < 0 ? '#DC2626' : '#6B7280'}
             />
             <View style={styles.statDivider} />
             <StatCol
               label="Score"
-              value={String(performanceScore)}
-              color={performanceScore >= base ? '#111827' : '#DC2626'}
+              value={String(stats.score)}
+              color={stats.score >= base ? '#111827' : '#DC2626'}
               large
             />
           </View>
 
-          {/* Entries */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Recent Entries</Text>
+            <Text style={styles.sectionTitle}>Entries</Text>
 
-            {entries.length === 0 ? (
+            {stats.entries.length === 0 ? (
               <View style={styles.emptyCard}>
                 <Text style={styles.emptyText}>No entries this cycle.</Text>
               </View>
             ) : (
               <View style={styles.listCard}>
-                {entries.map((entry, idx) => (
+                {stats.entries.map((entry, idx) => (
                   <EntryRow
                     key={entry.id}
                     entry={entry}
-                    isLast={idx === entries.length - 1}
+                    isLast={idx === stats.entries.length - 1}
                   />
                 ))}
               </View>

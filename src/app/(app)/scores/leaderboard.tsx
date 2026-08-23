@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -12,6 +11,7 @@ import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { useLocations } from '@/hooks/useLocations';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { ROLE_LABELS } from '@/constants/roles';
 import { BASE_SCORE } from '@/constants/scoring';
 import { LeaderboardEntry } from '@/types/leaderboard';
@@ -118,44 +118,12 @@ export default function LeaderboardScreen() {
         {/* Location filter — GM/owner browse every location; everyone
             else may only switch between locations they work at */}
         {filterLocations.length > 1 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterRow}
-          >
-            <Pressable
-              style={[styles.filterChip, !selectedLocationId && styles.filterChipActive]}
-              onPress={() => setSelectedLocationId(undefined)}
-            >
-              <Text
-                style={[
-                  styles.filterChipText,
-                  !selectedLocationId && styles.filterChipTextActive,
-                ]}
-              >
-                All
-              </Text>
-            </Pressable>
-            {filterLocations.map((loc) => (
-              <Pressable
-                key={loc.id}
-                style={[
-                  styles.filterChip,
-                  selectedLocationId === loc.id && styles.filterChipActive,
-                ]}
-                onPress={() => setSelectedLocationId(loc.id)}
-              >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    selectedLocationId === loc.id && styles.filterChipTextActive,
-                  ]}
-                >
-                  {loc.name}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+          <LocationTabs
+            locations={filterLocations}
+            selectedId={selectedLocationId}
+            onSelect={setSelectedLocationId}
+            showAll
+          />
         )}
 
         {/* Content */}
@@ -196,30 +164,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 40,
     gap: 16,
-  },
-  filterRow: {
-    gap: 8,
-    paddingVertical: 2,
-  },
-  filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#fff',
-  },
-  filterChipActive: {
-    backgroundColor: '#111827',
-    borderColor: '#111827',
-  },
-  filterChipText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#6B7280',
-  },
-  filterChipTextActive: {
-    color: '#fff',
   },
   loader: {
     marginTop: 60,

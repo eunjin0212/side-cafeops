@@ -14,12 +14,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { signOut } from '@/services/authService';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
-import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
+import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
 import { SCORE_SECTION_LABELS } from '@/constants/scoreSections';
-import { CycleSummary } from '@/types/leaderboard';
+import { BASE_SCORE } from '@/constants/scoring';
 
 // ─── helpers ────────────────────────────────────────────────
 
@@ -44,19 +44,6 @@ function rankBadgeStyle(rank: number): { bg: string; text: string } {
   if (rank === 2) return { bg: '#9CA3AF', text: '#fff' };
   if (rank === 3) return { bg: '#B45309', text: '#fff' };
   return { bg: '#F3F4F6', text: '#6B7280' };
-}
-
-function formatCycleDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function formatCycleProgress(cycle: CycleSummary): string {
-  const start = new Date(cycle.startedAt).getTime();
-  const end = new Date(cycle.endedAt).getTime();
-  const dayMs = 24 * 60 * 60 * 1000;
-  const totalDays = Math.max(1, Math.round((end - start) / dayMs));
-  const dayNum = Math.min(totalDays, Math.max(1, Math.floor((Date.now() - start) / dayMs) + 1));
-  return `Day ${dayNum} of ${totalDays}`;
 }
 
 function formatEntryDateTime(iso: string): string {
@@ -86,6 +73,12 @@ function formatLocationsLabel(locations: { id: string; name: string }[]): string
   if (locations.length === 0) return null;
   if (locations.length <= 2) return locations.map((l) => l.name).join(', ');
   return `${locations.length} Locations`;
+}
+
+function locationNetPoints(entries: EnrichedEntry[], locationId: string): number {
+  return entries
+    .filter((e) => e.locationId === locationId)
+    .reduce((sum, e) => sum + e.points, 0);
 }
 
 // ─── sub-components ─────────────────────────────────────────
@@ -141,36 +134,51 @@ function NavCard({ label, icon, onPress }: NavCardProps) {
   );
 }
 
+interface LocationScoreCardProps {
+  locationName: string;
+  score: number;
+  rank: number | null;
+  total: number;
+  onPress: () => void;
+}
+
+function LocationScoreCard({ locationName, score, rank, total, onPress }: LocationScoreCardProps) {
+  const badge = rank !== null ? rankBadgeStyle(rank) : { bg: '#F3F4F6', text: '#9CA3AF' };
+
+  return (
+    <Pressable style={styles.locationCard} onPress={onPress}>
+      <View style={styles.locationCardTop}>
+        <View>
+          <Text style={styles.locationCardLabel}>{locationName}</Text>
+          <Text style={styles.scoreValue}>{score}</Text>
+        </View>
+        <View style={[styles.rankBadgeCircle, { backgroundColor: badge.bg }]}>
+          <Text style={[styles.rankBadgeNumber, { color: badge.text }]}>
+            {rank !== null ? `#${rank}` : '–'}
+          </Text>
+        </View>
+      </View>
+      <View style={styles.cardDivider} />
+      <View style={styles.viewScoresRow}>
+        <Text style={styles.viewScoresText}>
+          {rank !== null ? `Rank #${rank} of ${total}` : 'View My Scores'}
+        </Text>
+        <Text style={styles.chevron}>›</Text>
+      </View>
+    </Pressable>
+  );
+}
+
 // ─── screen ─────────────────────────────────────────────────
 
 export default function HomeScreen() {
   const { profile } = useCurrentProfile();
-  const {
-    cycle,
-    entries,
-    base,
-    positivePoints,
-    negativePoints,
-    performanceScore,
-    isLoading,
-    error,
-  } = useMyScores();
-  const [selectedRankLocationId, setSelectedRankLocationId] = useState<string | undefined>(
-    undefined,
-  );
-  const effectiveRankLocationId = selectedRankLocationId ?? profile?.locationId ?? undefined;
-  const { entries: locationLeaderboard, isLoading: isRankLoading } = useLeaderboard(
-    effectiveRankLocationId,
-  );
-  // 2-3 locations: show one compact card per location, all at once.
-  // More than that would crowd the home screen, so it falls back to
-  // the single card + switcher chips above instead.
-  const smallMultiLocations =
-    profile && profile.locations.length >= 2 && profile.locations.length <= 3
-      ? profile.locations
-      : [];
-  const myLocationRanks = useMyLocationRanks(profile?.id, smallMultiLocations);
-  const showMultiRankCards = smallMultiLocations.length > 0;
+  const { entries, isLoading, error } = useMyScores();
+  const locations = profile?.locations ?? [];
+  const myLocationRanks = useMyLocationRanks(profile?.id, locations);
+
+  const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(undefined);
+
   const queryClient = useQueryClient();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
@@ -190,16 +198,8 @@ export default function HomeScreen() {
   const showScoreDashboard = profile !== null && profile.role !== 'owner';
   const recentEntries = entries.slice(0, 3);
   const locationsLabel = profile ? formatLocationsLabel(profile.locations) : null;
-  // A multi-location caller's query can return rows for more than one
-  // location, so scope both the rank lookup and the "of Y" count to
-  // whichever location is currently selected.
-  const myLocationEntries = locationLeaderboard.filter(
-    (e) => e.locationId === effectiveRankLocationId,
-  );
-  const myRankEntry = myLocationEntries.find((e) => e.profileId === profile?.id);
-  const rankLocationName =
-    profile?.locations.find((l) => l.id === effectiveRankLocationId)?.name ??
-    profile?.locationName;
+
+  const effectiveLocationId = selectedLocationId ?? profile?.locationId ?? locations[0]?.id;
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
@@ -233,152 +233,28 @@ export default function HomeScreen() {
       {/* Score dashboard — not shown for owner */}
       {showScoreDashboard && (
         <>
-          {showMultiRankCards ? (
-            <View style={styles.rankCardsRow}>
-              {myLocationRanks.map(
-                (lr) =>
-                  !lr.isLoading &&
-                  lr.rank !== null && (
-                    <Pressable
-                      key={lr.locationId}
-                      style={styles.rankCardCompact}
-                      onPress={() => router.navigate('/scores/leaderboard')}
-                    >
-                      <View
-                        style={[
-                          styles.rankBadgeCircleSmall,
-                          { backgroundColor: rankBadgeStyle(lr.rank).bg },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.rankBadgeNumberSmall,
-                            { color: rankBadgeStyle(lr.rank).text },
-                          ]}
-                        >
-                          #{lr.rank}
-                        </Text>
-                      </View>
-                      <Text style={styles.rankCardCompactLocation} numberOfLines={1}>
-                        {lr.locationName}
-                      </Text>
-                      <Text style={styles.rankCardCompactTotal}>of {lr.total}</Text>
-                    </Pressable>
-                  ),
-              )}
-            </View>
-          ) : (
-            <>
-              {profile && profile.locations.length > 1 && (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.rankLocationRow}
-                >
-                  {profile.locations.map((loc) => {
-                    const isActive = effectiveRankLocationId === loc.id;
-                    return (
-                      <Pressable
-                        key={loc.id}
-                        style={[
-                          styles.rankLocationChip,
-                          isActive && styles.rankLocationChipActive,
-                        ]}
-                        onPress={() => setSelectedRankLocationId(loc.id)}
-                      >
-                        <Text
-                          style={[
-                            styles.rankLocationChipText,
-                            isActive && styles.rankLocationChipTextActive,
-                          ]}
-                        >
-                          {loc.name}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
-              )}
-
-              {!isRankLoading && myRankEntry && (
-                <Pressable
-                  style={styles.rankCard}
-                  onPress={() => router.navigate('/scores/leaderboard')}
-                >
-                  <View
-                    style={[
-                      styles.rankBadgeCircle,
-                      { backgroundColor: rankBadgeStyle(myRankEntry.rank).bg },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.rankBadgeNumber,
-                        { color: rankBadgeStyle(myRankEntry.rank).text },
-                      ]}
-                    >
-                      #{myRankEntry.rank}
-                    </Text>
-                  </View>
-                  <View style={styles.rankCardText}>
-                    <Text style={styles.rankCardTitle}>🏆 Team Ranking</Text>
-                    <Text style={styles.rankCardSubtitle} numberOfLines={1}>
-                      of {myLocationEntries.length}
-                      {rankLocationName ? ` at ${rankLocationName}` : ''}
-                    </Text>
-                  </View>
-                  <Text style={styles.chevron}>›</Text>
-                </Pressable>
-              )}
-            </>
+          {locations.length > 1 && (
+            <LocationTabs
+              locations={locations}
+              selectedId={effectiveLocationId}
+              onSelect={setSelectedLocationId}
+            />
           )}
 
-          <View style={styles.scoreCard}>
-            <View style={styles.scoreCardTop}>
-              <View>
-                <Text style={styles.scoreCardLabel}>Current Performance Score</Text>
-                <Text style={styles.scoreValue}>{performanceScore}</Text>
-              </View>
-              {cycle && (
-                <View style={styles.cycleInfo}>
-                  <Text style={styles.cycleLabel}>Current Cycle</Text>
-                  <Text style={styles.cycleDates}>
-                    {formatCycleDate(cycle.startedAt)} – {formatCycleDate(cycle.endedAt)}
-                  </Text>
-                  <Text style={styles.cycleDay}>{formatCycleProgress(cycle)}</Text>
-                </View>
-              )}
-            </View>
-
-            <View style={styles.statsRow}>
-              <View style={[styles.statBox, { backgroundColor: '#DCFCE7' }]}>
-                <Text style={[styles.statValue, { color: '#16A34A' }]}>
-                  {positivePoints > 0 ? `+${positivePoints}` : '0'}
-                </Text>
-                <Text style={styles.statLabel}>Positive</Text>
-              </View>
-              <View style={[styles.statBox, { backgroundColor: '#FEE2E2' }]}>
-                <Text style={[styles.statValue, { color: '#DC2626' }]}>
-                  {negativePoints < 0 ? negativePoints : '0'}
-                </Text>
-                <Text style={styles.statLabel}>Negative</Text>
-              </View>
-              <View style={[styles.statBox, { backgroundColor: '#F3F4F6' }]}>
-                <Text style={[styles.statValue, { color: '#111827' }]}>{base}</Text>
-                <Text style={styles.statLabel}>Base Score</Text>
-              </View>
-            </View>
-
-            <View style={styles.cardDivider} />
-
-            <Pressable
-              style={styles.viewScoresRow}
-              onPress={() => router.navigate('/scores/my')}
-            >
-              <Text style={styles.viewScoresText}>View My Scores</Text>
-              <Text style={styles.chevron}>›</Text>
-            </Pressable>
-          </View>
+          {(() => {
+            const loc = locations.find((l) => l.id === effectiveLocationId);
+            const lr = myLocationRanks.find((r) => r.locationId === effectiveLocationId);
+            if (!loc || !lr || lr.isLoading) return null;
+            return (
+              <LocationScoreCard
+                locationName={loc.name}
+                score={BASE_SCORE + locationNetPoints(entries, loc.id)}
+                rank={lr.rank}
+                total={lr.total}
+                onPress={() => router.navigate('/scores/my')}
+              />
+            );
+          })()}
 
           {/* Recent Activity */}
           <View style={styles.section}>
@@ -513,7 +389,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#6B7280',
   },
-  scoreCard: {
+  locationCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
     borderWidth: 1,
@@ -521,75 +397,20 @@ const styles = StyleSheet.create({
     padding: 18,
     gap: 16,
   },
-  rankLocationRow: {
-    gap: 8,
-    paddingVertical: 2,
-  },
-  rankLocationChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#fff',
-  },
-  rankLocationChipActive: {
-    backgroundColor: '#111827',
-    borderColor: '#111827',
-  },
-  rankLocationChipText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#6B7280',
-  },
-  rankLocationChipTextActive: {
-    color: '#fff',
-  },
-  rankCardsRow: {
+  locationCardTop: {
     flexDirection: 'row',
-    gap: 10,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
-  rankCardCompact: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-  },
-  rankBadgeCircleSmall: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rankBadgeNumberSmall: {
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  rankCardCompactLocation: {
+  locationCardLabel: {
     fontSize: 13,
-    fontWeight: '700',
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  scoreValue: {
+    fontSize: 40,
+    fontWeight: '800',
     color: '#111827',
-    textAlign: 'center',
-  },
-  rankCardCompactTotal: {
-    fontSize: 11,
-    color: '#9CA3AF',
-  },
-  rankCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: 16,
   },
   rankBadgeCircle: {
     width: 56,
@@ -602,72 +423,6 @@ const styles = StyleSheet.create({
   rankBadgeNumber: {
     fontSize: 18,
     fontWeight: '800',
-  },
-  rankCardText: {
-    flex: 1,
-    gap: 2,
-  },
-  rankCardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  rankCardSubtitle: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  scoreCardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  scoreCardLabel: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-  scoreValue: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: '#111827',
-  },
-  cycleInfo: {
-    alignItems: 'flex-end',
-    gap: 2,
-  },
-  cycleLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  cycleDates: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
-  cycleDay: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#111827',
-    marginTop: 2,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  statBox: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    gap: 4,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#6B7280',
   },
   cardDivider: {
     height: 1,
