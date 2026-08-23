@@ -160,7 +160,13 @@ export default function HomeScreen() {
 
   const showScoreDashboard = profile !== null && profile.role !== 'owner';
   const recentEntries = entries.slice(0, 3);
-  const myRankEntry = locationLeaderboard.find((e) => e.profileId === profile?.id);
+  // A multi-location caller's query can return rows for more than one
+  // location, so scope both the rank lookup and the "of Y" count to the
+  // profile's own primary location (the one named in the banner text).
+  const myLocationEntries = locationLeaderboard.filter(
+    (e) => e.locationId === profile?.locationId,
+  );
+  const myRankEntry = myLocationEntries.find((e) => e.profileId === profile?.id);
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
@@ -201,7 +207,7 @@ export default function HomeScreen() {
                 onPress={() => router.navigate('/scores/leaderboard')}
               >
                 <Text style={styles.rankBannerText} numberOfLines={1}>
-                  🏆 Rank #{myRankEntry.rank} of {locationLeaderboard.length}
+                  🏆 Rank #{myRankEntry.rank} of {myLocationEntries.length}
                   {profile?.locationName ? ` at ${profile.locationName}` : ''}
                 </Text>
                 <Text style={styles.rankBannerChevron}>›</Text>

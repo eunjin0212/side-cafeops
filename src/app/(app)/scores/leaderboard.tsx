@@ -161,7 +161,7 @@ export default function LeaderboardScreen() {
         ) : (
           <View style={styles.listCard}>
             {entries.map((entry, idx) => (
-              <View key={entry.profileId}>
+              <View key={`${entry.profileId}-${entry.locationId}`}>
                 {idx > 0 && <View style={styles.divider} />}
                 <EntryRow
                   entry={entry}
