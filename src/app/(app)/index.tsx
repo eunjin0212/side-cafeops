@@ -15,6 +15,7 @@ import { signOut } from '@/services/authService';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
 import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
 import { SCORE_SECTION_LABELS } from '@/constants/scoreSections';
@@ -79,6 +80,12 @@ function formatEntryDateTime(iso: string): string {
 function getInitial(fullName: string | null, email: string): string {
   const source = fullName && fullName.trim().length > 0 ? fullName : email;
   return source.charAt(0).toUpperCase();
+}
+
+function formatLocationsLabel(locations: { id: string; name: string }[]): string | null {
+  if (locations.length === 0) return null;
+  if (locations.length <= 2) return locations.map((l) => l.name).join(', ');
+  return `${locations.length} Locations`;
 }
 
 // ─── sub-components ─────────────────────────────────────────
@@ -155,6 +162,15 @@ export default function HomeScreen() {
   const { entries: locationLeaderboard, isLoading: isRankLoading } = useLeaderboard(
     effectiveRankLocationId,
   );
+  // 2-3 locations: show one compact card per location, all at once.
+  // More than that would crowd the home screen, so it falls back to
+  // the single card + switcher chips above instead.
+  const smallMultiLocations =
+    profile && profile.locations.length >= 2 && profile.locations.length <= 3
+      ? profile.locations
+      : [];
+  const myLocationRanks = useMyLocationRanks(profile?.id, smallMultiLocations);
+  const showMultiRankCards = smallMultiLocations.length > 0;
   const queryClient = useQueryClient();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
@@ -173,6 +189,7 @@ export default function HomeScreen() {
 
   const showScoreDashboard = profile !== null && profile.role !== 'owner';
   const recentEntries = entries.slice(0, 3);
+  const locationsLabel = profile ? formatLocationsLabel(profile.locations) : null;
   // A multi-location caller's query can return rows for more than one
   // location, so scope both the rank lookup and the "of Y" count to
   // whichever location is currently selected.
@@ -205,8 +222,8 @@ export default function HomeScreen() {
           </Text>
           {profile && (
             <Text style={styles.subGreeting}>
-              {profile.locationName
-                ? `${profile.locationName} · ${ROLE_LABELS[profile.role]}`
+              {locationsLabel
+                ? `${locationsLabel} · ${ROLE_LABELS[profile.role]}`
                 : ROLE_LABELS[profile.role]}
             </Text>
           )}
@@ -216,63 +233,104 @@ export default function HomeScreen() {
       {/* Score dashboard — not shown for owner */}
       {showScoreDashboard && (
         <>
-          {profile && profile.locations.length > 1 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.rankLocationRow}
-            >
-              {profile.locations.map((loc) => {
-                const isActive = effectiveRankLocationId === loc.id;
-                return (
-                  <Pressable
-                    key={loc.id}
-                    style={[styles.rankLocationChip, isActive && styles.rankLocationChipActive]}
-                    onPress={() => setSelectedRankLocationId(loc.id)}
+          {showMultiRankCards ? (
+            <View style={styles.rankCardsRow}>
+              {myLocationRanks.map(
+                (lr) =>
+                  !lr.isLoading &&
+                  lr.rank !== null && (
+                    <Pressable
+                      key={lr.locationId}
+                      style={styles.rankCardCompact}
+                      onPress={() => router.navigate('/scores/leaderboard')}
+                    >
+                      <View
+                        style={[
+                          styles.rankBadgeCircleSmall,
+                          { backgroundColor: rankBadgeStyle(lr.rank).bg },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.rankBadgeNumberSmall,
+                            { color: rankBadgeStyle(lr.rank).text },
+                          ]}
+                        >
+                          #{lr.rank}
+                        </Text>
+                      </View>
+                      <Text style={styles.rankCardCompactLocation} numberOfLines={1}>
+                        {lr.locationName}
+                      </Text>
+                      <Text style={styles.rankCardCompactTotal}>of {lr.total}</Text>
+                    </Pressable>
+                  ),
+              )}
+            </View>
+          ) : (
+            <>
+              {profile && profile.locations.length > 1 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.rankLocationRow}
+                >
+                  {profile.locations.map((loc) => {
+                    const isActive = effectiveRankLocationId === loc.id;
+                    return (
+                      <Pressable
+                        key={loc.id}
+                        style={[
+                          styles.rankLocationChip,
+                          isActive && styles.rankLocationChipActive,
+                        ]}
+                        onPress={() => setSelectedRankLocationId(loc.id)}
+                      >
+                        <Text
+                          style={[
+                            styles.rankLocationChipText,
+                            isActive && styles.rankLocationChipTextActive,
+                          ]}
+                        >
+                          {loc.name}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              )}
+
+              {!isRankLoading && myRankEntry && (
+                <Pressable
+                  style={styles.rankCard}
+                  onPress={() => router.navigate('/scores/leaderboard')}
+                >
+                  <View
+                    style={[
+                      styles.rankBadgeCircle,
+                      { backgroundColor: rankBadgeStyle(myRankEntry.rank).bg },
+                    ]}
                   >
                     <Text
                       style={[
-                        styles.rankLocationChipText,
-                        isActive && styles.rankLocationChipTextActive,
+                        styles.rankBadgeNumber,
+                        { color: rankBadgeStyle(myRankEntry.rank).text },
                       ]}
                     >
-                      {loc.name}
+                      #{myRankEntry.rank}
                     </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          )}
-
-          {!isRankLoading && myRankEntry && (
-            <Pressable
-              style={styles.rankCard}
-              onPress={() => router.navigate('/scores/leaderboard')}
-            >
-              <View
-                style={[
-                  styles.rankBadgeCircle,
-                  { backgroundColor: rankBadgeStyle(myRankEntry.rank).bg },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.rankBadgeNumber,
-                    { color: rankBadgeStyle(myRankEntry.rank).text },
-                  ]}
-                >
-                  #{myRankEntry.rank}
-                </Text>
-              </View>
-              <View style={styles.rankCardText}>
-                <Text style={styles.rankCardTitle}>🏆 Team Ranking</Text>
-                <Text style={styles.rankCardSubtitle} numberOfLines={1}>
-                  of {myLocationEntries.length}
-                  {rankLocationName ? ` at ${rankLocationName}` : ''}
-                </Text>
-              </View>
-              <Text style={styles.chevron}>›</Text>
-            </Pressable>
+                  </View>
+                  <View style={styles.rankCardText}>
+                    <Text style={styles.rankCardTitle}>🏆 Team Ranking</Text>
+                    <Text style={styles.rankCardSubtitle} numberOfLines={1}>
+                      of {myLocationEntries.length}
+                      {rankLocationName ? ` at ${rankLocationName}` : ''}
+                    </Text>
+                  </View>
+                  <Text style={styles.chevron}>›</Text>
+                </Pressable>
+              )}
+            </>
           )}
 
           <View style={styles.scoreCard}>
@@ -486,6 +544,42 @@ const styles = StyleSheet.create({
   },
   rankLocationChipTextActive: {
     color: '#fff',
+  },
+  rankCardsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  rankCardCompact: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+  },
+  rankBadgeCircleSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rankBadgeNumberSmall: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  rankCardCompactLocation: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#111827',
+    textAlign: 'center',
+  },
+  rankCardCompactTotal: {
+    fontSize: 11,
+    color: '#9CA3AF',
   },
   rankCard: {
     flexDirection: 'row',
