@@ -13,6 +13,7 @@ import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { ListCard } from '@/components/molecules/ListCard';
+import { EmptyText } from '@/components/molecules/EmptyText';
 import { ROLE_LABELS } from '@/constants/roles';
 import { BASE_SCORE } from '@/constants/scoring';
 import { LeaderboardEntry } from '@/types/leaderboard';
@@ -133,7 +134,7 @@ export default function LeaderboardScreen() {
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : entries.length === 0 ? (
-          <Text style={styles.emptyText}>No employees found.</Text>
+          <EmptyText style={styles.emptyText}>No employees found.</EmptyText>
         ) : (
           <ListCard>
             {entries.map((entry) => (
@@ -174,8 +175,6 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   emptyText: {
-    fontSize: 14,
-    color: '#9CA3AF',
     textAlign: 'center',
     marginTop: 40,
   },

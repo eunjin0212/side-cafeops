@@ -17,6 +17,7 @@ import { ROLE_LABELS } from '@/constants/roles';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
+import { EmptyText } from '@/components/molecules/EmptyText';
 
 const STATUS_LABEL: Record<InvitationStatus, string> = {
   pending: 'Pending',
@@ -181,7 +182,7 @@ export default function InvitationsScreen() {
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text style={styles.emptyText}>No invitations yet.</Text>
+            <EmptyText>No invitations yet.</EmptyText>
           </View>
         }
         contentContainerStyle={
@@ -298,9 +299,5 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     color: '#EF4444',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#9CA3AF',
   },
 });

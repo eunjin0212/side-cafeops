@@ -17,6 +17,7 @@ import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
 import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { ListCard } from '@/components/molecules/ListCard';
+import { EmptyState } from '@/components/molecules/EmptyState';
 import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
 import { SCORE_SECTION_LABELS } from '@/constants/scoreSections';
@@ -260,9 +261,7 @@ export default function HomeScreen() {
             ) : error ? (
               <Text style={styles.errorText}>{error}</Text>
             ) : recentEntries.length === 0 ? (
-              <View style={styles.emptyCard}>
-                <Text style={styles.emptyText}>No recent activity.</Text>
-              </View>
+              <EmptyState>No recent activity.</EmptyState>
             ) : (
               <ListCard dividerInset={14}>
                 {recentEntries.map((entry) => (
@@ -456,18 +455,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#DC2626',
     textAlign: 'center',
-  },
-  emptyCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingVertical: 24,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#9CA3AF',
   },
   activityRow: {
     flexDirection: 'row',

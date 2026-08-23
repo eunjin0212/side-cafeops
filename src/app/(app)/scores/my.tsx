@@ -13,6 +13,7 @@ import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { ListCard } from '@/components/molecules/ListCard';
+import { EmptyState } from '@/components/molecules/EmptyState';
 import { formatPoints, pointsColor } from '@/utils/points';
 
 // ─── helpers ────────────────────────────────────────────────
@@ -141,9 +142,7 @@ export default function MyScoreScreen() {
       ) : error ? (
         <Text style={styles.errorText}>{error}</Text>
       ) : !stats ? (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyText}>No location assigned yet.</Text>
-        </View>
+        <EmptyState style={styles.emptyCard}>No location assigned yet.</EmptyState>
       ) : (
         <>
           <View style={styles.statsCard}>
@@ -173,9 +172,7 @@ export default function MyScoreScreen() {
             <Text style={styles.sectionTitle}>Entries</Text>
 
             {stats.entries.length === 0 ? (
-              <View style={styles.emptyCard}>
-                <Text style={styles.emptyText}>No entries this cycle.</Text>
-              </View>
+              <EmptyState style={styles.emptyCard}>No entries this cycle.</EmptyState>
             ) : (
               <ListCard>
                 {stats.entries.map((entry) => (
@@ -305,15 +302,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   emptyCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
     paddingVertical: 32,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#9CA3AF',
   },
 });

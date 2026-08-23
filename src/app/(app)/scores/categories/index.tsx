@@ -15,6 +15,7 @@ import { can } from '@/constants/permissions';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { ScoreCategory } from '@/types/score';
 import { formatPoints } from '@/utils/points';
+import { EmptyText } from '@/components/molecules/EmptyText';
 
 interface CategoryRowProps {
   category: ScoreCategory;
@@ -93,7 +94,7 @@ export default function ScoreCategoriesScreen() {
             <View style={styles.card}>
               {rows.length === 0 ? (
                 <View style={styles.row}>
-                  <Text style={styles.emptyText}>No categories yet</Text>
+                  <EmptyText>No categories yet</EmptyText>
                 </View>
               ) : (
                 rows.map((cat, i) => (
@@ -159,6 +160,5 @@ const styles = StyleSheet.create({
   rowPoints: { fontSize: 15, fontWeight: '600', marginLeft: 12 },
   pointsPositive: { color: '#10B981' },
   pointsNegative: { color: '#EF4444' },
-  emptyText: { fontSize: 14, color: '#9CA3AF' },
   errorText: { fontSize: 14, color: '#EF4444' },
 });

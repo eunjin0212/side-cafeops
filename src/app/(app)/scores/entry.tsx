@@ -22,6 +22,7 @@ import { Employee } from '@/types/employee';
 import { ImagePickerField } from '@/components/molecules/ImagePickerField';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { ListCard } from '@/components/molecules/ListCard';
+import { EmptyText } from '@/components/molecules/EmptyText';
 import { formatPoints, pointsColor } from '@/utils/points';
 
 export default function ScoreEntryScreen() {
@@ -241,7 +242,7 @@ export default function ScoreEntryScreen() {
             <ActivityIndicator style={styles.loader} />
           ) : employeeSearch.trim().length > 0 ? (
             searchResults.length === 0 ? (
-              <Text style={styles.emptyText}>No employees found.</Text>
+              <EmptyText style={styles.emptyText}>No employees found.</EmptyText>
             ) : (
               <ListCard dividerInset={14}>
                 {searchResults.map((emp) => {
@@ -726,8 +727,6 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   emptyText: {
-    fontSize: 14,
-    color: '#9CA3AF',
     textAlign: 'center',
     paddingVertical: 12,
   },

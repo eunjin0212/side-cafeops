@@ -11,6 +11,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEmployee } from '@/hooks/useEmployee';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { EmptyText } from '@/components/molecules/EmptyText';
 import { ROLE_LABELS } from '@/constants/roles';
 import {
   canEditEmployeeRole,
@@ -80,7 +81,7 @@ export default function EmployeeDetailScreen() {
   if (!employee) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyText}>Employee not found.</Text>
+        <EmptyText>Employee not found.</EmptyText>
       </View>
     );
   }
@@ -254,9 +255,5 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     color: '#EF4444',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#9CA3AF',
   },
 });

@@ -11,6 +11,7 @@ import { router } from 'expo-router';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { EmptyText } from '@/components/molecules/EmptyText';
 import { Employee } from '@/types/employee';
 import { ROLE_LABELS } from '@/constants/roles';
 import { can } from '@/constants/permissions';
@@ -95,7 +96,7 @@ export default function EmployeeListScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text style={styles.emptyText}>No employees yet.</Text>
+            <EmptyText>No employees yet.</EmptyText>
           </View>
         }
         ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -190,9 +191,5 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     color: '#EF4444',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#9CA3AF',
   },
 });
