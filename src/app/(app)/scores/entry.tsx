@@ -21,16 +21,7 @@ import { ScoreSection } from '@/types/score';
 import { Employee } from '@/types/employee';
 import { ImagePickerField } from '@/components/molecules/ImagePickerField';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
-
-function formatPoints(pts: number): string {
-  return pts > 0 ? `+${pts}` : String(pts);
-}
-
-function pointsColor(pts: number): string {
-  if (pts > 0) return '#16A34A';
-  if (pts < 0) return '#DC2626';
-  return '#6B7280';
-}
+import { formatPoints, pointsColor } from '@/utils/points';
 
 export default function ScoreEntryScreen() {
   const { profileId: preselectedId } = useLocalSearchParams<{ profileId?: string }>();

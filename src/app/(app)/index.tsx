@@ -20,18 +20,9 @@ import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
 import { SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { BASE_SCORE } from '@/constants/scoring';
+import { formatPoints, pointsColor } from '@/utils/points';
 
 // ─── helpers ────────────────────────────────────────────────
-
-function formatPoints(pts: number): string {
-  return pts > 0 ? `+${pts}` : String(pts);
-}
-
-function pointsColor(pts: number): string {
-  if (pts > 0) return '#16A34A';
-  if (pts < 0) return '#DC2626';
-  return '#6B7280';
-}
 
 function pointsBg(pts: number): string {
   if (pts > 0) return '#DCFCE7';

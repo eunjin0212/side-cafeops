@@ -14,10 +14,7 @@ import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { can } from '@/constants/permissions';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { ScoreCategory } from '@/types/score';
-
-function formatPoints(points: number): string {
-  return points >= 0 ? `+${points}` : `${points}`;
-}
+import { formatPoints } from '@/utils/points';
 
 interface CategoryRowProps {
   category: ScoreCategory;

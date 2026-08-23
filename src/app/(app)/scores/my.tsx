@@ -12,19 +12,9 @@ import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
+import { formatPoints, pointsColor } from '@/utils/points';
 
 // ─── helpers ────────────────────────────────────────────────
-
-function formatPoints(pts: number): string {
-  if (pts > 0) return `+${pts}`;
-  return String(pts);
-}
-
-function pointsColor(pts: number): string {
-  if (pts > 0) return '#16A34A';
-  if (pts < 0) return '#DC2626';
-  return '#6B7280';
-}
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
