@@ -1,62 +1,323 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { signOut } from '@/services/authService';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
+import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { can } from '@/constants/permissions';
+import { ROLE_LABELS } from '@/constants/roles';
+import { SCORE_SECTION_LABELS } from '@/constants/scoreSections';
+import { CycleSummary } from '@/types/leaderboard';
+
+// ─── helpers ────────────────────────────────────────────────
+
+function formatPoints(pts: number): string {
+  return pts > 0 ? `+${pts}` : String(pts);
+}
+
+function pointsColor(pts: number): string {
+  if (pts > 0) return '#16A34A';
+  if (pts < 0) return '#DC2626';
+  return '#6B7280';
+}
+
+function pointsBg(pts: number): string {
+  if (pts > 0) return '#DCFCE7';
+  if (pts < 0) return '#FEE2E2';
+  return '#F3F4F6';
+}
+
+function formatCycleDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function formatCycleProgress(cycle: CycleSummary): string {
+  const start = new Date(cycle.startedAt).getTime();
+  const end = new Date(cycle.endedAt).getTime();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const totalDays = Math.max(1, Math.round((end - start) / dayMs));
+  const dayNum = Math.min(totalDays, Math.max(1, Math.floor((Date.now() - start) / dayMs) + 1));
+  return `Day ${dayNum} of ${totalDays}`;
+}
+
+function formatEntryDateTime(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const isSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+
+  if (isSameDay(d, now)) return `Today, ${time}`;
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (isSameDay(d, yesterday)) return `Yesterday, ${time}`;
+
+  return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${time}`;
+}
+
+function getInitial(fullName: string | null, email: string): string {
+  const source = fullName && fullName.trim().length > 0 ? fullName : email;
+  return source.charAt(0).toUpperCase();
+}
+
+// ─── sub-components ─────────────────────────────────────────
+
+interface ActivityRowProps {
+  entry: EnrichedEntry;
+  isLast: boolean;
+}
+
+function ActivityRow({ entry, isLast }: ActivityRowProps) {
+  return (
+    <View>
+      <View style={styles.activityRow}>
+        <View style={[styles.pointsBadge, { backgroundColor: pointsBg(entry.points) }]}>
+          <Text style={[styles.pointsBadgeText, { color: pointsColor(entry.points) }]}>
+            {formatPoints(entry.points)}
+          </Text>
+        </View>
+
+        <View style={styles.activityMain}>
+          <Text style={styles.activityName} numberOfLines={1}>
+            {entry.categoryName}
+          </Text>
+          <Text style={styles.activityMeta} numberOfLines={1}>
+            {SCORE_SECTION_LABELS[entry.section]} · {formatEntryDateTime(entry.createdAt)}
+          </Text>
+        </View>
+
+        <View style={styles.activityIcons}>
+          {entry.imageUrls.length > 0 && <Text style={styles.activityIcon}>📷</Text>}
+          {entry.notes !== null && <Text style={styles.activityIcon}>📝</Text>}
+        </View>
+      </View>
+      {!isLast && <View style={styles.divider} />}
+    </View>
+  );
+}
+
+interface NavCardProps {
+  label: string;
+  icon: string;
+  onPress: () => void;
+}
+
+function NavCard({ label, icon, onPress }: NavCardProps) {
+  return (
+    <Pressable style={styles.navCard} onPress={onPress}>
+      <Text style={styles.navCardIcon}>{icon}</Text>
+      <Text style={styles.navCardText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+// ─── screen ─────────────────────────────────────────────────
 
 export default function HomeScreen() {
   const { profile } = useCurrentProfile();
+  const {
+    cycle,
+    entries,
+    base,
+    positivePoints,
+    negativePoints,
+    performanceScore,
+    isLoading,
+    error,
+  } = useMyScores();
+  const { entries: locationLeaderboard, isLoading: isRankLoading } = useLeaderboard(
+    profile?.locationId ?? undefined,
+  );
   const queryClient = useQueryClient();
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
 
   async function handleSignOut(): Promise<void> {
-    setError(null);
+    setSignOutError(null);
     setIsSigningOut(true);
     try {
       await signOut();
       queryClient.clear();
     } catch {
-      setError('Failed to sign out. Please try again.');
+      setSignOutError('Failed to sign out. Please try again.');
       setIsSigningOut(false);
     }
   }
 
+  const showScoreDashboard = profile !== null && profile.role !== 'owner';
+  const recentEntries = entries.slice(0, 3);
+  const myRankEntry = locationLeaderboard.find((e) => e.profileId === profile?.id);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Signed in as</Text>
-      <Text style={styles.email}>{profile?.email ?? 'Loading...'}</Text>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      {/* Header */}
+      <Text style={styles.appTitle}>CafeOps</Text>
 
-      <Pressable style={styles.button} onPress={() => router.navigate('/employees')}>
-        <Text style={styles.buttonText}>Employees</Text>
-      </Pressable>
+      <View style={styles.profileRow}>
+        {profile?.avatarUrl ? (
+          <Image source={{ uri: profile.avatarUrl }} style={styles.avatar} />
+        ) : (
+          <View style={styles.avatarFallback}>
+            <Text style={styles.avatarInitial}>
+              {profile ? getInitial(profile.fullName, profile.email) : '?'}
+            </Text>
+          </View>
+        )}
+        <View style={styles.profileText}>
+          <Text style={styles.greeting}>
+            {profile ? `Hi, ${profile.fullName ?? profile.email}! 👋` : 'Loading...'}
+          </Text>
+          {profile && (
+            <Text style={styles.subGreeting}>
+              {profile.locationName
+                ? `${profile.locationName} · ${ROLE_LABELS[profile.role]}`
+                : ROLE_LABELS[profile.role]}
+            </Text>
+          )}
+        </View>
+      </View>
 
-      {profile !== null && profile.role !== 'owner' && (
-        <Pressable style={styles.button} onPress={() => router.navigate('/scores/my')}>
-          <Text style={styles.buttonText}>My Scores</Text>
-        </Pressable>
+      {/* Score dashboard — not shown for owner */}
+      {showScoreDashboard && (
+        <>
+          <View style={styles.scoreCard}>
+            {!isRankLoading && myRankEntry && (
+              <Pressable
+                style={styles.rankBanner}
+                onPress={() => router.navigate('/scores/leaderboard')}
+              >
+                <Text style={styles.rankBannerText} numberOfLines={1}>
+                  🏆 Rank #{myRankEntry.rank} of {locationLeaderboard.length}
+                  {profile?.locationName ? ` at ${profile.locationName}` : ''}
+                </Text>
+                <Text style={styles.rankBannerChevron}>›</Text>
+              </Pressable>
+            )}
+
+            <View style={styles.scoreCardTop}>
+              <View>
+                <Text style={styles.scoreCardLabel}>Current Performance Score</Text>
+                <Text style={styles.scoreValue}>{performanceScore}</Text>
+              </View>
+              {cycle && (
+                <View style={styles.cycleInfo}>
+                  <Text style={styles.cycleLabel}>Current Cycle</Text>
+                  <Text style={styles.cycleDates}>
+                    {formatCycleDate(cycle.startedAt)} – {formatCycleDate(cycle.endedAt)}
+                  </Text>
+                  <Text style={styles.cycleDay}>{formatCycleProgress(cycle)}</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.statsRow}>
+              <View style={[styles.statBox, { backgroundColor: '#DCFCE7' }]}>
+                <Text style={[styles.statValue, { color: '#16A34A' }]}>
+                  {positivePoints > 0 ? `+${positivePoints}` : '0'}
+                </Text>
+                <Text style={styles.statLabel}>Positive</Text>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: '#FEE2E2' }]}>
+                <Text style={[styles.statValue, { color: '#DC2626' }]}>
+                  {negativePoints < 0 ? negativePoints : '0'}
+                </Text>
+                <Text style={styles.statLabel}>Negative</Text>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: '#F3F4F6' }]}>
+                <Text style={[styles.statValue, { color: '#111827' }]}>{base}</Text>
+                <Text style={styles.statLabel}>Base Score</Text>
+              </View>
+            </View>
+
+            <View style={styles.cardDivider} />
+
+            <Pressable
+              style={styles.viewScoresRow}
+              onPress={() => router.navigate('/scores/my')}
+            >
+              <Text style={styles.viewScoresText}>View My Scores</Text>
+              <Text style={styles.chevron}>›</Text>
+            </Pressable>
+          </View>
+
+          {/* Recent Activity */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Recent Activity</Text>
+              <Pressable onPress={() => router.navigate('/scores/my')}>
+                <Text style={styles.viewAllText}>View All</Text>
+              </Pressable>
+            </View>
+
+            {isLoading ? (
+              <ActivityIndicator style={styles.loader} />
+            ) : error ? (
+              <Text style={styles.errorText}>{error}</Text>
+            ) : recentEntries.length === 0 ? (
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyText}>No recent activity.</Text>
+              </View>
+            ) : (
+              <View style={styles.listCard}>
+                {recentEntries.map((entry, idx) => (
+                  <ActivityRow
+                    key={entry.id}
+                    entry={entry}
+                    isLast={idx === recentEntries.length - 1}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        </>
       )}
 
-      <Pressable style={styles.button} onPress={() => router.navigate('/scores/leaderboard')}>
-        <Text style={styles.buttonText}>Leaderboard</Text>
-      </Pressable>
+      {/* Existing navigation actions */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Manage</Text>
+        <View style={styles.navGrid}>
+          <NavCard
+            label="Employees"
+            icon="👥"
+            onPress={() => router.navigate('/employees')}
+          />
+          <NavCard
+            label="Leaderboard"
+            icon="🏆"
+            onPress={() => router.navigate('/scores/leaderboard')}
+          />
+          {profile !== null && can(profile.role, 'manageScores') && (
+            <NavCard
+              label="Score Entry"
+              icon="✏️"
+              onPress={() => router.navigate('/scores/entry')}
+            />
+          )}
+          {profile !== null && can(profile.role, 'manageScoreCategories') && (
+            <NavCard
+              label="Score Categories"
+              icon="🗂️"
+              onPress={() => router.navigate('/scores/categories')}
+            />
+          )}
+        </View>
+      </View>
 
-      {profile !== null && can(profile.role, 'manageScores') && (
-        <Pressable style={styles.button} onPress={() => router.navigate('/scores/entry')}>
-          <Text style={styles.buttonText}>Score Entry</Text>
-        </Pressable>
-      )}
-
-      {profile !== null && can(profile.role, 'manageScoreCategories') && (
-        <Pressable style={styles.button} onPress={() => router.navigate('/scores/categories')}>
-          <Text style={styles.buttonText}>Score Categories</Text>
-        </Pressable>
-      )}
-
-      {error !== null && <Text style={styles.error}>{error}</Text>}
+      {signOutError !== null && <Text style={styles.errorText}>{signOutError}</Text>}
 
       <Pressable
         style={[styles.signOutButton, isSigningOut && styles.signOutButtonDisabled]}
@@ -69,51 +330,285 @@ export default function HomeScreen() {
           <Text style={styles.signOutText}>Sign Out</Text>
         )}
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
+// ─── styles ─────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#fff',
+    backgroundColor: '#F9FAFB',
   },
-  label: {
-    fontSize: 14,
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    paddingBottom: 48,
+    gap: 20,
+  },
+  appTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
+  avatarFallback: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#111827',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitial: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  profileText: {
+    gap: 2,
+  },
+  greeting: {
+    fontSize: 19,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  subGreeting: {
+    fontSize: 13,
     color: '#6B7280',
   },
-  email: {
-    fontSize: 18,
+  scoreCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 18,
+    gap: 16,
+  },
+  rankBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F59E0B',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  rankBannerText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  rankBannerChevron: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  scoreCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  scoreCardLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  scoreValue: {
+    fontSize: 40,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  cycleInfo: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  cycleLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  cycleDates: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  cycleDay: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#111827',
+    marginTop: 2,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  statBox: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    gap: 4,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  cardDivider: {
+    height: 1,
+    backgroundColor: '#F3F4F6',
+  },
+  viewScoresRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  viewScoresText: {
+    fontSize: 15,
     fontWeight: '600',
     color: '#111827',
   },
-  button: {
-    marginTop: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: '#111827',
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 15,
+  chevron: {
+    fontSize: 20,
+    color: '#9CA3AF',
     fontWeight: '600',
   },
-  error: {
-    marginTop: 8,
+  section: {
+    gap: 10,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#6B7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  viewAllText: {
     fontSize: 13,
-    color: '#EF4444',
+    fontWeight: '600',
+    color: '#3B82F6',
+  },
+  loader: {
+    marginVertical: 16,
+  },
+  errorText: {
+    fontSize: 13,
+    color: '#DC2626',
+    textAlign: 'center',
+  },
+  emptyCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingVertical: 24,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+  },
+  listCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden',
+  },
+  activityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  pointsBadge: {
+    minWidth: 44,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  pointsBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  activityMain: {
+    flex: 1,
+    gap: 2,
+  },
+  activityName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  activityMeta: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  activityIcons: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  activityIcon: {
+    fontSize: 14,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#F3F4F6',
+    marginHorizontal: 14,
+  },
+  navGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  navCard: {
+    flexBasis: '47%',
+    flexGrow: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  navCardIcon: {
+    fontSize: 18,
+  },
+  navCardText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
   },
   signOutButton: {
-    marginTop: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    marginTop: 4,
+    paddingVertical: 14,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: '#EF4444',
+    alignItems: 'center',
   },
   signOutButtonDisabled: {
     opacity: 0.5,
