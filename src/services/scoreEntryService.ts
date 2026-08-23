@@ -7,7 +7,7 @@ import {
 import { uploadScoreImages } from '@/services/storageService';
 
 const ENTRY_QUERY =
-  'id, cycle_id, profile_id, category_id, points, notes, image_urls, submitted_by, correction_for, created_at' as const;
+  'id, cycle_id, profile_id, category_id, points, notes, image_urls, submitted_by, correction_for, location_id, created_at' as const;
 
 function mapScoreEntry(row: {
   id: string;
@@ -19,6 +19,7 @@ function mapScoreEntry(row: {
   image_urls: string[];
   submitted_by: string;
   correction_for: string | null;
+  location_id: string | null;
   created_at: string;
 }): ScoreEntry {
   return {
@@ -31,6 +32,7 @@ function mapScoreEntry(row: {
     imageUrls: row.image_urls,
     submittedBy: row.submitted_by,
     correctionFor: row.correction_for,
+    locationId: row.location_id,
     createdAt: row.created_at,
   };
 }
@@ -64,6 +66,7 @@ export async function createScoreEntry(
       image_urls: [],
       submitted_by: user.id,
       correction_for: input.correctionFor ?? null,
+      location_id: input.locationId ?? null,
     })
     .select(ENTRY_QUERY)
     .single();
@@ -121,7 +124,7 @@ export async function createScoreEntries(
       ? await uploadScoreImages(input.imageUris, user.id)
       : [];
 
-  const rows = input.profileIds.flatMap((profileId) =>
+  const rows = input.profiles.flatMap(({ profileId, locationId }) =>
     input.selections.map((s) => ({
       cycle_id: cycleId,
       profile_id: profileId,
@@ -131,6 +134,7 @@ export async function createScoreEntries(
       image_urls: imageUrls,
       submitted_by: user.id,
       correction_for: null,
+      location_id: locationId,
     })),
   );
 

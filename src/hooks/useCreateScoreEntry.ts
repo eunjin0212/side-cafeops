@@ -10,7 +10,7 @@ export function useCreateScoreEntry() {
   return useMutation<ScoreEntry[], Error, CreateScoreEntriesBatchInput>({
     mutationFn: createScoreEntries,
     onSuccess: (_, variables) => {
-      variables.profileIds.forEach((profileId) => {
+      variables.profiles.forEach(({ profileId }) => {
         void queryClient.invalidateQueries({
           queryKey: QUERY_KEYS.scoreEntries(profileId),
         });

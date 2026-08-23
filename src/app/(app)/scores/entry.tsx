@@ -39,6 +39,7 @@ export default function ScoreEntryScreen() {
     preselectedId ? [preselectedId] : [],
   );
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [locationSelections, setLocationSelections] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState('');
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [employeeSearch, setEmployeeSearch] = useState('');
@@ -80,9 +81,28 @@ export default function ScoreEntryScreen() {
   const totalPoints = selectedCategories.reduce((sum, c) => sum + c.points, 0);
   const totalEntries = selectedProfileIds.length * selectedCategoryIds.length;
 
+  function activeLocationsFor(emp: Employee) {
+    return emp.locations.filter((l) => l.isActive);
+  }
+
+  function resolveLocationId(emp: Employee): string | null {
+    const active = activeLocationsFor(emp);
+    if (active.length === 0) return null;
+    if (active.length === 1) return active[0].locationId;
+    return locationSelections[emp.id] ?? null;
+  }
+
+  const employeesNeedingLocationChoice = selectedEmployees.filter(
+    (emp) => activeLocationsFor(emp).length > 1,
+  );
+  const allLocationsResolved = employeesNeedingLocationChoice.every(
+    (emp) => locationSelections[emp.id] !== undefined,
+  );
+
   const canSubmit =
     selectedProfileIds.length > 0 &&
     selectedCategoryIds.length > 0 &&
+    allLocationsResolved &&
     !isPending &&
     !submitted;
 
@@ -90,6 +110,12 @@ export default function ScoreEntryScreen() {
     setSelectedProfileIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
+    setLocationSelections((prev) => {
+      if (!(id in prev)) return prev;
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
   }
 
   function toggleCategory(id: string): void {
@@ -111,7 +137,10 @@ export default function ScoreEntryScreen() {
     if (!canSubmit) return;
     mutate(
       {
-        profileIds: selectedProfileIds,
+        profiles: selectedEmployees.map((emp) => ({
+          profileId: emp.id,
+          locationId: resolveLocationId(emp),
+        })),
         selections: selectedCategories.map((c) => ({
           categoryId: c.id,
           points: c.points,
@@ -124,6 +153,7 @@ export default function ScoreEntryScreen() {
           setSelectedProfileIds([]);
           setEmployeeSearch('');
           setSelectedCategoryIds([]);
+          setLocationSelections({});
           setNotes('');
           setImageUris([]);
           setSubmitted(true);
@@ -148,9 +178,11 @@ export default function ScoreEntryScreen() {
     ? `✓ ${totalEntries} ${totalEntries === 1 ? 'entry' : 'entries'} submitted`
     : selectedProfileIds.length === 0
       ? 'Select employees'
-      : selectedCategoryIds.length === 0
-        ? 'Select categories'
-        : `Submit — ${totalEntries} ${totalEntries === 1 ? 'entry' : 'entries'}`;
+      : !allLocationsResolved
+        ? 'Select location'
+        : selectedCategoryIds.length === 0
+          ? 'Select categories'
+          : `Submit — ${totalEntries} ${totalEntries === 1 ? 'entry' : 'entries'}`;
 
   return (
     <View style={styles.root}>
@@ -255,6 +287,57 @@ export default function ScoreEntryScreen() {
             <Text style={styles.hintText}>Search to add employees</Text>
           ) : null}
         </View>
+
+        {/* ── Location ── */}
+        {employeesNeedingLocationChoice.length > 0 && (
+          <View style={styles.block}>
+            <Text style={styles.blockTitle}>Location</Text>
+            <View style={styles.listCard}>
+              {employeesNeedingLocationChoice.map((emp, idx) => {
+                const chosen = locationSelections[emp.id];
+                return (
+                  <View key={emp.id}>
+                    {idx > 0 && <View style={styles.divider} />}
+                    <View style={styles.locationEmployeeRow}>
+                      <Text style={styles.locationEmployeeName} numberOfLines={1}>
+                        {emp.fullName ?? emp.email}
+                      </Text>
+                      <View style={styles.locationChipsRow}>
+                        {activeLocationsFor(emp).map((loc) => {
+                          const isSelected = chosen === loc.locationId;
+                          return (
+                            <Pressable
+                              key={loc.id}
+                              style={[
+                                styles.locationChip,
+                                isSelected && styles.locationChipActive,
+                              ]}
+                              onPress={() =>
+                                setLocationSelections((prev) => ({
+                                  ...prev,
+                                  [emp.id]: loc.locationId,
+                                }))
+                              }
+                            >
+                              <Text
+                                style={[
+                                  styles.locationChipText,
+                                  isSelected && styles.locationChipTextActive,
+                                ]}
+                              >
+                                {loc.locationName}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        )}
 
         {/* ── Categories ── */}
         {selectedProfileIds.length > 0 && (
@@ -564,6 +647,40 @@ const styles = StyleSheet.create({
   rowSublabel: {
     fontSize: 12,
     color: '#9CA3AF',
+  },
+  locationEmployeeRow: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  locationEmployeeName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  locationChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  locationChip: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  locationChipActive: {
+    backgroundColor: '#111827',
+    borderColor: '#111827',
+  },
+  locationChipText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  locationChipTextActive: {
+    color: '#fff',
   },
   categoryRow: {
     flexDirection: 'row',
