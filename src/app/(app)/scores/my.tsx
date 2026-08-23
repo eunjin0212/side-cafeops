@@ -14,6 +14,8 @@ import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyState } from '@/components/molecules/EmptyState';
+import { SectionLabel } from '@/components/molecules/SectionLabel';
+import { ErrorText } from '@/components/molecules/ErrorText';
 import { formatPoints, pointsColor } from '@/utils/points';
 
 // ─── helpers ────────────────────────────────────────────────
@@ -140,7 +142,7 @@ export default function MyScoreScreen() {
       {isLoading ? (
         <ActivityIndicator style={styles.loader} size="large" />
       ) : error ? (
-        <Text style={styles.errorText}>{error}</Text>
+        <ErrorText style={styles.errorText}>{error}</ErrorText>
       ) : !stats ? (
         <EmptyState style={styles.emptyCard}>No location assigned yet.</EmptyState>
       ) : (
@@ -169,7 +171,7 @@ export default function MyScoreScreen() {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Entries</Text>
+            <SectionLabel>Entries</SectionLabel>
 
             {stats.entries.length === 0 ? (
               <EmptyState style={styles.emptyCard}>No entries this cycle.</EmptyState>
@@ -204,8 +206,6 @@ const styles = StyleSheet.create({
     marginTop: 60,
   },
   errorText: {
-    fontSize: 14,
-    color: '#DC2626',
     textAlign: 'center',
     marginTop: 40,
   },
@@ -244,13 +244,6 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: 10,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#6B7280',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
   },
   entryRow: {
     flexDirection: 'row',

@@ -18,6 +18,7 @@ import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
 import { EmptyText } from '@/components/molecules/EmptyText';
+import { ErrorText } from '@/components/molecules/ErrorText';
 
 const STATUS_LABEL: Record<InvitationStatus, string> = {
   pending: 'Pending',
@@ -165,7 +166,7 @@ export default function InvitationsScreen() {
   if (error) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>{error}</Text>
+        <ErrorText>{error}</ErrorText>
       </View>
     );
   }
@@ -295,9 +296,5 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#F3F4F6',
     marginHorizontal: 20,
-  },
-  errorText: {
-    fontSize: 14,
-    color: '#EF4444',
   },
 });

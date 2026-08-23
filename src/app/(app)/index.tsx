@@ -18,6 +18,8 @@ import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyState } from '@/components/molecules/EmptyState';
+import { SectionLabel } from '@/components/molecules/SectionLabel';
+import { ErrorText } from '@/components/molecules/ErrorText';
 import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
 import { SCORE_SECTION_LABELS } from '@/constants/scoreSections';
@@ -250,7 +252,7 @@ export default function HomeScreen() {
           {/* Recent Activity */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Recent Activity</Text>
+              <SectionLabel>Recent Activity</SectionLabel>
               <Pressable onPress={() => router.navigate('/scores/my')}>
                 <Text style={styles.viewAllText}>View All</Text>
               </Pressable>
@@ -259,7 +261,7 @@ export default function HomeScreen() {
             {isLoading ? (
               <ActivityIndicator style={styles.loader} />
             ) : error ? (
-              <Text style={styles.errorText}>{error}</Text>
+              <ErrorText style={styles.errorText}>{error}</ErrorText>
             ) : recentEntries.length === 0 ? (
               <EmptyState>No recent activity.</EmptyState>
             ) : (
@@ -275,7 +277,7 @@ export default function HomeScreen() {
 
       {/* Existing navigation actions */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Manage</Text>
+        <SectionLabel>Manage</SectionLabel>
         <View style={styles.navGrid}>
           <NavCard
             label="Employees"
@@ -304,7 +306,9 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {signOutError !== null && <Text style={styles.errorText}>{signOutError}</Text>}
+      {signOutError !== null && (
+        <ErrorText style={styles.errorText}>{signOutError}</ErrorText>
+      )}
 
       <Pressable
         style={[styles.signOutButton, isSigningOut && styles.signOutButtonDisabled]}
@@ -436,13 +440,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#6B7280',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
   viewAllText: {
     fontSize: 13,
     fontWeight: '600',
@@ -453,7 +450,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 13,
-    color: '#DC2626',
     textAlign: 'center',
   },
   activityRow: {

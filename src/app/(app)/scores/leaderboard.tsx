@@ -14,6 +14,7 @@ import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyText } from '@/components/molecules/EmptyText';
+import { ErrorText } from '@/components/molecules/ErrorText';
 import { ROLE_LABELS } from '@/constants/roles';
 import { BASE_SCORE } from '@/constants/scoring';
 import { LeaderboardEntry } from '@/types/leaderboard';
@@ -132,7 +133,7 @@ export default function LeaderboardScreen() {
         {isLoading ? (
           <ActivityIndicator style={styles.loader} size="large" />
         ) : error ? (
-          <Text style={styles.errorText}>{error}</Text>
+          <ErrorText style={styles.errorText}>{error}</ErrorText>
         ) : entries.length === 0 ? (
           <EmptyText style={styles.emptyText}>No employees found.</EmptyText>
         ) : (
@@ -169,8 +170,6 @@ const styles = StyleSheet.create({
     marginTop: 60,
   },
   errorText: {
-    fontSize: 14,
-    color: '#DC2626',
     textAlign: 'center',
     marginTop: 40,
   },

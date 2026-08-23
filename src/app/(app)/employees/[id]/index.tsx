@@ -12,6 +12,7 @@ import { useEmployee } from '@/hooks/useEmployee';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { EmptyText } from '@/components/molecules/EmptyText';
+import { ErrorText } from '@/components/molecules/ErrorText';
 import { ROLE_LABELS } from '@/constants/roles';
 import {
   canEditEmployeeRole,
@@ -73,7 +74,7 @@ export default function EmployeeDetailScreen() {
   if (error) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>{error}</Text>
+        <ErrorText>{error}</ErrorText>
       </View>
     );
   }
@@ -251,9 +252,5 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#F3F4F6',
     marginHorizontal: 16,
-  },
-  errorText: {
-    fontSize: 14,
-    color: '#EF4444',
   },
 });

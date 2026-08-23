@@ -16,6 +16,7 @@ import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections'
 import { ScoreCategory } from '@/types/score';
 import { formatPoints } from '@/utils/points';
 import { EmptyText } from '@/components/molecules/EmptyText';
+import { ErrorText } from '@/components/molecules/ErrorText';
 
 interface CategoryRowProps {
   category: ScoreCategory;
@@ -59,7 +60,7 @@ export default function ScoreCategoriesScreen() {
   if (error) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>{error}</Text>
+        <ErrorText>{error}</ErrorText>
       </View>
     );
   }
@@ -160,5 +161,4 @@ const styles = StyleSheet.create({
   rowPoints: { fontSize: 15, fontWeight: '600', marginLeft: 12 },
   pointsPositive: { color: '#10B981' },
   pointsNegative: { color: '#EF4444' },
-  errorText: { fontSize: 14, color: '#EF4444' },
 });

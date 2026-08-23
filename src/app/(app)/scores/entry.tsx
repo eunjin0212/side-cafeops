@@ -23,6 +23,8 @@ import { ImagePickerField } from '@/components/molecules/ImagePickerField';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyText } from '@/components/molecules/EmptyText';
+import { SectionLabel } from '@/components/molecules/SectionLabel';
+import { ErrorText } from '@/components/molecules/ErrorText';
 import { formatPoints, pointsColor } from '@/utils/points';
 
 export default function ScoreEntryScreen() {
@@ -193,7 +195,7 @@ export default function ScoreEntryScreen() {
         {/* ── Employees ── */}
         <View style={styles.block}>
           <View style={styles.blockHeader}>
-            <Text style={styles.blockTitle}>Employees</Text>
+            <SectionLabel>Employees</SectionLabel>
             {selectedProfileIds.length > 0 && (
               <View style={styles.countBadge}>
                 <Text style={styles.countBadgeText}>
@@ -286,7 +288,7 @@ export default function ScoreEntryScreen() {
         {/* ── Location ── */}
         {employeesNeedingLocationChoice.length > 0 && (
           <View style={styles.block}>
-            <Text style={styles.blockTitle}>Location</Text>
+            <SectionLabel>Location</SectionLabel>
             <ListCard dividerInset={14}>
               {employeesNeedingLocationChoice.map((emp) => {
                 const chosen = locationSelections[emp.id];
@@ -335,7 +337,7 @@ export default function ScoreEntryScreen() {
         {selectedProfileIds.length > 0 && (
           <View style={styles.block}>
             <View style={styles.blockHeader}>
-              <Text style={styles.blockTitle}>Categories</Text>
+              <SectionLabel>Categories</SectionLabel>
               {selectedCategoryIds.length > 0 && (
                 <View style={styles.countBadge}>
                   <Text style={styles.countBadgeText}>
@@ -442,7 +444,7 @@ export default function ScoreEntryScreen() {
         {/* ── Notes ── */}
         {selectedProfileIds.length > 0 && (
           <View style={styles.block}>
-            <Text style={styles.blockTitle}>Notes (optional)</Text>
+            <SectionLabel>Notes (optional)</SectionLabel>
             <TextInput
               style={styles.notesInput}
               placeholder="Add a note..."
@@ -465,7 +467,7 @@ export default function ScoreEntryScreen() {
           </View>
         )}
 
-        {error && <Text style={styles.errorText}>{error.message}</Text>}
+        {error && <ErrorText style={styles.errorText}>{error.message}</ErrorText>}
 
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -524,13 +526,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  blockTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#6B7280',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
   },
   countBadge: {
     backgroundColor: '#111827',
@@ -749,7 +744,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 13,
-    color: '#DC2626',
     textAlign: 'center',
   },
   bottomBar: {
