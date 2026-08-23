@@ -14,7 +14,7 @@ import { useEmployees } from '@/hooks/useEmployees';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useScoreCategories } from '@/hooks/useScoreCategories';
 import { useCreateScoreEntry } from '@/hooks/useCreateScoreEntry';
-import { can } from '@/constants/permissions';
+import { can, canScoreEmployee } from '@/constants/permissions';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { ROLE_LABELS } from '@/constants/roles';
 import { ScoreSection } from '@/types/score';
@@ -58,7 +58,10 @@ export default function ScoreEntryScreen() {
   }, [currentProfile]);
 
   const scorableEmployees = employees.filter(
-    (e) => e.isActive && e.id !== currentProfile?.id,
+    (e) =>
+      e.isActive &&
+      e.id !== currentProfile?.id &&
+      (currentProfile === null || canScoreEmployee(currentProfile.role, e.role)),
   );
 
   const searchResults =
@@ -154,6 +157,7 @@ export default function ScoreEntryScreen() {
           setEmployeeSearch('');
           setSelectedCategoryIds([]);
           setLocationSelections({});
+          setExpandedSections(new Set());
           setNotes('');
           setImageUris([]);
           setSubmitted(true);

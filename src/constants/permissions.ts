@@ -53,6 +53,13 @@ export function canDeactivateEmployee(
   );
 }
 
+export function canScoreEmployee(
+  currentUserRole: EmployeeRole,
+  targetUserRole: EmployeeRole,
+): boolean {
+  return ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY[targetUserRole];
+}
+
 export function canEditOwnProfile(
   currentUserId: string,
   targetUserId: string,

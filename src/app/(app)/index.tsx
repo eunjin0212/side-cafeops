@@ -196,10 +196,12 @@ export default function HomeScreen() {
   }
 
   const showScoreDashboard = profile !== null && profile.role !== 'owner';
-  const recentEntries = entries.slice(0, 3);
   const locationsLabel = profile ? formatLocationsLabel(profile.locations) : null;
 
   const effectiveLocationId = selectedLocationId ?? profile?.locationId ?? locations[0]?.id;
+  const recentEntries = entries
+    .filter((e) => e.locationId === effectiveLocationId)
+    .slice(0, 3);
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>

@@ -16,6 +16,7 @@ import {
   canEditEmployeeRole,
   canEditEmployeeLocation,
   canEditOwnProfile,
+  canScoreEmployee,
   can,
 } from '@/constants/permissions';
 
@@ -57,7 +58,8 @@ export default function EmployeeDetailScreen() {
     currentProfile !== null &&
     employee !== null &&
     currentProfile.id !== id &&
-    can(currentProfile.role, 'manageScores');
+    can(currentProfile.role, 'manageScores') &&
+    canScoreEmployee(currentProfile.role, employee.role);
 
   if (isLoading) {
     return (
