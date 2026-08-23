@@ -38,6 +38,13 @@ function pointsBg(pts: number): string {
   return '#F3F4F6';
 }
 
+function rankBadgeStyle(rank: number): { bg: string; text: string } {
+  if (rank === 1) return { bg: '#F59E0B', text: '#fff' };
+  if (rank === 2) return { bg: '#9CA3AF', text: '#fff' };
+  if (rank === 3) return { bg: '#B45309', text: '#fff' };
+  return { bg: '#F3F4F6', text: '#6B7280' };
+}
+
 function formatCycleDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
@@ -200,20 +207,38 @@ export default function HomeScreen() {
       {/* Score dashboard — not shown for owner */}
       {showScoreDashboard && (
         <>
-          <View style={styles.scoreCard}>
-            {!isRankLoading && myRankEntry && (
-              <Pressable
-                style={styles.rankBanner}
-                onPress={() => router.navigate('/scores/leaderboard')}
+          {!isRankLoading && myRankEntry && (
+            <Pressable
+              style={styles.rankCard}
+              onPress={() => router.navigate('/scores/leaderboard')}
+            >
+              <View
+                style={[
+                  styles.rankBadgeCircle,
+                  { backgroundColor: rankBadgeStyle(myRankEntry.rank).bg },
+                ]}
               >
-                <Text style={styles.rankBannerText} numberOfLines={1}>
-                  🏆 Rank #{myRankEntry.rank} of {myLocationEntries.length}
+                <Text
+                  style={[
+                    styles.rankBadgeNumber,
+                    { color: rankBadgeStyle(myRankEntry.rank).text },
+                  ]}
+                >
+                  #{myRankEntry.rank}
+                </Text>
+              </View>
+              <View style={styles.rankCardText}>
+                <Text style={styles.rankCardTitle}>🏆 Team Ranking</Text>
+                <Text style={styles.rankCardSubtitle} numberOfLines={1}>
+                  of {myLocationEntries.length}
                   {profile?.locationName ? ` at ${profile.locationName}` : ''}
                 </Text>
-                <Text style={styles.rankBannerChevron}>›</Text>
-              </Pressable>
-            )}
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </Pressable>
+          )}
 
+          <View style={styles.scoreCard}>
             <View style={styles.scoreCardTop}>
               <View>
                 <Text style={styles.scoreCardLabel}>Current Performance Score</Text>
@@ -401,25 +426,40 @@ const styles = StyleSheet.create({
     padding: 18,
     gap: 16,
   },
-  rankBanner: {
+  rankCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#F59E0B',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    gap: 14,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 16,
   },
-  rankBannerText: {
-    flex: 1,
-    fontSize: 15,
+  rankBadgeCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  rankBadgeNumber: {
+    fontSize: 18,
     fontWeight: '800',
-    color: '#fff',
   },
-  rankBannerChevron: {
-    fontSize: 20,
+  rankCardText: {
+    flex: 1,
+    gap: 2,
+  },
+  rankCardTitle: {
+    fontSize: 16,
     fontWeight: '700',
-    color: '#fff',
+    color: '#111827',
+  },
+  rankCardSubtitle: {
+    fontSize: 13,
+    color: '#6B7280',
   },
   scoreCardTop: {
     flexDirection: 'row',
