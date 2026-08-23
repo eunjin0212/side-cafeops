@@ -16,6 +16,7 @@ import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
 import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
+import { ListCard } from '@/components/molecules/ListCard';
 import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
 import { SCORE_SECTION_LABELS } from '@/constants/scoreSections';
@@ -76,36 +77,32 @@ function locationNetPoints(entries: EnrichedEntry[], locationId: string): number
 
 interface ActivityRowProps {
   entry: EnrichedEntry;
-  isLast: boolean;
 }
 
-function ActivityRow({ entry, isLast }: ActivityRowProps) {
+function ActivityRow({ entry }: ActivityRowProps) {
   return (
-    <View>
-      <View style={styles.activityRow}>
-        <View style={[styles.pointsBadge, { backgroundColor: pointsBg(entry.points) }]}>
-          <Text style={[styles.pointsBadgeText, { color: pointsColor(entry.points) }]}>
-            {formatPoints(entry.points)}
-          </Text>
-        </View>
-
-        <View style={styles.activityMain}>
-          <Text style={styles.activityName} numberOfLines={1}>
-            {entry.categoryName}
-          </Text>
-          <Text style={styles.activityMeta} numberOfLines={1}>
-            {SCORE_SECTION_LABELS[entry.section]}
-            {entry.locationName ? ` · ${entry.locationName}` : ''} ·{' '}
-            {formatEntryDateTime(entry.createdAt)}
-          </Text>
-        </View>
-
-        <View style={styles.activityIcons}>
-          {entry.imageUrls.length > 0 && <Text style={styles.activityIcon}>📷</Text>}
-          {entry.notes !== null && <Text style={styles.activityIcon}>📝</Text>}
-        </View>
+    <View style={styles.activityRow}>
+      <View style={[styles.pointsBadge, { backgroundColor: pointsBg(entry.points) }]}>
+        <Text style={[styles.pointsBadgeText, { color: pointsColor(entry.points) }]}>
+          {formatPoints(entry.points)}
+        </Text>
       </View>
-      {!isLast && <View style={styles.divider} />}
+
+      <View style={styles.activityMain}>
+        <Text style={styles.activityName} numberOfLines={1}>
+          {entry.categoryName}
+        </Text>
+        <Text style={styles.activityMeta} numberOfLines={1}>
+          {SCORE_SECTION_LABELS[entry.section]}
+          {entry.locationName ? ` · ${entry.locationName}` : ''} ·{' '}
+          {formatEntryDateTime(entry.createdAt)}
+        </Text>
+      </View>
+
+      <View style={styles.activityIcons}>
+        {entry.imageUrls.length > 0 && <Text style={styles.activityIcon}>📷</Text>}
+        {entry.notes !== null && <Text style={styles.activityIcon}>📝</Text>}
+      </View>
     </View>
   );
 }
@@ -267,15 +264,11 @@ export default function HomeScreen() {
                 <Text style={styles.emptyText}>No recent activity.</Text>
               </View>
             ) : (
-              <View style={styles.listCard}>
-                {recentEntries.map((entry, idx) => (
-                  <ActivityRow
-                    key={entry.id}
-                    entry={entry}
-                    isLast={idx === recentEntries.length - 1}
-                  />
+              <ListCard dividerInset={14}>
+                {recentEntries.map((entry) => (
+                  <ActivityRow key={entry.id} entry={entry} />
                 ))}
-              </View>
+              </ListCard>
             )}
           </View>
         </>
@@ -476,13 +469,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9CA3AF',
   },
-  listCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    overflow: 'hidden',
-  },
   activityRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -519,11 +505,6 @@ const styles = StyleSheet.create({
   },
   activityIcon: {
     fontSize: 14,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#F3F4F6',
-    marginHorizontal: 14,
   },
   navGrid: {
     flexDirection: 'row',

@@ -12,6 +12,7 @@ import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
+import { ListCard } from '@/components/molecules/ListCard';
 import { formatPoints, pointsColor } from '@/utils/points';
 
 // ─── helpers ────────────────────────────────────────────────
@@ -66,36 +67,32 @@ function StatCol({ label, value, color = '#111827', large = false }: StatColProp
 
 interface EntryRowProps {
   entry: EnrichedEntry;
-  isLast: boolean;
 }
 
-function EntryRow({ entry, isLast }: EntryRowProps) {
+function EntryRow({ entry }: EntryRowProps) {
   return (
-    <View>
-      <View style={styles.entryRow}>
-        <View style={styles.entryLeft}>
-          <View style={styles.entryTopLine}>
-            <Text style={styles.entryName} numberOfLines={1}>
-              {entry.categoryName}
-            </Text>
-            {entry.imageUrls.length > 0 && (
-              <View style={styles.photoBadge}>
-                <Text style={styles.photoBadgeText}>Photo</Text>
-              </View>
-            )}
-          </View>
-          {entry.notes !== null && (
-            <Text style={styles.entryNote} numberOfLines={2}>
-              {entry.notes}
-            </Text>
+    <View style={styles.entryRow}>
+      <View style={styles.entryLeft}>
+        <View style={styles.entryTopLine}>
+          <Text style={styles.entryName} numberOfLines={1}>
+            {entry.categoryName}
+          </Text>
+          {entry.imageUrls.length > 0 && (
+            <View style={styles.photoBadge}>
+              <Text style={styles.photoBadgeText}>Photo</Text>
+            </View>
           )}
-          <Text style={styles.entryDate}>{formatDate(entry.createdAt)}</Text>
         </View>
-        <Text style={[styles.entryPoints, { color: pointsColor(entry.points) }]}>
-          {formatPoints(entry.points)}
-        </Text>
+        {entry.notes !== null && (
+          <Text style={styles.entryNote} numberOfLines={2}>
+            {entry.notes}
+          </Text>
+        )}
+        <Text style={styles.entryDate}>{formatDate(entry.createdAt)}</Text>
       </View>
-      {!isLast && <View style={styles.divider} />}
+      <Text style={[styles.entryPoints, { color: pointsColor(entry.points) }]}>
+        {formatPoints(entry.points)}
+      </Text>
     </View>
   );
 }
@@ -180,15 +177,11 @@ export default function MyScoreScreen() {
                 <Text style={styles.emptyText}>No entries this cycle.</Text>
               </View>
             ) : (
-              <View style={styles.listCard}>
-                {stats.entries.map((entry, idx) => (
-                  <EntryRow
-                    key={entry.id}
-                    entry={entry}
-                    isLast={idx === stats.entries.length - 1}
-                  />
+              <ListCard>
+                {stats.entries.map((entry) => (
+                  <EntryRow key={entry.id} entry={entry} />
                 ))}
-              </View>
+              </ListCard>
             )}
           </View>
         </>
@@ -262,13 +255,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
-  listCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    overflow: 'hidden',
-  },
   entryRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -317,11 +303,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     minWidth: 36,
     textAlign: 'right',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#F3F4F6',
-    marginHorizontal: 16,
   },
   emptyCard: {
     backgroundColor: '#fff',

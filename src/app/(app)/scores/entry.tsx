@@ -21,6 +21,7 @@ import { ScoreSection } from '@/types/score';
 import { Employee } from '@/types/employee';
 import { ImagePickerField } from '@/components/molecules/ImagePickerField';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { ListCard } from '@/components/molecules/ListCard';
 import { formatPoints, pointsColor } from '@/utils/points';
 
 export default function ScoreEntryScreen() {
@@ -242,41 +243,39 @@ export default function ScoreEntryScreen() {
             searchResults.length === 0 ? (
               <Text style={styles.emptyText}>No employees found.</Text>
             ) : (
-              <View style={styles.listCard}>
-                {searchResults.map((emp, idx) => {
+              <ListCard dividerInset={14}>
+                {searchResults.map((emp) => {
                   const isSelected = selectedProfileIds.includes(emp.id);
                   return (
-                    <View key={emp.id}>
-                      {idx > 0 && <View style={styles.divider} />}
-                      <Pressable
-                        style={[styles.employeeRow, isSelected && styles.rowSelected]}
-                        onPress={() => toggleEmployee(emp.id)}
+                    <Pressable
+                      key={emp.id}
+                      style={[styles.employeeRow, isSelected && styles.rowSelected]}
+                      onPress={() => toggleEmployee(emp.id)}
+                    >
+                      <View
+                        style={[
+                          styles.checkbox,
+                          styles.checkboxCircle,
+                          isSelected && styles.checkboxActive,
+                        ]}
                       >
-                        <View
-                          style={[
-                            styles.checkbox,
-                            styles.checkboxCircle,
-                            isSelected && styles.checkboxActive,
-                          ]}
+                        {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                      </View>
+                      <View style={styles.rowContent}>
+                        <Text
+                          style={[styles.rowLabel, isSelected && styles.rowLabelSelected]}
+                          numberOfLines={1}
                         >
-                          {isSelected && <Text style={styles.checkmark}>✓</Text>}
-                        </View>
-                        <View style={styles.rowContent}>
-                          <Text
-                            style={[styles.rowLabel, isSelected && styles.rowLabelSelected]}
-                            numberOfLines={1}
-                          >
-                            {emp.fullName ?? emp.email}
-                          </Text>
-                          <Text style={styles.rowSublabel} numberOfLines={1}>
-                            {employeeLabel(emp)}
-                          </Text>
-                        </View>
-                      </Pressable>
-                    </View>
+                          {emp.fullName ?? emp.email}
+                        </Text>
+                        <Text style={styles.rowSublabel} numberOfLines={1}>
+                          {employeeLabel(emp)}
+                        </Text>
+                      </View>
+                    </Pressable>
                   );
                 })}
-              </View>
+              </ListCard>
             )
           ) : selectedProfileIds.length === 0 ? (
             <Text style={styles.hintText}>Search to add employees</Text>
@@ -287,50 +286,47 @@ export default function ScoreEntryScreen() {
         {employeesNeedingLocationChoice.length > 0 && (
           <View style={styles.block}>
             <Text style={styles.blockTitle}>Location</Text>
-            <View style={styles.listCard}>
-              {employeesNeedingLocationChoice.map((emp, idx) => {
+            <ListCard dividerInset={14}>
+              {employeesNeedingLocationChoice.map((emp) => {
                 const chosen = locationSelections[emp.id];
                 return (
-                  <View key={emp.id}>
-                    {idx > 0 && <View style={styles.divider} />}
-                    <View style={styles.locationEmployeeRow}>
-                      <Text style={styles.locationEmployeeName} numberOfLines={1}>
-                        {emp.fullName ?? emp.email}
-                      </Text>
-                      <View style={styles.locationChipsRow}>
-                        {activeLocationsFor(emp).map((loc) => {
-                          const isSelected = chosen === loc.locationId;
-                          return (
-                            <Pressable
-                              key={loc.id}
+                  <View key={emp.id} style={styles.locationEmployeeRow}>
+                    <Text style={styles.locationEmployeeName} numberOfLines={1}>
+                      {emp.fullName ?? emp.email}
+                    </Text>
+                    <View style={styles.locationChipsRow}>
+                      {activeLocationsFor(emp).map((loc) => {
+                        const isSelected = chosen === loc.locationId;
+                        return (
+                          <Pressable
+                            key={loc.id}
+                            style={[
+                              styles.locationChip,
+                              isSelected && styles.locationChipActive,
+                            ]}
+                            onPress={() =>
+                              setLocationSelections((prev) => ({
+                                ...prev,
+                                [emp.id]: loc.locationId,
+                              }))
+                            }
+                          >
+                            <Text
                               style={[
-                                styles.locationChip,
-                                isSelected && styles.locationChipActive,
+                                styles.locationChipText,
+                                isSelected && styles.locationChipTextActive,
                               ]}
-                              onPress={() =>
-                                setLocationSelections((prev) => ({
-                                  ...prev,
-                                  [emp.id]: loc.locationId,
-                                }))
-                              }
                             >
-                              <Text
-                                style={[
-                                  styles.locationChipText,
-                                  isSelected && styles.locationChipTextActive,
-                                ]}
-                              >
-                                {loc.locationName}
-                              </Text>
-                            </Pressable>
-                          );
-                        })}
-                      </View>
+                              {loc.locationName}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
                     </View>
                   </View>
                 );
               })}
-            </View>
+            </ListCard>
           </View>
         )}
 
@@ -351,8 +347,8 @@ export default function ScoreEntryScreen() {
             {categoriesLoading ? (
               <ActivityIndicator style={styles.loader} />
             ) : (
-              <View style={styles.listCard}>
-                {SCORE_SECTIONS.map((section, sIdx) => {
+              <ListCard dividerInset={14}>
+                {SCORE_SECTIONS.map((section) => {
                   const sectionCats = activeCategories.filter(
                     (c) => c.section === section,
                   );
@@ -365,8 +361,6 @@ export default function ScoreEntryScreen() {
 
                   return (
                     <View key={section}>
-                      {sIdx > 0 && <View style={styles.divider} />}
-
                       {/* Section accordion header */}
                       <Pressable
                         style={styles.accordionHeader}
@@ -439,7 +433,7 @@ export default function ScoreEntryScreen() {
                     </View>
                   );
                 })}
-              </View>
+              </ListCard>
             )}
           </View>
         )}
@@ -583,13 +577,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 15,
     color: '#111827',
-  },
-  listCard: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 10,
-    overflow: 'hidden',
   },
   employeeRow: {
     flexDirection: 'row',

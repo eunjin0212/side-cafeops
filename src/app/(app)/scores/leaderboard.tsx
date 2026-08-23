@@ -12,6 +12,7 @@ import { useLocations } from '@/hooks/useLocations';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
+import { ListCard } from '@/components/molecules/ListCard';
 import { ROLE_LABELS } from '@/constants/roles';
 import { BASE_SCORE } from '@/constants/scoring';
 import { LeaderboardEntry } from '@/types/leaderboard';
@@ -134,17 +135,15 @@ export default function LeaderboardScreen() {
         ) : entries.length === 0 ? (
           <Text style={styles.emptyText}>No employees found.</Text>
         ) : (
-          <View style={styles.listCard}>
-            {entries.map((entry, idx) => (
-              <View key={`${entry.profileId}-${entry.locationId}`}>
-                {idx > 0 && <View style={styles.divider} />}
-                <EntryRow
-                  entry={entry}
-                  isCurrentUser={entry.profileId === currentProfile?.id}
-                />
-              </View>
+          <ListCard>
+            {entries.map((entry) => (
+              <EntryRow
+                key={`${entry.profileId}-${entry.locationId}`}
+                entry={entry}
+                isCurrentUser={entry.profileId === currentProfile?.id}
+              />
             ))}
-          </View>
+          </ListCard>
         )}
       </ScrollView>
     </View>
@@ -179,13 +178,6 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     textAlign: 'center',
     marginTop: 40,
-  },
-  listCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    overflow: 'hidden',
   },
   row: {
     flexDirection: 'row',
@@ -241,10 +233,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     minWidth: 40,
     textAlign: 'right',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#F3F4F6',
-    marginHorizontal: 16,
   },
 });
