@@ -247,19 +247,34 @@ Before creating a migration:
 
 ### Roles
 
-1. staff
-2. supervisor
-3. location_manager
-4. general_manager
-5. owner
+1. trainee
+2. staff
+3. supervisor
+4. location_manager
+5. general_manager
+6. owner
+
+### Employee Edit Rules
+
+* All roles, including trainees, may edit their own personal information such as full name and phone.
+* Email is read-only and cannot be edited from the employee profile form.
+* Users must never edit their own role.
+* Users must never edit their own location assignment.
+* Role and location changes require a user with a strictly higher role rank than the target employee.
+* Trainees and staff cannot edit another employee's role or location.
+* Role hierarchy rules must use the centralized permission helpers in `src/constants/permissions.ts`.
+* Do not hardcode role permission arrays inside screens.
 
 ### Permission Rules
 
-* Staff can view their own scores and rankings.
-* Supervisors can create score entries.
-* Location Managers manage employees at assigned locations.
-* General Managers manage all locations.
+* Trainees and Staff can view their own scores and rankings.
+* Supervisors can create score entries for employees they are allowed to manage.
+* Location Managers manage employees at their assigned locations.
+* General Managers manage employees across all locations.
 * Owners have full access.
+* Role and location edits require a strictly higher role rank than the target employee.
+* Users cannot edit their own role or location assignment.
+* Client-side permission checks are UX only; RLS is the source of truth for authorization.
 
 ## Scoring System
 
@@ -282,9 +297,17 @@ Fail to update daily record -1
 
 ### Scoring Rules
 
+* Base performance score is `200`.
+* `BASE_SCORE` must use the centralized constant in `src/constants/scoring.ts`.
 * Scores are additive point records.
 * Scores are not ratings.
-* Leaderboards use `SUM(points)`.
+* Score delta is `SUM(score_entries.points)` within the active score cycle.
+* Performance Score = `BASE_SCORE + SUM(score_entries.points)`.
+* Positive Points = sum of score entries where `points > 0`.
+* Negative Points = sum of score entries where `points < 0`.
+* Rankings are ordered by summed score-entry points within the active 14-day cycle.
+* Displayed ranking scores must include `BASE_SCORE`.
+* Adding the same `BASE_SCORE` to every employee does not affect ranking order.
 * All score history must be preserved.
 
 ## UI Principles
@@ -336,32 +359,55 @@ feat: add employee service
 Do not execute git commit.
 Do not execute git push.
 
-## Technical Backlog
-
-Items deferred from MVP. Do not implement until noted.
+## Security Work Before Production
 
 ### RLS: Add target-rank enforcement on profiles UPDATE
 
-**Context:** The current `profiles` UPDATE policy checks only the actor's role (`location_manager+`), not the target's rank. The frontend prevents same-level or upward edits via `canEditEmployeeRole` / `canEditEmployeeLocation`, but RLS alone does not enforce this.
+**Current State:** The current `profiles` UPDATE policy checks the actor's role but does not fully enforce target-rank restrictions at the database level.
 
-**Why deferred:** All writes currently go through the app UI, which applies the rank check before any DB call. Risk is low for MVP.
+The frontend currently uses centralized permission helpers to prevent invalid role and location edits. These checks are UX safeguards only and must not be treated as authorization.
 
-**When to address:** Before opening any direct API access, adding a public-facing integration, or exposing a service-role endpoint. At that point, add a `get_profile_role(uuid)` helper and tighten the UPDATE WITH CHECK to also verify `actor.rank > target.rank`.
+**Required Before Production:**
+
+RLS must enforce that:
+
+* Users cannot edit their own role.
+* Users cannot edit their own location assignment.
+* Role and location changes require a strictly higher role rank than the target employee.
+* Same-rank and upward edits are rejected by the database.
+* Client-side permission checks and RLS rules must represent the same business rules.
+
+This must be completed during the RLS / permission audit before production.
 
 ---
 
-## MVP Priority
+## Current MVP Status
 
-Build features in this order:
+### Completed / Implemented
 
-1. Authentication
-2. Current User Profile
-3. Employee Management
-4. Location Assignment
-5. Score Categories
-6. Score Entry
-7. Ranking
-8. Notification Center
-9. Recipe Management
+* Authentication
+* Current User Profile
+* Employee Management
+* Employee Location Assignment
+* Employee Invitations
+* Centralized Role Permissions
+* Score Categories
+* Score Entry
+* Multi-employee / multi-score entry
+* Score Entry Notes
+* Score Entry Photos
+* Basic Leaderboard
+
+### Current Priority
+
+1. My Score Dashboard
+2. Update Leaderboard display to use `BASE_SCORE = 200`
+3. Verify Score Cycle lifecycle
+4. Audit Score RLS and permissions
+5. Notification Center
+6. Complete Invitation signup flow
+7. Recipe Management
+8. Role-based QA
+9. Production readiness
 
 Do not build advanced features before the MVP is working.
