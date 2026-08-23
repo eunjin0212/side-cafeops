@@ -55,6 +55,9 @@ export default function LoginScreen() {
           keyboardType="email-address"
           returnKeyType="next"
           editable={!isLoading}
+          nativeID="email"
+          autoComplete="email"
+          textContentType="username"
         />
 
         <View style={styles.passwordWrapper}>
@@ -68,6 +71,9 @@ export default function LoginScreen() {
             returnKeyType="done"
             onSubmitEditing={handleLogin}
             editable={!isLoading}
+            nativeID="password"
+            autoComplete="current-password"
+            textContentType="password"
           />
           <Pressable
             style={styles.passwordToggle}
