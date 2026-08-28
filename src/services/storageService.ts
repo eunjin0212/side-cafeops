@@ -16,7 +16,10 @@ export async function uploadImage(
       upsert: false,
     });
 
-  if (error) throw new Error(`Failed to upload image: ${error.message}`);
+  if (error) {
+    console.error('storageService: upload image', error);
+    throw new Error('Failed to upload image. Please try again.');
+  }
 
   const {
     data: { publicUrl },

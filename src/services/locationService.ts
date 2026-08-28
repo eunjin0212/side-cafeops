@@ -8,7 +8,10 @@ export async function getLocations(): Promise<Location[]> {
     .eq('is_active', true)
     .order('name', { ascending: true });
 
-  if (error) throw error;
+  if (error) {
+    console.error('locationService: load locations', error);
+    throw new Error('Failed to load locations. Please try again.');
+  }
 
   return data.map((row) => ({
     id: row.id as string,

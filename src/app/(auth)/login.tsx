@@ -10,28 +10,42 @@ import {
   View,
 } from 'react-native';
 import { router } from 'expo-router';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 import { signIn } from '@/services/authService';
+import { ErrorText } from '@/components/molecules/ErrorText';
+
+const loginSchema = z.object({
+  email: z.string().min(1, 'Email is required'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  async function handleLogin() {
-    if (!email || !password) {
-      setError('Please enter your email and password.');
-      return;
-    }
-    setError(null);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  async function onSubmit(data: LoginFormValues): Promise<void> {
+    setAuthError(null);
     setIsLoading(true);
     try {
-      await signIn(email, password);
+      await signIn(data.email, data.password);
       router.replace('/');
     } catch {
-      setError('Invalid email or password.');
+      setAuthError('Invalid email or password.');
     } finally {
       setIsLoading(false);
     }
@@ -45,35 +59,54 @@ export default function LoginScreen() {
       <View style={styles.inner} role="form">
         <Text style={styles.title}>CafeOps</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#9CA3AF"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          returnKeyType="next"
-          editable={!isLoading}
-          nativeID="email"
-          autoComplete="email"
-          textContentType="username"
+        <Controller
+          control={control}
+          name="email"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={[styles.input, errors.email && styles.inputError]}
+              placeholder="Email"
+              placeholderTextColor="#9CA3AF"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              returnKeyType="next"
+              editable={!isLoading}
+              nativeID="email"
+              autoComplete="email"
+              textContentType="username"
+            />
+          )}
         />
+        {errors.email && <Text style={styles.fieldError}>{errors.email.message}</Text>}
 
         <View style={styles.passwordWrapper}>
-          <TextInput
-            style={[styles.input, styles.passwordInput]}
-            placeholder="Password"
-            placeholderTextColor="#9CA3AF"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!isPasswordVisible}
-            returnKeyType="done"
-            onSubmitEditing={handleLogin}
-            editable={!isLoading}
-            nativeID="password"
-            autoComplete="current-password"
-            textContentType="password"
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={[
+                  styles.input,
+                  styles.passwordInput,
+                  errors.password && styles.inputError,
+                ]}
+                placeholder="Password"
+                placeholderTextColor="#9CA3AF"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry={!isPasswordVisible}
+                returnKeyType="done"
+                onSubmitEditing={handleSubmit(onSubmit)}
+                editable={!isLoading}
+                nativeID="password"
+                autoComplete="current-password"
+                textContentType="password"
+              />
+            )}
           />
           <Pressable
             style={styles.passwordToggle}
@@ -85,12 +118,13 @@ export default function LoginScreen() {
             </Text>
           </Pressable>
         </View>
+        {errors.password && <Text style={styles.fieldError}>{errors.password.message}</Text>}
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {authError !== null && <ErrorText>{authError}</ErrorText>}
 
         <Pressable
           style={[styles.button, isLoading && styles.buttonDisabled]}
-          onPress={handleLogin}
+          onPress={handleSubmit(onSubmit)}
           disabled={isLoading}
         >
           {isLoading ? (
@@ -132,6 +166,14 @@ const styles = StyleSheet.create({
     color: '#111827',
     backgroundColor: '#F9FAFB',
   },
+  inputError: {
+    borderColor: '#DC2626',
+  },
+  fieldError: {
+    fontSize: 12,
+    color: '#DC2626',
+    marginTop: -4,
+  },
   passwordWrapper: {
     justifyContent: 'center',
   },
@@ -146,10 +188,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#6B7280',
-  },
-  error: {
-    fontSize: 14,
-    color: '#EF4444',
   },
   button: {
     height: 52,

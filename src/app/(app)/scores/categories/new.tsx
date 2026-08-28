@@ -37,7 +37,7 @@ const newCategorySchema = z.object({
 type NewCategoryValues = z.infer<typeof newCategorySchema>;
 
 export default function NewScoreCategoryScreen() {
-  const { profile } = useCurrentProfile();
+  const { profile, isLoading: profileLoading } = useCurrentProfile();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -79,6 +79,14 @@ export default function NewScoreCategoryScreen() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (profileLoading || (profile && !can(profile.role, 'manageScoreCategories'))) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
 
   return (
@@ -179,6 +187,7 @@ export default function NewScoreCategoryScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: '#fff' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
   scroll: { flex: 1 },
   scrollContent: {
     paddingHorizontal: 20,

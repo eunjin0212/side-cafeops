@@ -41,7 +41,7 @@ type EditCategoryValues = z.infer<typeof editCategorySchema>;
 
 export default function EditScoreCategoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { profile } = useCurrentProfile();
+  const { profile, isLoading: profileLoading } = useCurrentProfile();
   const { categories, isLoading } = useScoreCategories();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -102,7 +102,12 @@ export default function EditScoreCategoryScreen() {
     }
   }
 
-  if (isLoading || !category) {
+  if (
+    profileLoading ||
+    isLoading ||
+    !category ||
+    (profile && !can(profile.role, 'manageScoreCategories'))
+  ) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />

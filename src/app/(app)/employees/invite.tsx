@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -17,8 +17,10 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useLocations } from '@/hooks/useLocations';
 import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
+import { can, ROLE_HIERARCHY } from '@/constants/permissions';
 import { createInvitation } from '@/services/invitationService';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
@@ -39,10 +41,23 @@ const inviteSchema = z.object({
 type InviteFormValues = z.infer<typeof inviteSchema>;
 
 export default function InviteEmployeeScreen() {
+  const { profile: currentProfile, isLoading: profileLoading } = useCurrentProfile();
   const { locations } = useLocations();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (currentProfile && !can(currentProfile.role, 'inviteEmployee')) {
+      router.replace('/employees');
+    }
+  }, [currentProfile]);
+
+  const availableRoles = currentProfile
+    ? ROLE_OPTIONS.filter(
+        (opt) => ROLE_HIERARCHY[opt.value] < ROLE_HIERARCHY[currentProfile.role],
+      )
+    : [];
 
   const {
     control,
@@ -76,6 +91,14 @@ export default function InviteEmployeeScreen() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (profileLoading || (currentProfile && !can(currentProfile.role, 'inviteEmployee'))) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
 
   return (
@@ -129,7 +152,7 @@ export default function InviteEmployeeScreen() {
             name="role"
             render={({ field: { onChange, value } }) => (
               <View style={styles.roleGrid}>
-                {ROLE_OPTIONS.map((option) => (
+                {availableRoles.map((option) => (
                   <Pressable
                     key={option.value}
                     style={[
@@ -216,6 +239,12 @@ export default function InviteEmployeeScreen() {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#fff',
   },
   scroll: {

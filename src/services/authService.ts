@@ -1,4 +1,4 @@
-import { Session, User } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase';
 import { EmployeeRole } from '@/types/employee';
@@ -59,21 +59,13 @@ export async function signOut(): Promise<void> {
   if (error) throw error;
 }
 
-export async function getSession(): Promise<Session | null> {
-  const { data, error } = await supabase.auth.getSession();
-  if (error) throw error;
-  return data.session;
-}
-
-export async function getCurrentUser(): Promise<User | null> {
-  const { data, error } = await supabase.auth.getUser();
-  if (error) throw error;
-  return data.user;
-}
-
 export async function getCurrentProfile(): Promise<CurrentProfile | null> {
   const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) return null;
+  if (userError) {
+    console.error('getCurrentProfile: failed to get auth user', userError);
+    return null;
+  }
+  if (!user) return null;
 
   const { data, error } = await supabase
     .from('profiles')
@@ -86,7 +78,11 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
     .eq('id', user.id)
     .single();
 
-  if (error || !data) return null;
+  if (error) {
+    console.error('getCurrentProfile: failed to load profile row', error);
+    return null;
+  }
+  if (!data) return null;
 
   const employeeLocations = data.employee_locations as EmployeeLocationRow[];
   const primaryLocation = resolvePrimaryLocation(employeeLocations);

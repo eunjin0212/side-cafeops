@@ -64,13 +64,21 @@ function mapEmployee(row: {
   };
 }
 
+function wrapError(context: string, error: { code?: string; message: string }): Error {
+  console.error(`employeeService: ${context}`, error);
+  if (error.code === '42501') {
+    return new Error('You do not have permission to perform this action.');
+  }
+  return new Error(`Failed to ${context}. Please try again.`);
+}
+
 export async function getEmployees(): Promise<Employee[]> {
   const { data, error } = await supabase
     .from('profiles')
     .select(EMPLOYEE_QUERY)
     .order('created_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) throw wrapError('load employees', error);
   return data.map(mapEmployee);
 }
 
@@ -81,7 +89,7 @@ export async function getEmployee(id: string): Promise<Employee> {
     .eq('id', id)
     .single();
 
-  if (error) throw error;
+  if (error) throw wrapError('load employee', error);
   return mapEmployee(data);
 }
 
@@ -94,7 +102,7 @@ export async function updateEmployeeLocations(
     .select('location_id, is_primary')
     .eq('profile_id', profileId);
 
-  if (fetchError) throw fetchError;
+  if (fetchError) throw wrapError('update employee locations', fetchError);
 
   const currentRows = current ?? [];
   const currentIds = currentRows.map((r) => r.location_id as string);
@@ -107,7 +115,7 @@ export async function updateEmployeeLocations(
       .delete()
       .eq('profile_id', profileId)
       .in('location_id', toRemove);
-    if (error) throw error;
+    if (error) throw wrapError('update employee locations', error);
   }
 
   if (toAdd.length > 0) {
@@ -118,7 +126,7 @@ export async function updateEmployeeLocations(
         location_id: locationId,
         is_primary: false,
       })));
-    if (error) throw error;
+    if (error) throw wrapError('update employee locations', error);
   }
 
   if (locationIds.length > 0) {
@@ -131,7 +139,7 @@ export async function updateEmployeeLocations(
         .update({ is_primary: true })
         .eq('profile_id', profileId)
         .eq('location_id', locationIds[0]);
-      if (error) throw error;
+      if (error) throw wrapError('update employee locations', error);
     }
   }
 }
@@ -150,6 +158,6 @@ export async function updateEmployee(
     })
     .eq('id', id);
 
-  if (error) throw error;
+  if (error) throw wrapError('update employee', error);
   return getEmployee(id);
 }
