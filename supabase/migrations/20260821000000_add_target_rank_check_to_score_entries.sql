@@ -11,8 +11,11 @@
 -- rank (employee_role is a Postgres enum declared in hierarchy
 -- order: trainee < staff < supervisor < location_manager <
 -- general_manager < owner, so >= compares correctly). Same-rank
--- scoring stays allowed, matching the location edit permission
--- pattern already in place.
+-- scoring is intentionally allowed (an actor may score a peer at
+-- their own rank), matching canScoreEmployee in permissions.ts --
+-- this was not modeled after any employee_locations rule; at the
+-- time this migration was written, employee_locations had no
+-- rank check at all (added later, see 20260828000003).
 --
 -- The target-profile subquery is intentionally a plain (non
 -- SECURITY DEFINER) lookup: it relies on the profiles SELECT

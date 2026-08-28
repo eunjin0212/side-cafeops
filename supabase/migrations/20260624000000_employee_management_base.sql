@@ -133,5 +133,5 @@ CREATE POLICY "authenticated users can select employee_locations"
 -- DROP TABLE IF EXISTS employee_locations, locations, profiles CASCADE;
 -- DROP TYPE IF EXISTS employee_role;
 -- DROP FUNCTION IF EXISTS set_updated_at();
--- DROP FUNCTION IF EXISTS handle_new_user();
 -- DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+-- DROP FUNCTION IF EXISTS handle_new_user();
