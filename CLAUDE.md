@@ -260,7 +260,8 @@ Before creating a migration:
 * Email is read-only and cannot be edited from the employee profile form.
 * Users must never edit their own role.
 * Users must never edit their own location assignment.
-* Role and location changes require a user with a strictly higher role rank than the target employee.
+* Role changes require a strictly higher role rank than the target employee (minimum actor rank: supervisor).
+* Location changes require a strictly higher role rank than the target employee, OR the same rank if the actor is location_manager or above (minimum actor rank: supervisor; same-rank peer edits require location_manager+).
 * Trainees and staff cannot edit another employee's role or location.
 * Role hierarchy rules must use the centralized permission helpers in `src/constants/permissions.ts`.
 * Do not hardcode role permission arrays inside screens.
@@ -272,7 +273,8 @@ Before creating a migration:
 * Location Managers manage employees at their assigned locations.
 * General Managers manage employees across all locations.
 * Owners have full access.
-* Role and location edits require a strictly higher role rank than the target employee.
+* Role edits require a strictly higher role rank than the target employee (minimum actor rank: supervisor).
+* Location edits require a strictly higher role rank than the target employee, OR the same rank if the actor is location_manager or above.
 * Users cannot edit their own role or location assignment.
 * Client-side permission checks are UX only; RLS is the source of truth for authorization.
 
@@ -361,23 +363,20 @@ Do not execute git push.
 
 ## Security Work Before Production
 
-### RLS: Add target-rank enforcement on profiles UPDATE
+### RLS: target-rank enforcement on profiles UPDATE — done (2026-08-28)
 
-**Current State:** The current `profiles` UPDATE policy checks the actor's role but does not fully enforce target-rank restrictions at the database level.
+A full RLS audit found and fixed several live authorization gaps, including this one. `profiles` UPDATE now enforces at the database level:
 
-The frontend currently uses centralized permission helpers to prevent invalid role and location edits. These checks are UX safeguards only and must not be treated as authorization.
+* Users cannot edit their own role, is_active, or email (self-edits of these columns are rejected regardless of caller).
+* Role changes require actor rank strictly higher than the target's role (minimum actor rank: supervisor).
+* `employee_locations` INSERT/UPDATE/DELETE require actor rank strictly higher than the target, or equal rank if the actor is location_manager+ (matching `canEditEmployeeLocation`); self-assignment is always rejected regardless of rank.
+* `score_entries` INSERT requires points to match an active `score_categories` row and blocks self-scoring.
+* `invitations` INSERT/UPDATE require the invited role to be strictly below the actor's own rank.
+* `score_entries` and `employee_locations` SELECT are scoped to self / same-location coworkers / general_manager+owner, matching `profiles`.
 
-**Required Before Production:**
+Client-side permission checks (`src/constants/permissions.ts`) and RLS now represent the same business rules. See `supabase/migrations/20260828*.sql` for the fixes and their rationale.
 
-RLS must enforce that:
-
-* Users cannot edit their own role.
-* Users cannot edit their own location assignment.
-* Role and location changes require a strictly higher role rank than the target employee.
-* Same-rank and upward edits are rejected by the database.
-* Client-side permission checks and RLS rules must represent the same business rules.
-
-This must be completed during the RLS / permission audit before production.
+**Still open (lower severity, not yet fixed):** SECURITY DEFINER functions have no explicit `search_path`; `get_leaderboard()` is not marked `STABLE`; the "who can see whom" location logic is implemented separately in the `profiles` policy and in `get_leaderboard()` rather than sharing one helper.
 
 ---
 
@@ -397,17 +396,17 @@ This must be completed during the RLS / permission audit before production.
 * Score Entry Notes
 * Score Entry Photos
 * Basic Leaderboard
+* Score RLS / Permission Audit
 
 ### Current Priority
 
 1. My Score Dashboard
 2. Update Leaderboard display to use `BASE_SCORE = 200`
 3. Verify Score Cycle lifecycle
-4. Audit Score RLS and permissions
-5. Notification Center
-6. Complete Invitation signup flow
-7. Recipe Management
-8. Role-based QA
-9. Production readiness
+4. Notification Center
+5. Complete Invitation signup flow
+6. Recipe Management
+7. Role-based QA
+8. Production readiness
 
 Do not build advanced features before the MVP is working.
