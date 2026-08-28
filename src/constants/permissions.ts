@@ -28,7 +28,7 @@ export function canEditEmployeeRole(
   targetUserRole: EmployeeRole,
 ): boolean {
   return (
-    ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY['location_manager'] &&
+    ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY['supervisor'] &&
     ROLE_HIERARCHY[currentUserRole] > ROLE_HIERARCHY[targetUserRole]
   );
 }
@@ -37,10 +37,13 @@ export function canEditEmployeeLocation(
   currentUserRole: EmployeeRole,
   targetUserRole: EmployeeRole,
 ): boolean {
-  return (
-    ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY['location_manager'] &&
-    ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY[targetUserRole]
-  );
+  const actorRank = ROLE_HIERARCHY[currentUserRole];
+  const targetRank = ROLE_HIERARCHY[targetUserRole];
+
+  if (actorRank < ROLE_HIERARCHY['supervisor']) return false;
+  if (actorRank > targetRank) return true;
+  if (actorRank === targetRank) return actorRank >= ROLE_HIERARCHY['location_manager'];
+  return false;
 }
 
 export function canDeactivateEmployee(
