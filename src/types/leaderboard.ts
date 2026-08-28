@@ -12,6 +12,7 @@ export type LeaderboardEntry = {
 };
 
 export type CycleSummary = {
+  id: string;
   startedAt: string;
   endedAt: string;
 };

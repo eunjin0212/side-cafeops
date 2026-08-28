@@ -41,10 +41,12 @@ export function useMyScores(): MyScores {
     queryFn: getCurrentCycle,
   });
 
+  const cycleId = cycleResult.data?.id;
+
   const entriesResult = useQuery({
     queryKey: QUERY_KEYS.scoreEntries(profile?.id ?? ''),
-    queryFn: () => getMyScoreEntries(profile!.id),
-    enabled: !!profile,
+    queryFn: () => getMyScoreEntries(profile!.id, cycleId!),
+    enabled: !!profile && !!cycleId,
   });
 
   const categoryMap = useMemo(() => {

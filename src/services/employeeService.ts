@@ -4,6 +4,7 @@ import {
   EmployeeLocation,
   UpdateEmployeeInput,
 } from '@/types/employee';
+import { unwrapJoin } from '@/utils/supabaseJoin';
 
 const EMPLOYEE_QUERY = `
   id, email, full_name, phone, avatar_url, role, is_active, created_at, updated_at,
@@ -15,11 +16,6 @@ const EMPLOYEE_QUERY = `
 
 type LocationRow = { id: string; name: string } | { id: string; name: string }[] | null;
 
-function resolveLocation(loc: LocationRow): { id: string; name: string } | null {
-  if (!loc) return null;
-  return Array.isArray(loc) ? (loc[0] ?? null) : loc;
-}
-
 function mapEmployeeLocation(row: {
   id: string;
   is_primary: boolean;
@@ -27,7 +23,7 @@ function mapEmployeeLocation(row: {
   is_active: boolean;
   locations: LocationRow;
 }): EmployeeLocation {
-  const loc = resolveLocation(row.locations);
+  const loc = unwrapJoin(row.locations);
   return {
     id: row.id,
     locationId: loc?.id ?? '',
@@ -109,15 +105,9 @@ export async function updateEmployeeLocations(
   const toAdd = locationIds.filter((id) => !currentIds.includes(id));
   const toRemove = currentIds.filter((id) => !locationIds.includes(id));
 
-  if (toRemove.length > 0) {
-    const { error } = await supabase
-      .from('employee_locations')
-      .delete()
-      .eq('profile_id', profileId)
-      .in('location_id', toRemove);
-    if (error) throw wrapError('update employee locations', error);
-  }
-
+  // Insert before delete: if a network failure interrupts this sequence,
+  // the employee is left with an extra (recoverable) location rather than
+  // missing one they should still have.
   if (toAdd.length > 0) {
     const { error } = await supabase
       .from('employee_locations')
@@ -126,6 +116,15 @@ export async function updateEmployeeLocations(
         location_id: locationId,
         is_primary: false,
       })));
+    if (error) throw wrapError('update employee locations', error);
+  }
+
+  if (toRemove.length > 0) {
+    const { error } = await supabase
+      .from('employee_locations')
+      .delete()
+      .eq('profile_id', profileId)
+      .in('location_id', toRemove);
     if (error) throw wrapError('update employee locations', error);
   }
 

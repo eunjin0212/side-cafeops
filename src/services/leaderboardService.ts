@@ -38,7 +38,7 @@ export async function getLeaderboard(locationId?: string): Promise<LeaderboardEn
 export async function getCurrentCycle(): Promise<CycleSummary | null> {
   const { data, error } = await supabase
     .from('score_cycles')
-    .select('started_at, ended_at')
+    .select('id, started_at, ended_at')
     .eq('is_active', true)
     .gt('ended_at', new Date().toISOString())
     .order('started_at', { ascending: false })
@@ -46,5 +46,5 @@ export async function getCurrentCycle(): Promise<CycleSummary | null> {
     .maybeSingle();
 
   if (error || !data) return null;
-  return { startedAt: data.started_at, endedAt: data.ended_at };
+  return { id: data.id, startedAt: data.started_at, endedAt: data.ended_at };
 }

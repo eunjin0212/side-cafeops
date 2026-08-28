@@ -7,5 +7,6 @@ export const QUERY_KEYS = {
   scoreCategories: ['scoreCategories'] as const,
   scoreEntries: (profileId: string) => ['scoreEntries', profileId] as const,
   leaderboard: (locationId?: string) => ['leaderboard', locationId ?? 'all'] as const,
+  leaderboardAll: ['leaderboard'] as const,
   currentCycle: ['currentCycle'] as const,
 } as const;

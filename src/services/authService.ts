@@ -2,6 +2,7 @@ import { Session } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase';
 import { EmployeeRole } from '@/types/employee';
+import { unwrapJoin } from '@/utils/supabaseJoin';
 
 export type CurrentProfile = {
   id: string;
@@ -30,8 +31,7 @@ function resolveActiveLocations(
   return employeeLocations
     .filter((el) => el.is_active)
     .map((el) => {
-      const loc = el.locations;
-      const resolved = Array.isArray(loc) ? (loc[0] ?? null) : loc;
+      const resolved = unwrapJoin(el.locations);
       return resolved ? { id: el.location_id, name: resolved.name } : null;
     })
     .filter((loc): loc is { id: string; name: string } => loc !== null);
@@ -42,8 +42,7 @@ function resolvePrimaryLocation(
 ): { id: string; name: string } | null {
   const primary = employeeLocations.find((el) => el.is_primary && el.is_active);
   if (!primary) return null;
-  const loc = primary.locations;
-  const resolved = Array.isArray(loc) ? (loc[0] ?? null) : loc;
+  const resolved = unwrapJoin(primary.locations);
   if (!resolved) return null;
   return { id: primary.location_id, name: resolved.name };
 }

@@ -5,6 +5,7 @@ import {
   Invitation,
   InvitationStatus,
 } from '@/types/invitation';
+import { unwrapJoin } from '@/utils/supabaseJoin';
 
 type LocationResult =
   | { id: string; name: string }
@@ -27,9 +28,7 @@ type InvitationRow = {
 };
 
 function resolveLocationName(locations: LocationResult): string | null {
-  if (!locations) return null;
-  const loc = Array.isArray(locations) ? locations[0] : locations;
-  return loc?.name ?? null;
+  return unwrapJoin(locations)?.name ?? null;
 }
 
 function mapInvitation(row: InvitationRow): Invitation {

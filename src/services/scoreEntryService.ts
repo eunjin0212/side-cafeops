@@ -81,26 +81,18 @@ export async function createScoreEntry(
   return mapScoreEntry(data);
 }
 
-// Read-only fetch — does NOT call get_or_create_current_cycle.
-// Returns [] when no active cycle exists.
-export async function getMyScoreEntries(profileId: string): Promise<ScoreEntry[]> {
-  const { data: cycle, error: cycleError } = await supabase
-    .from('score_cycles')
-    .select('id')
-    .eq('is_active', true)
-    .gt('ended_at', new Date().toISOString())
-    .order('started_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (cycleError) throw new Error('Failed to load current score cycle.');
-  if (!cycle) return [];
-
+// Read-only fetch for a known cycle — the caller resolves the current
+// cycle (leaderboardService.getCurrentCycle) so both the cycle summary
+// and these entries always agree on which cycle is "current."
+export async function getMyScoreEntries(
+  profileId: string,
+  cycleId: string,
+): Promise<ScoreEntry[]> {
   const { data, error } = await supabase
     .from('score_entries')
     .select(ENTRY_QUERY)
     .eq('profile_id', profileId)
-    .eq('cycle_id', cycle.id)
+    .eq('cycle_id', cycleId)
     .order('created_at', { ascending: false });
 
   if (error) throw new Error('Failed to load score entries.');
