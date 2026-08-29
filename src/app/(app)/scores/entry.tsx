@@ -14,6 +14,7 @@ import { useEmployees } from '@/hooks/useEmployees';
 import { usePermissionGate } from '@/hooks/usePermissionGate';
 import { useScoreCategories } from '@/hooks/useScoreCategories';
 import { useCreateScoreEntry } from '@/hooks/useCreateScoreEntry';
+import { useLocations } from '@/hooks/useLocations';
 import { canScoreEmployee } from '@/constants/permissions';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { ROLE_LABELS } from '@/constants/roles';
@@ -25,7 +26,13 @@ import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyText } from '@/components/molecules/EmptyText';
 import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { ErrorText } from '@/components/molecules/ErrorText';
+import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { formatPoints, pointsColor } from '@/utils/points';
+
+// GM/owner may score employees across every location, mirroring the
+// leaderboard/home screens; everyone else may only switch between the
+// locations they themselves work at.
+const LOCATIONS_UNRESTRICTED_ROLES = ['general_manager', 'owner'];
 
 export default function ScoreEntryScreen() {
   const { profileId: preselectedId } = useLocalSearchParams<{ profileId?: string }>();
@@ -34,7 +41,7 @@ export default function ScoreEntryScreen() {
     preselectedId ? [preselectedId] : [],
   );
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
-  const [locationSelections, setLocationSelections] = useState<Record<string, string>>({});
+  const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(undefined);
   const [notes, setNotes] = useState('');
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [employeeSearch, setEmployeeSearch] = useState('');
@@ -47,14 +54,26 @@ export default function ScoreEntryScreen() {
   );
   const { employees, isLoading: employeesLoading } = useEmployees();
   const { categories, isLoading: categoriesLoading } = useScoreCategories();
+  const { locations: allLocations } = useLocations();
   const { mutate, isPending, error, reset: resetMutation } = useCreateScoreEntry();
 
-  const scorableEmployees = employees.filter(
-    (e) =>
-      e.isActive &&
-      e.id !== currentProfile?.id &&
-      (currentProfile === null || canScoreEmployee(currentProfile.role, e.role)),
-  );
+  const canBrowseAllLocations =
+    currentProfile !== null && LOCATIONS_UNRESTRICTED_ROLES.includes(currentProfile.role);
+  const scoringLocations = canBrowseAllLocations
+    ? allLocations
+    : (currentProfile?.locations ?? []);
+  const effectiveLocationId =
+    selectedLocationId ?? (scoringLocations.length === 1 ? scoringLocations[0].id : undefined);
+
+  const scorableEmployees = effectiveLocationId
+    ? employees.filter(
+        (e) =>
+          e.isActive &&
+          e.id !== currentProfile?.id &&
+          (currentProfile === null || canScoreEmployee(currentProfile.role, e.role)) &&
+          e.locations.some((l) => l.isActive && l.locationId === effectiveLocationId),
+      )
+    : [];
 
   const searchResults =
     employeeSearch.trim().length > 0
@@ -76,28 +95,10 @@ export default function ScoreEntryScreen() {
   const totalPoints = selectedCategories.reduce((sum, c) => sum + c.points, 0);
   const totalEntries = selectedProfileIds.length * selectedCategoryIds.length;
 
-  function activeLocationsFor(emp: Employee) {
-    return emp.locations.filter((l) => l.isActive);
-  }
-
-  function resolveLocationId(emp: Employee): string | null {
-    const active = activeLocationsFor(emp);
-    if (active.length === 0) return null;
-    if (active.length === 1) return active[0].locationId;
-    return locationSelections[emp.id] ?? null;
-  }
-
-  const employeesNeedingLocationChoice = selectedEmployees.filter(
-    (emp) => activeLocationsFor(emp).length > 1,
-  );
-  const allLocationsResolved = employeesNeedingLocationChoice.every(
-    (emp) => locationSelections[emp.id] !== undefined,
-  );
-
   const canSubmit =
+    effectiveLocationId !== undefined &&
     selectedProfileIds.length > 0 &&
     selectedCategoryIds.length > 0 &&
-    allLocationsResolved &&
     !isPending &&
     !submitted;
 
@@ -105,12 +106,6 @@ export default function ScoreEntryScreen() {
     setSelectedProfileIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
-    setLocationSelections((prev) => {
-      if (!(id in prev)) return prev;
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
   }
 
   function toggleCategory(id: string): void {
@@ -129,12 +124,12 @@ export default function ScoreEntryScreen() {
   }
 
   function handleSubmit(): void {
-    if (!canSubmit) return;
+    if (!canSubmit || !effectiveLocationId) return;
     mutate(
       {
         profiles: selectedEmployees.map((emp) => ({
           profileId: emp.id,
-          locationId: resolveLocationId(emp),
+          locationId: effectiveLocationId,
         })),
         selections: selectedCategories.map((c) => ({
           categoryId: c.id,
@@ -145,10 +140,11 @@ export default function ScoreEntryScreen() {
       },
       {
         onSuccess: () => {
+          // Location stays selected — a supervisor typically scores
+          // several employees at the same location in one sitting.
           setSelectedProfileIds([]);
           setEmployeeSearch('');
           setSelectedCategoryIds([]);
-          setLocationSelections({});
           setExpandedSections(new Set());
           setNotes('');
           setImageUris([]);
@@ -172,10 +168,10 @@ export default function ScoreEntryScreen() {
 
   const submitLabel = submitted
     ? `✓ ${totalEntries} ${totalEntries === 1 ? 'entry' : 'entries'} submitted`
-    : selectedProfileIds.length === 0
-      ? 'Select employees'
-      : !allLocationsResolved
-        ? 'Select location'
+    : !effectiveLocationId
+      ? 'Select a location'
+      : selectedProfileIds.length === 0
+        ? 'Select employees'
         : selectedCategoryIds.length === 0
           ? 'Select categories'
           : `Submit — ${totalEntries} ${totalEntries === 1 ? 'entry' : 'entries'}`;
@@ -197,6 +193,22 @@ export default function ScoreEntryScreen() {
       >
         <ScreenHeader backHref="/" title="Score Entry" />
 
+        {/* ── Location ── */}
+        <View style={styles.block}>
+          <SectionLabel>Location</SectionLabel>
+          {scoringLocations.length === 0 ? (
+            <EmptyText>No location assigned.</EmptyText>
+          ) : scoringLocations.length === 1 ? (
+            <Text style={styles.singleLocationText}>{scoringLocations[0].name}</Text>
+          ) : (
+            <LocationTabs
+              locations={scoringLocations}
+              selectedId={effectiveLocationId}
+              onSelect={setSelectedLocationId}
+            />
+          )}
+        </View>
+
         {/* ── Employees ── */}
         <View style={styles.block}>
           <View style={styles.blockHeader}>
@@ -210,133 +222,91 @@ export default function ScoreEntryScreen() {
             )}
           </View>
 
-          {/* Chips for selected employees */}
-          {selectedEmployees.length > 0 && (
-            <View style={styles.chipsRow}>
-              {selectedEmployees.map((emp) => (
-                <Pressable
-                  key={emp.id}
-                  style={styles.chip}
-                  onPress={() => toggleEmployee(emp.id)}
-                >
-                  <Text style={styles.chipText} numberOfLines={1}>
-                    {emp.fullName ?? emp.email}
-                  </Text>
-                  <Text style={styles.chipRemove}>×</Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
-
-          {/* Search input */}
-          <TextInput
-            style={styles.searchInput}
-            placeholder={
-              selectedProfileIds.length > 0
-                ? 'Search to add more...'
-                : 'Search employees...'
-            }
-            placeholderTextColor="#9CA3AF"
-            value={employeeSearch}
-            onChangeText={setEmployeeSearch}
-            autoCapitalize="none"
-            autoCorrect={false}
-            clearButtonMode="while-editing"
-          />
-
-          {/* Search results */}
-          {employeesLoading ? (
-            <ActivityIndicator style={styles.loader} />
-          ) : employeeSearch.trim().length > 0 ? (
-            searchResults.length === 0 ? (
-              <EmptyText style={styles.emptyText}>No employees found.</EmptyText>
-            ) : (
-              <ListCard dividerInset={14}>
-                {searchResults.map((emp) => {
-                  const isSelected = selectedProfileIds.includes(emp.id);
-                  return (
+          {!effectiveLocationId ? (
+            <Text style={styles.hintText}>Select a location to find employees</Text>
+          ) : (
+            <>
+              {/* Chips for selected employees */}
+              {selectedEmployees.length > 0 && (
+                <View style={styles.chipsRow}>
+                  {selectedEmployees.map((emp) => (
                     <Pressable
                       key={emp.id}
-                      style={[styles.employeeRow, isSelected && styles.rowSelected]}
+                      style={styles.chip}
                       onPress={() => toggleEmployee(emp.id)}
                     >
-                      <View
-                        style={[
-                          styles.checkbox,
-                          styles.checkboxCircle,
-                          isSelected && styles.checkboxActive,
-                        ]}
-                      >
-                        {isSelected && <Text style={styles.checkmark}>✓</Text>}
-                      </View>
-                      <View style={styles.rowContent}>
-                        <Text
-                          style={[styles.rowLabel, isSelected && styles.rowLabelSelected]}
-                          numberOfLines={1}
-                        >
-                          {emp.fullName ?? emp.email}
-                        </Text>
-                        <Text style={styles.rowSublabel} numberOfLines={1}>
-                          {employeeLabel(emp)}
-                        </Text>
-                      </View>
+                      <Text style={styles.chipText} numberOfLines={1}>
+                        {emp.fullName ?? emp.email}
+                      </Text>
+                      <Text style={styles.chipRemove}>×</Text>
                     </Pressable>
-                  );
-                })}
-              </ListCard>
-            )
-          ) : selectedProfileIds.length === 0 ? (
-            <Text style={styles.hintText}>Search to add employees</Text>
-          ) : null}
-        </View>
+                  ))}
+                </View>
+              )}
 
-        {/* ── Location ── */}
-        {employeesNeedingLocationChoice.length > 0 && (
-          <View style={styles.block}>
-            <SectionLabel>Location</SectionLabel>
-            <ListCard dividerInset={14}>
-              {employeesNeedingLocationChoice.map((emp) => {
-                const chosen = locationSelections[emp.id];
-                return (
-                  <View key={emp.id} style={styles.locationEmployeeRow}>
-                    <Text style={styles.locationEmployeeName} numberOfLines={1}>
-                      {emp.fullName ?? emp.email}
-                    </Text>
-                    <View style={styles.locationChipsRow}>
-                      {activeLocationsFor(emp).map((loc) => {
-                        const isSelected = chosen === loc.locationId;
-                        return (
-                          <Pressable
-                            key={loc.id}
+              {/* Search input */}
+              <TextInput
+                style={styles.searchInput}
+                placeholder={
+                  selectedProfileIds.length > 0
+                    ? 'Search to add more...'
+                    : 'Search employees...'
+                }
+                placeholderTextColor="#9CA3AF"
+                value={employeeSearch}
+                onChangeText={setEmployeeSearch}
+                autoCapitalize="none"
+                autoCorrect={false}
+                clearButtonMode="while-editing"
+              />
+
+              {/* Search results */}
+              {employeesLoading ? (
+                <ActivityIndicator style={styles.loader} />
+              ) : employeeSearch.trim().length > 0 ? (
+                searchResults.length === 0 ? (
+                  <EmptyText style={styles.emptyText}>No employees found.</EmptyText>
+                ) : (
+                  <ListCard dividerInset={14}>
+                    {searchResults.map((emp) => {
+                      const isSelected = selectedProfileIds.includes(emp.id);
+                      return (
+                        <Pressable
+                          key={emp.id}
+                          style={[styles.employeeRow, isSelected && styles.rowSelected]}
+                          onPress={() => toggleEmployee(emp.id)}
+                        >
+                          <View
                             style={[
-                              styles.locationChip,
-                              isSelected && styles.locationChipActive,
+                              styles.checkbox,
+                              styles.checkboxCircle,
+                              isSelected && styles.checkboxActive,
                             ]}
-                            onPress={() =>
-                              setLocationSelections((prev) => ({
-                                ...prev,
-                                [emp.id]: loc.locationId,
-                              }))
-                            }
                           >
+                            {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                          </View>
+                          <View style={styles.rowContent}>
                             <Text
-                              style={[
-                                styles.locationChipText,
-                                isSelected && styles.locationChipTextActive,
-                              ]}
+                              style={[styles.rowLabel, isSelected && styles.rowLabelSelected]}
+                              numberOfLines={1}
                             >
-                              {loc.locationName}
+                              {emp.fullName ?? emp.email}
                             </Text>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-                  </View>
-                );
-              })}
-            </ListCard>
-          </View>
-        )}
+                            <Text style={styles.rowSublabel} numberOfLines={1}>
+                              {employeeLabel(emp)}
+                            </Text>
+                          </View>
+                        </Pressable>
+                      );
+                    })}
+                  </ListCard>
+                )
+              ) : selectedProfileIds.length === 0 ? (
+                <Text style={styles.hintText}>Search to add employees</Text>
+              ) : null}
+            </>
+          )}
+        </View>
 
         {/* ── Categories ── */}
         {selectedProfileIds.length > 0 && (
@@ -637,39 +607,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9CA3AF',
   },
-  locationEmployeeRow: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  locationEmployeeName: {
-    fontSize: 14,
+  singleLocationText: {
+    fontSize: 15,
     fontWeight: '600',
     color: '#111827',
-  },
-  locationChipsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  locationChip: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  locationChipActive: {
-    backgroundColor: '#111827',
-    borderColor: '#111827',
-  },
-  locationChipText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#374151',
-  },
-  locationChipTextActive: {
-    color: '#fff',
   },
   categoryRow: {
     flexDirection: 'row',
