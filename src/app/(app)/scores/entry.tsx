@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -8,13 +8,13 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
 import { useEmployees } from '@/hooks/useEmployees';
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { usePermissionGate } from '@/hooks/usePermissionGate';
 import { useScoreCategories } from '@/hooks/useScoreCategories';
 import { useCreateScoreEntry } from '@/hooks/useCreateScoreEntry';
-import { can, canScoreEmployee } from '@/constants/permissions';
+import { canScoreEmployee } from '@/constants/permissions';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { ROLE_LABELS } from '@/constants/roles';
 import { ScoreSection } from '@/types/score';
@@ -41,16 +41,13 @@ export default function ScoreEntryScreen() {
   const [expandedSections, setExpandedSections] = useState<Set<ScoreSection>>(new Set());
   const [submitted, setSubmitted] = useState(false);
 
-  const { profile: currentProfile } = useCurrentProfile();
+  const { profile: currentProfile, isLoading: profileLoading } = usePermissionGate(
+    'manageScores',
+    '/',
+  );
   const { employees, isLoading: employeesLoading } = useEmployees();
   const { categories, isLoading: categoriesLoading } = useScoreCategories();
   const { mutate, isPending, error, reset: resetMutation } = useCreateScoreEntry();
-
-  useEffect(() => {
-    if (currentProfile && !can(currentProfile.role, 'manageScores')) {
-      router.replace('/');
-    }
-  }, [currentProfile]);
 
   const scorableEmployees = employees.filter(
     (e) =>
@@ -182,6 +179,14 @@ export default function ScoreEntryScreen() {
         : selectedCategoryIds.length === 0
           ? 'Select categories'
           : `Submit — ${totalEntries} ${totalEntries === 1 ? 'entry' : 'entries'}`;
+
+  if (profileLoading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.root}>
@@ -508,6 +513,12 @@ export default function ScoreEntryScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#F9FAFB',
   },
   scroll: {

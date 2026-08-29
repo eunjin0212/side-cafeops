@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -16,9 +16,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { usePermissionGate } from '@/hooks/usePermissionGate';
 import { createScoreCategory } from '@/services/scoreCategoryService';
-import { can } from '@/constants/permissions';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
@@ -37,16 +36,13 @@ const newCategorySchema = z.object({
 type NewCategoryValues = z.infer<typeof newCategorySchema>;
 
 export default function NewScoreCategoryScreen() {
-  const { profile, isLoading: profileLoading } = useCurrentProfile();
+  const { isLoading: profileLoading } = usePermissionGate(
+    'manageScoreCategories',
+    '/scores/categories',
+  );
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (profile && !can(profile.role, 'manageScoreCategories')) {
-      router.replace('/scores/categories');
-    }
-  }, [profile]);
 
   const {
     control,
@@ -81,7 +77,7 @@ export default function NewScoreCategoryScreen() {
     }
   }
 
-  if (profileLoading || (profile && !can(profile.role, 'manageScoreCategories'))) {
+  if (profileLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />

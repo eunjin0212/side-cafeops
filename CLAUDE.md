@@ -260,8 +260,8 @@ Before creating a migration:
 * Email is read-only and cannot be edited from the employee profile form.
 * Users must never edit their own role.
 * Users must never edit their own location assignment.
-* Role changes require a strictly higher role rank than the target employee (minimum actor rank: supervisor).
-* Location changes require a strictly higher role rank than the target employee, OR the same rank if the actor is location_manager or above (minimum actor rank: supervisor; same-rank peer edits require location_manager+).
+* Role changes require actor rank strictly higher than the target employee (minimum actor rank: supervisor).
+* Location changes require actor rank location_manager or above, AND actor rank >= the target employee's rank (minimum actor rank: location_manager — supervisors can edit an employee's role but never their location).
 * Trainees and staff cannot edit another employee's role or location.
 * Role hierarchy rules must use the centralized permission helpers in `src/constants/permissions.ts`.
 * Do not hardcode role permission arrays inside screens.
@@ -273,8 +273,8 @@ Before creating a migration:
 * Location Managers manage employees at their assigned locations.
 * General Managers manage employees across all locations.
 * Owners have full access.
-* Role edits require a strictly higher role rank than the target employee (minimum actor rank: supervisor).
-* Location edits require a strictly higher role rank than the target employee, OR the same rank if the actor is location_manager or above.
+* Role edits require actor rank strictly higher than the target employee (minimum actor rank: supervisor).
+* Location edits require actor rank location_manager or above, AND actor rank >= the target employee's rank.
 * Users cannot edit their own role or location assignment.
 * Client-side permission checks are UX only; RLS is the source of truth for authorization.
 

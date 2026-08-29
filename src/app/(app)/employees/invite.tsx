@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -17,10 +17,10 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { usePermissionGate } from '@/hooks/usePermissionGate';
 import { useLocations } from '@/hooks/useLocations';
 import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
-import { can, ROLE_HIERARCHY } from '@/constants/permissions';
+import { ROLE_HIERARCHY } from '@/constants/permissions';
 import { createInvitation } from '@/services/invitationService';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
@@ -41,17 +41,14 @@ const inviteSchema = z.object({
 type InviteFormValues = z.infer<typeof inviteSchema>;
 
 export default function InviteEmployeeScreen() {
-  const { profile: currentProfile, isLoading: profileLoading } = useCurrentProfile();
+  const { profile: currentProfile, isLoading: profileLoading } = usePermissionGate(
+    'inviteEmployee',
+    '/employees',
+  );
   const { locations } = useLocations();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (currentProfile && !can(currentProfile.role, 'inviteEmployee')) {
-      router.replace('/employees');
-    }
-  }, [currentProfile]);
 
   const availableRoles = currentProfile
     ? ROLE_OPTIONS.filter(
@@ -93,7 +90,7 @@ export default function InviteEmployeeScreen() {
     }
   }
 
-  if (profileLoading || (currentProfile && !can(currentProfile.role, 'inviteEmployee'))) {
+  if (profileLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />

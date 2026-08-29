@@ -107,12 +107,12 @@ describe('canEditOwnProfile()', () => {
 
 describe('canEditEmployeeLocation()', () => {
   describe('supervisor', () => {
-    it('can edit trainee location', () => {
-      expect(canEditEmployeeLocation('supervisor', 'trainee')).toBe(true);
+    it('cannot edit trainee location', () => {
+      expect(canEditEmployeeLocation('supervisor', 'trainee')).toBe(false);
     });
 
-    it('can edit staff location', () => {
-      expect(canEditEmployeeLocation('supervisor', 'staff')).toBe(true);
+    it('cannot edit staff location', () => {
+      expect(canEditEmployeeLocation('supervisor', 'staff')).toBe(false);
     });
 
     it('cannot edit supervisor location', () => {

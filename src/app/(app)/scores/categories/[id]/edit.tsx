@@ -17,10 +17,9 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { usePermissionGate } from '@/hooks/usePermissionGate';
 import { useScoreCategories } from '@/hooks/useScoreCategories';
 import { updateScoreCategory } from '@/services/scoreCategoryService';
-import { can } from '@/constants/permissions';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
@@ -41,17 +40,14 @@ type EditCategoryValues = z.infer<typeof editCategorySchema>;
 
 export default function EditScoreCategoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { profile, isLoading: profileLoading } = useCurrentProfile();
+  const { isLoading: profileLoading } = usePermissionGate(
+    'manageScoreCategories',
+    '/scores/categories',
+  );
   const { categories, isLoading } = useScoreCategories();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (profile && !can(profile.role, 'manageScoreCategories')) {
-      router.replace('/scores/categories');
-    }
-  }, [profile]);
 
   const category = categories.find((c) => c.id === id) ?? null;
 
@@ -102,12 +98,7 @@ export default function EditScoreCategoryScreen() {
     }
   }
 
-  if (
-    profileLoading ||
-    isLoading ||
-    !category ||
-    (profile && !can(profile.role, 'manageScoreCategories'))
-  ) {
+  if (profileLoading || isLoading || !category) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
