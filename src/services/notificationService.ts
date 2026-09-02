@@ -82,3 +82,25 @@ export async function registerPushToken(
     console.error('notificationService: register push token', error);
   }
 }
+
+export async function registerWebPushSubscription(
+  profileId: string,
+  subscription: { endpoint: string; p256dh: string; auth: string },
+): Promise<void> {
+  const { error } = await supabase
+    .from('web_push_subscriptions')
+    .upsert(
+      {
+        profile_id: profileId,
+        endpoint: subscription.endpoint,
+        p256dh: subscription.p256dh,
+        auth: subscription.auth,
+      },
+      { onConflict: 'endpoint' },
+    );
+
+  if (error) {
+    // Non-fatal: push registration failing shouldn't block app usage.
+    console.error('notificationService: register web push subscription', error);
+  }
+}

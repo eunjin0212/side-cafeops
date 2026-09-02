@@ -25,6 +25,7 @@ import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
 import { EnrichedEntry, useMyScores } from '@/hooks/useMyScores';
 import { useNotifications } from '@/hooks/useNotifications';
+import { usePushNotificationRegistration } from '@/hooks/usePushNotificationRegistration';
 import { signOut } from '@/services/authService';
 import { formatPoints, pointsColor } from '@/utils/points';
 
@@ -173,6 +174,7 @@ export default function HomeScreen() {
   const { profile } = useCurrentProfile();
   const { entries, isLoading, error } = useMyScores();
   const { unreadCount } = useNotifications();
+  const { webPushPermission, requestWebPushPermission } = usePushNotificationRegistration();
   const locations = profile?.locations ?? [];
   const myLocationRanks = useMyLocationRanks(profile?.id, locations);
 
@@ -224,6 +226,13 @@ export default function HomeScreen() {
             )}
           </Pressable>
         </View>
+
+        {webPushPermission === 'default' && (
+          <Pressable style={styles.notifyBanner} onPress={requestWebPushPermission}>
+            <Text style={styles.notifyBannerText}>🔔 Turn on notifications</Text>
+            <Text style={styles.notifyBannerChevron}>›</Text>
+          </Pressable>
+        )}
 
         <View style={styles.profileRow}>
           {profile?.avatarUrl ? (
@@ -398,6 +407,24 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
     color: '#fff',
+  },
+  notifyBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#EFF6FF',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  notifyBannerText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1D4ED8',
+  },
+  notifyBannerChevron: {
+    fontSize: 16,
+    color: '#1D4ED8',
   },
   profileRow: {
     flexDirection: 'row',
