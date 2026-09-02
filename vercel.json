@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npx expo export --platform web",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "framework": null,
+  "rewrites": [
+    { "source": "/employees/:id/edit", "destination": "/employees/[id]/edit.html" },
+    { "source": "/employees/:id", "destination": "/employees/[id].html" },
+    { "source": "/scores/categories/:id/edit", "destination": "/scores/categories/[id]/edit.html" }
+  ]
+}
