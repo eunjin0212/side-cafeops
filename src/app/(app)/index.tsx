@@ -1,3 +1,5 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -8,24 +10,22 @@ import {
   Text,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
 
-import { signOut } from '@/services/authService';
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
-import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
-import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
-import { useNotifications } from '@/hooks/useNotifications';
-import { LocationTabs } from '@/components/molecules/LocationTabs';
-import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyState } from '@/components/molecules/EmptyState';
-import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { ErrorText } from '@/components/molecules/ErrorText';
+import { ListCard } from '@/components/molecules/ListCard';
+import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { PhotoViewerModal } from '@/components/molecules/PhotoViewerModal';
+import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
 import { SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { BASE_SCORE } from '@/constants/scoring';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
+import { EnrichedEntry, useMyScores } from '@/hooks/useMyScores';
+import { useNotifications } from '@/hooks/useNotifications';
+import { signOut } from '@/services/authService';
 import { formatPoints, pointsColor } from '@/utils/points';
 
 // ─── helpers ────────────────────────────────────────────────
@@ -205,150 +205,150 @@ export default function HomeScreen() {
 
   return (
     <>
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-      {/* Header */}
-      <View style={styles.titleRow}>
-        <Text style={styles.appTitle}>CafeOps</Text>
-        <Pressable
-          style={styles.bellButton}
-          onPress={() => router.navigate('/notifications')}
-          hitSlop={8}
-        >
-          <Text style={styles.bellIcon}>🔔</Text>
-          {unreadCount > 0 && (
-            <View style={styles.bellBadge}>
-              <Text style={styles.bellBadgeText}>
-                {unreadCount > 9 ? '9+' : unreadCount}
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        {/* Header */}
+        <View style={styles.titleRow}>
+          <Text style={styles.appTitle}>CafeOps</Text>
+          <Pressable
+            style={styles.bellButton}
+            onPress={() => router.navigate('/notifications')}
+            hitSlop={8}
+          >
+            <Text style={styles.bellIcon}>🔔</Text>
+            {unreadCount > 0 && (
+              <View style={styles.bellBadge}>
+                <Text style={styles.bellBadgeText}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </Pressable>
+        </View>
+
+        <View style={styles.profileRow}>
+          {profile?.avatarUrl ? (
+            <Image source={{ uri: profile.avatarUrl }} style={styles.avatar} />
+          ) : (
+            <View style={styles.avatarFallback}>
+              <Text style={styles.avatarInitial}>
+                {profile ? getInitial(profile.fullName, profile.email) : '?'}
               </Text>
             </View>
           )}
-        </Pressable>
-      </View>
-
-      <View style={styles.profileRow}>
-        {profile?.avatarUrl ? (
-          <Image source={{ uri: profile.avatarUrl }} style={styles.avatar} />
-        ) : (
-          <View style={styles.avatarFallback}>
-            <Text style={styles.avatarInitial}>
-              {profile ? getInitial(profile.fullName, profile.email) : '?'}
+          <View style={styles.profileText}>
+            <Text style={styles.greeting}>
+              {profile ? `Hi, ${profile.fullName ?? profile.email}! 👋` : 'Loading...'}
             </Text>
-          </View>
-        )}
-        <View style={styles.profileText}>
-          <Text style={styles.greeting}>
-            {profile ? `Hi, ${profile.fullName ?? profile.email}! 👋` : 'Loading...'}
-          </Text>
-          {profile && (
-            <Text style={styles.subGreeting}>
-              {locationsLabel
-                ? `${locationsLabel} · ${ROLE_LABELS[profile.role]}`
-                : ROLE_LABELS[profile.role]}
-            </Text>
-          )}
-        </View>
-      </View>
-
-      {/* Score dashboard — not shown for owner */}
-      {showScoreDashboard && (
-        <>
-          {locations.length > 1 && (
-            <LocationTabs
-              locations={locations}
-              selectedId={effectiveLocationId}
-              onSelect={setSelectedLocationId}
-            />
-          )}
-
-          {(() => {
-            const loc = locations.find((l) => l.id === effectiveLocationId);
-            const lr = myLocationRanks.find((r) => r.locationId === effectiveLocationId);
-            if (!loc || !lr || lr.isLoading) return null;
-            return (
-              <LocationScoreCard
-                locationName={loc.name}
-                score={BASE_SCORE + locationNetPoints(entries, loc.id)}
-                rank={lr.rank}
-                total={lr.total}
-                onPress={() => router.navigate('/scores/my')}
-              />
-            );
-          })()}
-
-          {/* Recent Activity */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <SectionLabel>Recent Activity</SectionLabel>
-              <Pressable onPress={() => router.navigate('/scores/my')}>
-                <Text style={styles.viewAllText}>View All</Text>
-              </Pressable>
-            </View>
-
-            {isLoading ? (
-              <ActivityIndicator style={styles.loader} />
-            ) : error ? (
-              <ErrorText style={styles.errorText}>{error}</ErrorText>
-            ) : recentEntries.length === 0 ? (
-              <EmptyState>No recent activity.</EmptyState>
-            ) : (
-              <ListCard dividerInset={14}>
-                {recentEntries.map((entry) => (
-                  <ActivityRow key={entry.id} entry={entry} onViewPhotos={setViewingPhotos} />
-                ))}
-              </ListCard>
+            {profile && (
+              <Text style={styles.subGreeting}>
+                {locationsLabel
+                  ? `${locationsLabel} · ${ROLE_LABELS[profile.role]}`
+                  : ROLE_LABELS[profile.role]}
+              </Text>
             )}
           </View>
-        </>
-      )}
-
-      {/* Existing navigation actions */}
-      <View style={styles.section}>
-        <SectionLabel>Manage</SectionLabel>
-        <View style={styles.navGrid}>
-          <NavCard
-            label="Employees"
-            icon="👥"
-            onPress={() => router.navigate('/employees')}
-          />
-          <NavCard
-            label="Leaderboard"
-            icon="🏆"
-            onPress={() => router.navigate('/scores/leaderboard')}
-          />
-          {profile !== null && can(profile.role, 'manageScores') && (
-            <NavCard
-              label="Score Entry"
-              icon="✏️"
-              onPress={() => router.navigate('/scores/entry')}
-            />
-          )}
-          {profile !== null && can(profile.role, 'manageScoreCategories') && (
-            <NavCard
-              label="Score Categories"
-              icon="🗂️"
-              onPress={() => router.navigate('/scores/categories')}
-            />
-          )}
         </View>
-      </View>
 
-      {signOutError !== null && (
-        <ErrorText style={styles.errorText}>{signOutError}</ErrorText>
-      )}
+        {/* Score dashboard — not shown for owner */}
+        {showScoreDashboard && (
+          <>
+            {locations.length > 1 && (
+              <LocationTabs
+                locations={locations}
+                selectedId={effectiveLocationId}
+                onSelect={setSelectedLocationId}
+              />
+            )}
 
-      <Pressable
-        style={[styles.signOutButton, isSigningOut && styles.signOutButtonDisabled]}
-        onPress={handleSignOut}
-        disabled={isSigningOut}
-      >
-        {isSigningOut ? (
-          <ActivityIndicator color="#EF4444" />
-        ) : (
-          <Text style={styles.signOutText}>Sign Out</Text>
+            {(() => {
+              const loc = locations.find((l) => l.id === effectiveLocationId);
+              const lr = myLocationRanks.find((r) => r.locationId === effectiveLocationId);
+              if (!loc || !lr || lr.isLoading) return null;
+              return (
+                <LocationScoreCard
+                  locationName={loc.name}
+                  score={BASE_SCORE + locationNetPoints(entries, loc.id)}
+                  rank={lr.rank}
+                  total={lr.total}
+                  onPress={() => router.navigate('/scores/my')}
+                />
+              );
+            })()}
+
+            {/* Recent Activity */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <SectionLabel>Recent Activity</SectionLabel>
+                <Pressable onPress={() => router.navigate('/scores/my')}>
+                  <Text style={styles.viewAllText}>View All</Text>
+                </Pressable>
+              </View>
+
+              {isLoading ? (
+                <ActivityIndicator style={styles.loader} />
+              ) : error ? (
+                <ErrorText style={styles.errorText}>{error}</ErrorText>
+              ) : recentEntries.length === 0 ? (
+                <EmptyState>No recent activity.</EmptyState>
+              ) : (
+                <ListCard dividerInset={14}>
+                  {recentEntries.map((entry) => (
+                    <ActivityRow key={entry.id} entry={entry} onViewPhotos={setViewingPhotos} />
+                  ))}
+                </ListCard>
+              )}
+            </View>
+          </>
         )}
-      </Pressable>
-    </ScrollView>
-    <PhotoViewerModal imageUrls={viewingPhotos} onClose={() => setViewingPhotos(null)} />
+
+        {/* Existing navigation actions */}
+        <View style={styles.section}>
+          <SectionLabel>Manage</SectionLabel>
+          <View style={styles.navGrid}>
+            <NavCard
+              label="Employees"
+              icon="👥"
+              onPress={() => router.navigate('/employees')}
+            />
+            <NavCard
+              label="Leaderboard"
+              icon="🏆"
+              onPress={() => router.navigate('/scores/leaderboard')}
+            />
+            {profile !== null && can(profile.role, 'manageScores') && (
+              <NavCard
+                label="Score Entry"
+                icon="✏️"
+                onPress={() => router.navigate('/scores/entry')}
+              />
+            )}
+            {profile !== null && can(profile.role, 'manageScoreCategories') && (
+              <NavCard
+                label="Score Categories"
+                icon="🗂️"
+                onPress={() => router.navigate('/scores/categories')}
+              />
+            )}
+          </View>
+        </View>
+
+        {signOutError !== null && (
+          <ErrorText style={styles.errorText}>{signOutError}</ErrorText>
+        )}
+
+        <Pressable
+          style={[styles.signOutButton, isSigningOut && styles.signOutButtonDisabled]}
+          onPress={handleSignOut}
+          disabled={isSigningOut}
+        >
+          {isSigningOut ? (
+            <ActivityIndicator color="#EF4444" />
+          ) : (
+            <Text style={styles.signOutText}>Sign Out</Text>
+          )}
+        </Pressable>
+      </ScrollView>
+      <PhotoViewerModal imageUrls={viewingPhotos} onClose={() => setViewingPhotos(null)} />
     </>
   );
 }
@@ -577,6 +577,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#EF4444',
+    backgroundColor: '#fff',
     alignItems: 'center',
   },
   signOutButtonDisabled: {

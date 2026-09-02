@@ -1,4 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router } from 'expo-router';
 import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -9,13 +12,10 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-import { signIn } from '@/services/authService';
 import { ErrorText } from '@/components/molecules/ErrorText';
+import { signIn } from '@/services/authService';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required'),
@@ -57,7 +57,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.inner} role="form">
-        <Text style={styles.title}>CafeOps</Text>
+        <Text style={styles.title}>Twilight Cafe & Bar</Text>
 
         <Controller
           control={control}
