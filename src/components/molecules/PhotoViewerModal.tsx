@@ -15,7 +15,11 @@ export function PhotoViewerModal({ imageUrls, onClose }: PhotoViewerModalProps) 
       onRequestClose={onClose}
     >
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.scrollArea}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
           {(imageUrls ?? []).map((uri) => (
             <Image key={uri} source={{ uri }} style={styles.image} contentFit="contain" />
           ))}
@@ -35,6 +39,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  scrollArea: {
+    width: '100%',
+  },
   content: {
     gap: 12,
     paddingVertical: 60,
@@ -43,8 +50,10 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
+    maxWidth: 480,
     aspectRatio: 1,
     borderRadius: 8,
+    alignSelf: 'center',
   },
   closeButton: {
     position: 'absolute',
