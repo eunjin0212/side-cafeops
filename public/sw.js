@@ -17,10 +17,10 @@ self.addEventListener('push', (event) => {
   try {
     payload = event.data.json();
   } catch {
-    payload = { title: 'CafeOps', body: event.data.text() };
+    payload = { title: 'Twilight Cafe', body: event.data.text() };
   }
 
-  const title = payload.title || 'CafeOps';
+  const title = payload.title || 'Twilight Cafe';
   const options = {
     body: payload.body || '',
     icon: '/icons/icon-1024.png',

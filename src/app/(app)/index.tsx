@@ -211,7 +211,7 @@ export default function HomeScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.titleRow}>
-          <Text style={styles.appTitle}>CafeOps</Text>
+          <Text style={styles.appTitle}>Twilight Cafe</Text>
           <Pressable
             style={styles.bellButton}
             onPress={() => router.navigate('/notifications')}

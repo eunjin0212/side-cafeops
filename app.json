@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "side-cafeops",
-    "slug": "side-cafeops",
+    "name": "Twilight Cafe",
+    "slug": "twilightcafe",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "sidecafeops",
+    "scheme": "twilightcafe",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
@@ -28,7 +28,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow CafeOps to attach photos to score entries."
+          "photosPermission": "Allow Twilight Cafe to attach photos to score entries."
         }
       ],
       [
