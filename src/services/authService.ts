@@ -61,7 +61,11 @@ export async function signOut(): Promise<void> {
 export async function getCurrentProfile(): Promise<CurrentProfile | null> {
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError) {
-    console.error('getCurrentProfile: failed to get auth user', userError);
+    // AuthSessionMissingError is the expected signal for "not signed in"
+    // (login screen, app boot before a session restores) -- not a bug.
+    if (userError.name !== 'AuthSessionMissingError') {
+      console.error('getCurrentProfile: failed to get auth user', userError);
+    }
     return null;
   }
   if (!user) return null;
