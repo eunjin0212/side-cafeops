@@ -9,4 +9,5 @@ export const QUERY_KEYS = {
   leaderboard: (locationId?: string) => ['leaderboard', locationId ?? 'all'] as const,
   leaderboardAll: ['leaderboard'] as const,
   currentCycle: ['currentCycle'] as const,
+  notifications: (profileId: string) => ['notifications', profileId] as const,
 } as const;

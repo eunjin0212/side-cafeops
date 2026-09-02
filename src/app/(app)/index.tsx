@@ -15,6 +15,7 @@ import { signOut } from '@/services/authService';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
 import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
+import { useNotifications } from '@/hooks/useNotifications';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyState } from '@/components/molecules/EmptyState';
@@ -165,6 +166,7 @@ function LocationScoreCard({ locationName, score, rank, total, onPress }: Locati
 export default function HomeScreen() {
   const { profile } = useCurrentProfile();
   const { entries, isLoading, error } = useMyScores();
+  const { unreadCount } = useNotifications();
   const locations = profile?.locations ?? [];
   const myLocationRanks = useMyLocationRanks(profile?.id, locations);
 
@@ -197,7 +199,23 @@ export default function HomeScreen() {
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
       {/* Header */}
-      <Text style={styles.appTitle}>CafeOps</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.appTitle}>CafeOps</Text>
+        <Pressable
+          style={styles.bellButton}
+          onPress={() => router.navigate('/notifications')}
+          hitSlop={8}
+        >
+          <Text style={styles.bellIcon}>🔔</Text>
+          {unreadCount > 0 && (
+            <View style={styles.bellBadge}>
+              <Text style={styles.bellBadgeText}>
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </Text>
+            </View>
+          )}
+        </Pressable>
+      </View>
 
       <View style={styles.profileRow}>
         {profile?.avatarUrl ? (
@@ -338,10 +356,38 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
     gap: 20,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   appTitle: {
     fontSize: 28,
     fontWeight: '700',
     color: '#111827',
+  },
+  bellButton: {
+    padding: 4,
+  },
+  bellIcon: {
+    fontSize: 22,
+  },
+  bellBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#DC2626',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  bellBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#fff',
   },
   profileRow: {
     flexDirection: 'row',
