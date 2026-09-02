@@ -3,6 +3,8 @@ import {
   canEditEmployeeRole,
   canEditEmployeeLocation,
   canEditOwnProfile,
+  canScoreEmployee,
+  canDeactivateEmployee,
 } from '@/constants/permissions';
 
 // ─── can() ───────────────────────────────────────────────────────────────────
@@ -31,6 +33,57 @@ describe('can()', () => {
 
     it('trainee cannot invite employees', () => {
       expect(can('trainee', 'inviteEmployee')).toBe(false);
+    });
+  });
+
+  describe('viewInvitations', () => {
+    it('location_manager and above can view invitations', () => {
+      expect(can('location_manager', 'viewInvitations')).toBe(true);
+      expect(can('general_manager', 'viewInvitations')).toBe(true);
+      expect(can('owner', 'viewInvitations')).toBe(true);
+    });
+
+    it('supervisor and below cannot view invitations', () => {
+      expect(can('supervisor', 'viewInvitations')).toBe(false);
+      expect(can('staff', 'viewInvitations')).toBe(false);
+      expect(can('trainee', 'viewInvitations')).toBe(false);
+    });
+  });
+
+  describe('manageScores', () => {
+    it('supervisor and above can manage scores', () => {
+      expect(can('supervisor', 'manageScores')).toBe(true);
+      expect(can('location_manager', 'manageScores')).toBe(true);
+      expect(can('general_manager', 'manageScores')).toBe(true);
+      expect(can('owner', 'manageScores')).toBe(true);
+    });
+
+    it('staff and trainee cannot manage scores', () => {
+      expect(can('staff', 'manageScores')).toBe(false);
+      expect(can('trainee', 'manageScores')).toBe(false);
+    });
+  });
+
+  describe('manageScoreCategories', () => {
+    it('general_manager and owner can manage score categories', () => {
+      expect(can('general_manager', 'manageScoreCategories')).toBe(true);
+      expect(can('owner', 'manageScoreCategories')).toBe(true);
+    });
+
+    it('location_manager and below cannot manage score categories', () => {
+      expect(can('location_manager', 'manageScoreCategories')).toBe(false);
+      expect(can('supervisor', 'manageScoreCategories')).toBe(false);
+    });
+  });
+
+  describe('manageLocations', () => {
+    it('general_manager and owner can manage locations', () => {
+      expect(can('general_manager', 'manageLocations')).toBe(true);
+      expect(can('owner', 'manageLocations')).toBe(true);
+    });
+
+    it('location_manager and below cannot manage locations', () => {
+      expect(can('location_manager', 'manageLocations')).toBe(false);
     });
   });
 });
@@ -164,5 +217,50 @@ describe('canEditEmployeeLocation()', () => {
     it('can edit another owner location', () => {
       expect(canEditEmployeeLocation('owner', 'owner')).toBe(true);
     });
+  });
+});
+
+// ─── canScoreEmployee() ────────────────────────────────────────────────────
+
+describe('canScoreEmployee()', () => {
+  it('can score a strictly lower-ranked employee', () => {
+    expect(canScoreEmployee('supervisor', 'trainee')).toBe(true);
+    expect(canScoreEmployee('supervisor', 'staff')).toBe(true);
+  });
+
+  it('can score a peer at the same rank', () => {
+    expect(canScoreEmployee('supervisor', 'supervisor')).toBe(true);
+  });
+
+  it('cannot score someone who outranks them', () => {
+    expect(canScoreEmployee('supervisor', 'location_manager')).toBe(false);
+    expect(canScoreEmployee('staff', 'supervisor')).toBe(false);
+  });
+
+  it('owner can score anyone up to their own rank', () => {
+    expect(canScoreEmployee('owner', 'general_manager')).toBe(true);
+    expect(canScoreEmployee('owner', 'owner')).toBe(true);
+  });
+});
+
+// ─── canDeactivateEmployee() ────────────────────────────────────────────────
+
+describe('canDeactivateEmployee()', () => {
+  it('location_manager and above can deactivate a strictly lower-ranked employee', () => {
+    expect(canDeactivateEmployee('location_manager', 'supervisor')).toBe(true);
+    expect(canDeactivateEmployee('general_manager', 'location_manager')).toBe(true);
+  });
+
+  it('supervisor and below cannot deactivate anyone', () => {
+    expect(canDeactivateEmployee('supervisor', 'trainee')).toBe(false);
+    expect(canDeactivateEmployee('staff', 'trainee')).toBe(false);
+  });
+
+  it('cannot deactivate a peer at the same rank', () => {
+    expect(canDeactivateEmployee('location_manager', 'location_manager')).toBe(false);
+  });
+
+  it('cannot deactivate someone who outranks them', () => {
+    expect(canDeactivateEmployee('location_manager', 'general_manager')).toBe(false);
   });
 });

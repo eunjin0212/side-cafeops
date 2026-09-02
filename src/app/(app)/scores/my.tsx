@@ -19,6 +19,7 @@ import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { ErrorText } from '@/components/molecules/ErrorText';
 import { PhotoViewerModal } from '@/components/molecules/PhotoViewerModal';
 import { formatPoints, pointsColor } from '@/utils/points';
+import { computeLocationStats } from '@/utils/scoreStats';
 
 // ─── helpers ────────────────────────────────────────────────
 
@@ -30,24 +31,6 @@ function formatDate(iso: string): string {
 function formatCycleDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-type LocationStats = {
-  entries: EnrichedEntry[];
-  positive: number;
-  negative: number;
-  score: number;
-};
-
-function computeLocationStats(
-  entries: EnrichedEntry[],
-  locationId: string,
-  base: number,
-): LocationStats {
-  const locEntries = entries.filter((e) => e.locationId === locationId);
-  const positive = locEntries.reduce((sum, e) => (e.points > 0 ? sum + e.points : sum), 0);
-  const negative = locEntries.reduce((sum, e) => (e.points < 0 ? sum + e.points : sum), 0);
-  return { entries: locEntries, positive, negative, score: base + positive + negative };
 }
 
 // ─── sub-components ─────────────────────────────────────────
