@@ -62,8 +62,27 @@ export default function ScoreEntryScreen() {
   const scoringLocations = canBrowseAllLocations
     ? allLocations
     : (currentProfile?.locations ?? []);
+
+  // Arriving from an employee's detail page ("Score" button) preselects
+  // that employee — also auto-pick whichever of their locations the actor
+  // can score at (their primary one, if that's in scope), so a
+  // multi-location actor doesn't have to re-derive it manually.
+  const preselectedEmployee = preselectedId
+    ? employees.find((e) => e.id === preselectedId)
+    : undefined;
+  const scoringLocationIds = new Set(scoringLocations.map((l) => l.id));
+  const eligiblePreselectedLocations = preselectedEmployee
+    ? preselectedEmployee.locations.filter(
+        (l) => l.isActive && scoringLocationIds.has(l.locationId),
+      )
+    : [];
+  const preselectedEmployeeLocationId = (
+    eligiblePreselectedLocations.find((l) => l.isPrimary) ?? eligiblePreselectedLocations[0]
+  )?.locationId;
+
   const effectiveLocationId =
-    selectedLocationId ?? (scoringLocations.length === 1 ? scoringLocations[0].id : undefined);
+    selectedLocationId ??
+    (scoringLocations.length === 1 ? scoringLocations[0].id : preselectedEmployeeLocationId);
 
   const scorableEmployees = effectiveLocationId
     ? employees.filter(
