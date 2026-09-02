@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -16,6 +17,7 @@ import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { ErrorText } from '@/components/molecules/ErrorText';
+import { PhotoViewerModal } from '@/components/molecules/PhotoViewerModal';
 import { formatPoints, pointsColor } from '@/utils/points';
 
 // ─── helpers ────────────────────────────────────────────────
@@ -70,9 +72,10 @@ function StatCol({ label, value, color = '#111827', large = false }: StatColProp
 
 interface EntryRowProps {
   entry: EnrichedEntry;
+  onViewPhotos: (imageUrls: string[]) => void;
 }
 
-function EntryRow({ entry }: EntryRowProps) {
+function EntryRow({ entry, onViewPhotos }: EntryRowProps) {
   return (
     <View style={styles.entryRow}>
       <View style={styles.entryLeft}>
@@ -81,9 +84,13 @@ function EntryRow({ entry }: EntryRowProps) {
             {entry.categoryName}
           </Text>
           {entry.imageUrls.length > 0 && (
-            <View style={styles.photoBadge}>
+            <Pressable
+              style={styles.photoBadge}
+              onPress={() => onViewPhotos(entry.imageUrls)}
+              hitSlop={4}
+            >
               <Text style={styles.photoBadgeText}>Photo</Text>
-            </View>
+            </Pressable>
           )}
         </View>
         {entry.notes !== null && (
@@ -106,6 +113,7 @@ export default function MyScoreScreen() {
   const { profile } = useCurrentProfile();
   const { cycle, entries, base, isLoading, isFetching, error, refetch } = useMyScores();
   const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(undefined);
+  const [viewingPhotos, setViewingPhotos] = useState<string[] | null>(null);
 
   const cycleLabel =
     cycle
@@ -119,73 +127,76 @@ export default function MyScoreScreen() {
     : null;
 
   return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.scrollContent}
-      refreshControl={
-        <RefreshControl
-          refreshing={isFetching && !isLoading}
-          onRefresh={refetch}
-        />
-      }
-    >
-      <ScreenHeader backHref="/" title="My Scores" subtitle={cycleLabel ?? undefined} />
+    <>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching && !isLoading}
+            onRefresh={refetch}
+          />
+        }
+      >
+        <ScreenHeader backHref="/" title="My Scores" subtitle={cycleLabel ?? undefined} />
 
-      {locations.length > 1 && (
-        <LocationTabs
-          locations={locations}
-          selectedId={effectiveLocationId}
-          onSelect={setSelectedLocationId}
-        />
-      )}
+        {locations.length > 1 && (
+          <LocationTabs
+            locations={locations}
+            selectedId={effectiveLocationId}
+            onSelect={setSelectedLocationId}
+          />
+        )}
 
-      {isLoading ? (
-        <ActivityIndicator style={styles.loader} size="large" />
-      ) : error ? (
-        <ErrorText style={styles.errorText}>{error}</ErrorText>
-      ) : !stats ? (
-        <EmptyState style={styles.emptyCard}>No location assigned yet.</EmptyState>
-      ) : (
-        <>
-          <View style={styles.statsCard}>
-            <StatCol label="Base" value={String(base)} />
-            <View style={styles.statDivider} />
-            <StatCol
-              label="Positive"
-              value={stats.positive > 0 ? `+${stats.positive}` : '0'}
-              color={stats.positive > 0 ? '#16A34A' : '#6B7280'}
-            />
-            <View style={styles.statDivider} />
-            <StatCol
-              label="Negative"
-              value={stats.negative < 0 ? String(stats.negative) : '0'}
-              color={stats.negative < 0 ? '#DC2626' : '#6B7280'}
-            />
-            <View style={styles.statDivider} />
-            <StatCol
-              label="Score"
-              value={String(stats.score)}
-              color={stats.score >= base ? '#111827' : '#DC2626'}
-              large
-            />
-          </View>
+        {isLoading ? (
+          <ActivityIndicator style={styles.loader} size="large" />
+        ) : error ? (
+          <ErrorText style={styles.errorText}>{error}</ErrorText>
+        ) : !stats ? (
+          <EmptyState style={styles.emptyCard}>No location assigned yet.</EmptyState>
+        ) : (
+          <>
+            <View style={styles.statsCard}>
+              <StatCol label="Base" value={String(base)} />
+              <View style={styles.statDivider} />
+              <StatCol
+                label="Positive"
+                value={stats.positive > 0 ? `+${stats.positive}` : '0'}
+                color={stats.positive > 0 ? '#16A34A' : '#6B7280'}
+              />
+              <View style={styles.statDivider} />
+              <StatCol
+                label="Negative"
+                value={stats.negative < 0 ? String(stats.negative) : '0'}
+                color={stats.negative < 0 ? '#DC2626' : '#6B7280'}
+              />
+              <View style={styles.statDivider} />
+              <StatCol
+                label="Score"
+                value={String(stats.score)}
+                color={stats.score >= base ? '#111827' : '#DC2626'}
+                large
+              />
+            </View>
 
-          <View style={styles.section}>
-            <SectionLabel>Entries</SectionLabel>
+            <View style={styles.section}>
+              <SectionLabel>Entries</SectionLabel>
 
-            {stats.entries.length === 0 ? (
-              <EmptyState style={styles.emptyCard}>No entries this cycle.</EmptyState>
-            ) : (
-              <ListCard>
-                {stats.entries.map((entry) => (
-                  <EntryRow key={entry.id} entry={entry} />
-                ))}
-              </ListCard>
-            )}
-          </View>
-        </>
-      )}
-    </ScrollView>
+              {stats.entries.length === 0 ? (
+                <EmptyState style={styles.emptyCard}>No entries this cycle.</EmptyState>
+              ) : (
+                <ListCard>
+                  {stats.entries.map((entry) => (
+                    <EntryRow key={entry.id} entry={entry} onViewPhotos={setViewingPhotos} />
+                  ))}
+                </ListCard>
+              )}
+            </View>
+          </>
+        )}
+      </ScrollView>
+      <PhotoViewerModal imageUrls={viewingPhotos} onClose={() => setViewingPhotos(null)} />
+    </>
   );
 }
 

@@ -21,6 +21,7 @@ import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { ErrorText } from '@/components/molecules/ErrorText';
+import { PhotoViewerModal } from '@/components/molecules/PhotoViewerModal';
 import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
 import { SCORE_SECTION_LABELS } from '@/constants/scoreSections';
@@ -81,9 +82,10 @@ function locationNetPoints(entries: EnrichedEntry[], locationId: string): number
 
 interface ActivityRowProps {
   entry: EnrichedEntry;
+  onViewPhotos: (imageUrls: string[]) => void;
 }
 
-function ActivityRow({ entry }: ActivityRowProps) {
+function ActivityRow({ entry, onViewPhotos }: ActivityRowProps) {
   return (
     <View style={styles.activityRow}>
       <View style={[styles.pointsBadge, { backgroundColor: pointsBg(entry.points) }]}>
@@ -104,7 +106,11 @@ function ActivityRow({ entry }: ActivityRowProps) {
       </View>
 
       <View style={styles.activityIcons}>
-        {entry.imageUrls.length > 0 && <Text style={styles.activityIcon}>📷</Text>}
+        {entry.imageUrls.length > 0 && (
+          <Pressable onPress={() => onViewPhotos(entry.imageUrls)} hitSlop={4}>
+            <Text style={styles.activityIcon}>📷</Text>
+          </Pressable>
+        )}
         {entry.notes !== null && <Text style={styles.activityIcon}>📝</Text>}
       </View>
     </View>
@@ -171,6 +177,7 @@ export default function HomeScreen() {
   const myLocationRanks = useMyLocationRanks(profile?.id, locations);
 
   const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(undefined);
+  const [viewingPhotos, setViewingPhotos] = useState<string[] | null>(null);
 
   const queryClient = useQueryClient();
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -197,6 +204,7 @@ export default function HomeScreen() {
     .slice(0, 3);
 
   return (
+    <>
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
       {/* Header */}
       <View style={styles.titleRow}>
@@ -285,7 +293,7 @@ export default function HomeScreen() {
             ) : (
               <ListCard dividerInset={14}>
                 {recentEntries.map((entry) => (
-                  <ActivityRow key={entry.id} entry={entry} />
+                  <ActivityRow key={entry.id} entry={entry} onViewPhotos={setViewingPhotos} />
                 ))}
               </ListCard>
             )}
@@ -340,6 +348,8 @@ export default function HomeScreen() {
         )}
       </Pressable>
     </ScrollView>
+    <PhotoViewerModal imageUrls={viewingPhotos} onClose={() => setViewingPhotos(null)} />
+    </>
   );
 }
 
