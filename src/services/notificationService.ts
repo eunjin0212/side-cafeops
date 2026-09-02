@@ -100,7 +100,7 @@ export async function registerWebPushSubscription(
     );
 
   if (error) {
-    // Non-fatal: push registration failing shouldn't block app usage.
     console.error('notificationService: register web push subscription', error);
+    throw new Error('Failed to save your notification subscription. Please try again.');
   }
 }

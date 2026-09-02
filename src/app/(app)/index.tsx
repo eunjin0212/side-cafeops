@@ -174,7 +174,8 @@ export default function HomeScreen() {
   const { profile } = useCurrentProfile();
   const { entries, isLoading, error } = useMyScores();
   const { unreadCount } = useNotifications();
-  const { webPushPermission, requestWebPushPermission } = usePushNotificationRegistration();
+  const { webPushPermission, requestWebPushPermission, subscribeError } =
+    usePushNotificationRegistration();
   const locations = profile?.locations ?? [];
   const myLocationRanks = useMyLocationRanks(profile?.id, locations);
 
@@ -232,6 +233,9 @@ export default function HomeScreen() {
             <Text style={styles.notifyBannerText}>🔔 Turn on notifications</Text>
             <Text style={styles.notifyBannerChevron}>›</Text>
           </Pressable>
+        )}
+        {subscribeError !== null && (
+          <ErrorText style={styles.notifyError}>{subscribeError}</ErrorText>
         )}
 
         <View style={styles.profileRow}>
@@ -425,6 +429,9 @@ const styles = StyleSheet.create({
   notifyBannerChevron: {
     fontSize: 16,
     color: '#1D4ED8',
+  },
+  notifyError: {
+    marginTop: 6,
   },
   profileRow: {
     flexDirection: 'row',

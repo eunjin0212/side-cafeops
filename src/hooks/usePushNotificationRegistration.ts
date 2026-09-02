@@ -30,8 +30,10 @@ function getWebPushSupport(): boolean {
 async function subscribeWebPush(profileId: string): Promise<void> {
   const vapidPublicKey = process.env.EXPO_PUBLIC_VAPID_PUBLIC_KEY;
   if (!vapidPublicKey) {
-    console.warn('usePushNotificationRegistration: EXPO_PUBLIC_VAPID_PUBLIC_KEY not set.');
-    return;
+    // Misconfigured deployment (missing env var) — throw so the caller can
+    // tell the user, instead of silently doing nothing after they granted
+    // permission.
+    throw new Error('Push notifications are not configured for this deployment.');
   }
 
   const registration = await navigator.serviceWorker.ready;
@@ -44,7 +46,9 @@ async function subscribeWebPush(profileId: string): Promise<void> {
     }));
 
   const json = subscription.toJSON();
-  if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) return;
+  if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
+    throw new Error('Could not create a push subscription.');
+  }
 
   await registerWebPushSubscription(profileId, {
     endpoint: json.endpoint,
@@ -94,11 +98,13 @@ async function registerNativePush(profileId: string): Promise<void> {
 export function usePushNotificationRegistration(): {
   webPushPermission: WebPushPermission;
   requestWebPushPermission: () => Promise<void>;
+  subscribeError: string | null;
 } {
   const { profile } = useCurrentProfile();
   const [webPushPermission, setWebPushPermission] = useState<WebPushPermission>(() =>
     getWebPushSupport() ? Notification.permission : 'unsupported',
   );
+  const [subscribeError, setSubscribeError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile || Platform.OS === 'web') return;
@@ -109,6 +115,7 @@ export function usePushNotificationRegistration(): {
 
   async function requestWebPushPermission(): Promise<void> {
     if (!profile || !getWebPushSupport()) return;
+    setSubscribeError(null);
     try {
       const permission = await Notification.requestPermission();
       setWebPushPermission(permission);
@@ -117,8 +124,9 @@ export function usePushNotificationRegistration(): {
       }
     } catch (err) {
       console.error('usePushNotificationRegistration: web push request failed', err);
+      setSubscribeError('Could not turn on notifications. Please try again.');
     }
   }
 
-  return { webPushPermission, requestWebPushPermission };
+  return { webPushPermission, requestWebPushPermission, subscribeError };
 }
