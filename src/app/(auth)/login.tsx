@@ -133,6 +133,14 @@ export default function LoginScreen() {
             <Text style={styles.buttonText}>Sign In</Text>
           )}
         </Pressable>
+
+        <Pressable
+          style={styles.installLink}
+          onPress={() => router.push('/install')}
+          hitSlop={8}
+        >
+          <Text style={styles.installLinkText}>How to install this app on your phone →</Text>
+        </Pressable>
       </View>
     </KeyboardAvoidingView>
   );
@@ -204,5 +212,14 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  installLink: {
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  installLinkText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6B7280',
   },
 });
