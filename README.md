@@ -12,6 +12,13 @@ Built with React Native (Expo) and Supabase.
 
 [Notion](https://app.notion.com/p/fedev-genie/Twilight-CafeOps-383cbf6924e68039b918ecf483dff162?source=copy_link)
 
+## Live
+
+[URL](https://side-cafeops.vercel.app/)
+
+example ID general.manager.cafeops@example.com
+password 1234
+
 ⸻
 
 ### ✨ Features
