@@ -18,7 +18,6 @@ Built with React Native (Expo) and Supabase.
 
 #### 👥 Employee Management
 
-* Employee onboarding
 * Location assignment
 * Role-based permissions
 * Staff, Supervisor, Manager, and Owner roles
@@ -30,19 +29,11 @@ Built with React Native (Expo) and Supabase.
 * Ranking leaderboard
 * Transparent performance records
 
-#### 📖 Recipe Management
-
-* Centralized recipe library
-* Recipe updates and version history
-* Image support
-* Instant update notifications
-
 #### 🔔 Notifications
 
 * Score update notifications
-* Recipe update notifications
 * In-app notification center
-* Push notifications (planned)
+* Push notifications
 
 ⸻
 
@@ -79,19 +70,13 @@ Built with React Native (Expo) and Supabase.
 * Location Management
 * Performance Scoring
 * 14-Day Ranking System
-* Notifications
-* Recipe Management
+* Push Notifications
 
 ⸻
 
 ### 🚀 Future Plans
 
-* Push Notifications
-* Advanced Analytics
-* Attendance Tracking
-* Shift Management
-* Payroll Integration
-* AI Performance Insights
+* Invitation via email
 
 ⸻
 
