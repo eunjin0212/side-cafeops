@@ -1,0 +1,41 @@
+name: Keep Supabase awake
+
+# Supabase pauses free projects after a period of inactivity.
+# This sends a tiny read request twice a week so the database stays active.
+
+on:
+  schedule:
+    # Mondays and Thursdays at 13:00 UTC (9:00 AM Toronto during EDT)
+    - cron: "0 13 * * 1,4"
+  workflow_dispatch: # lets you run it manually from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          PING_TABLE: ${{ vars.SUPABASE_PING_TABLE }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ] || [ -z "$PING_TABLE" ]; then
+            echo "Missing SUPABASE_URL, SUPABASE_ANON_KEY, or SUPABASE_PING_TABLE."
+            exit 1
+          fi
+
+          status=$(curl -s -o response.txt -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/$PING_TABLE?select=*&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+
+          echo "HTTP status: $status"
+
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "Ping failed. Response:"
+            cat response.txt
+            exit 1
+          fi
+
+          echo "Supabase is awake."
