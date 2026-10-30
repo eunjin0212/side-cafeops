@@ -376,7 +376,9 @@ A full RLS audit found and fixed several live authorization gaps, including this
 
 Client-side permission checks (`src/constants/permissions.ts`) and RLS now represent the same business rules. See `supabase/migrations/20260828*.sql` for the fixes and their rationale.
 
-**Still open (lower severity, not yet fixed):** SECURITY DEFINER functions have no explicit `search_path`; `get_leaderboard()` is not marked `STABLE`; the "who can see whom" location logic is implemented separately in the `profiles` policy and in `get_leaderboard()` rather than sharing one helper.
+**Also fixed:** all SECURITY DEFINER functions have an explicit `search_path`, and `get_leaderboard()` is marked `STABLE` (`20260828000009`); `get_leaderboard()` now reuses `is_privileged_actor()` for the general_manager/owner check (`20260828000010`).
+
+**Still open (lower severity, not yet fixed):** the "same location" visibility check is still implemented separately — the `profiles` policy uses `shares_active_location_with()`, while `get_leaderboard()` builds its own `location_ids` array from `employee_locations`.
 
 ---
 
