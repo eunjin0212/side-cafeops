@@ -13,6 +13,6 @@ export function EmptyText({ children, style }: EmptyTextProps) {
 const styles = StyleSheet.create({
   text: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: '#6B7280',
   },
 });

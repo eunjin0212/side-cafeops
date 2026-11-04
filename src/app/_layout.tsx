@@ -1,9 +1,10 @@
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { useSession } from '@/hooks/useSession';
+import { isUnhandledKeyboardActivation } from '@/utils/a11y';
 
 const queryClient = new QueryClient();
 
@@ -13,13 +14,16 @@ const queryClient = new QueryClient();
 // flags as an accessibility violation. Blurring non-form elements at the
 // start of every click — before React's onPress/navigation handlers run —
 // clears focus in time, without ever touching a real text input's focus.
+// Keyboard activation (detail === 0) keeps focus unless it's a link, so
+// toggling a checkbox with Space doesn't lose the user's place.
 function useBlurStaleFocusOnWebNavigation(): void {
   useEffect(() => {
     if (Platform.OS !== 'web') return;
 
-    function blurNonFormActiveElement(): void {
+    function blurNonFormActiveElement(event: MouseEvent): void {
       const active = document.activeElement as HTMLElement | null;
       if (!active) return;
+      if (event.detail === 0 && active.getAttribute('role') !== 'link') return;
       const tag = active.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || active.isContentEditable) {
         return;
@@ -32,12 +36,39 @@ function useBlurStaleFocusOnWebNavigation(): void {
   }, []);
 }
 
+// Fills the gaps in react-native-web's keyboard handling; see
+// isUnhandledKeyboardActivation. Listens in the capture phase because the
+// library stops propagation of the key presses it does handle.
+function useKeyboardActivation(): void {
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (event.repeat) return;
+      const target = event.target as HTMLElement;
+      if (!isUnhandledKeyboardActivation(event.key, target.getAttribute('role'))) return;
+      event.preventDefault();
+      target.click();
+    }
+
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
+  }, []);
+}
+
 function RootLayoutNav() {
   const { session, isLoading } = useSession();
   const segments = useSegments();
   const router = useRouter();
 
   useBlurStaleFocusOnWebNavigation();
+  useKeyboardActivation();
+
+  // Loading and error states render no ScreenTitle. expo-router's head manager
+  // emits an empty <title> first, so one set in +html.tsx would be ignored.
+  useEffect(() => {
+    if (Platform.OS === 'web' && !document.title) document.title = 'Twilight Cafe';
+  }, []);
 
   useEffect(() => {
     if (isLoading) return;
@@ -53,7 +84,11 @@ function RootLayoutNav() {
 
   if (isLoading) return null;
 
-  return <Slot />;
+  return (
+    <View role="main" style={{ flex: 1 }}>
+      <Slot />
+    </View>
+  );
 }
 
 export default function RootLayout() {

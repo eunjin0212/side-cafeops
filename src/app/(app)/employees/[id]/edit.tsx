@@ -32,6 +32,7 @@ import {
 } from '@/constants/permissions';
 import { UpdateEmployeeInput } from '@/types/employee';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { webOnlyProps } from '@/utils/a11y';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
 
@@ -168,7 +169,7 @@ export default function EmployeeEditScreen() {
   if (employeeLoading || !employee || !currentProfile) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator aria-label="Loading" size="large" />
       </View>
     );
   }
@@ -186,7 +187,7 @@ export default function EmployeeEditScreen() {
         <FormHeader title="Edit Employee" onDismiss={() => goBack(`/employees/${id}`)} />
 
         {submitError !== null && (
-          <View style={styles.errorBanner}>
+          <View role="alert" style={styles.errorBanner}>
             <Text style={styles.errorBannerText}>{submitError}</Text>
           </View>
         )}
@@ -209,8 +210,13 @@ export default function EmployeeEditScreen() {
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   style={[styles.input, errors.fullName ? styles.inputError : null]}
+                  aria-label="Full Name"
                   placeholder="John Doe"
-                  placeholderTextColor="#9CA3AF"
+                  {...webOnlyProps({
+                    'aria-invalid': errors.fullName !== undefined,
+                    'aria-describedby': errors.fullName ? 'edit-employee-name-error' : undefined,
+                  })}
+                  placeholderTextColor="#6B7280"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
@@ -218,7 +224,9 @@ export default function EmployeeEditScreen() {
               )}
             />
             {errors.fullName && (
-              <Text style={styles.fieldError}>{errors.fullName.message}</Text>
+              <Text role="alert" nativeID="edit-employee-name-error" style={styles.fieldError}>
+                {errors.fullName.message}
+              </Text>
             )}
           </View>
         )}
@@ -233,8 +241,9 @@ export default function EmployeeEditScreen() {
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   style={styles.input}
+                  aria-label="Phone"
                   placeholder="01012345678"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor="#6B7280"
                   keyboardType="number-pad"
                   onBlur={onBlur}
                   onChangeText={(text) => onChange(text.replace(/[^0-9]/g, ''))}
@@ -253,10 +262,12 @@ export default function EmployeeEditScreen() {
               control={control}
               name="role"
               render={({ field: { onChange, value } }) => (
-                <View style={styles.roleGrid}>
+                <View style={styles.roleGrid} role="radiogroup" aria-label="Role">
                   {availableRoles.map((option) => (
                     <Pressable
                       key={option.value}
+                      role="radio"
+                      aria-checked={value === option.value}
                       style={[
                         styles.rolePill,
                         value === option.value && styles.rolePillSelected,
@@ -292,12 +303,14 @@ export default function EmployeeEditScreen() {
                     <Text style={styles.inputDisabledText}>No locations available</Text>
                   </View>
                 ) : (
-                  <View style={styles.locationList}>
+                  <View style={styles.locationList} role="group" aria-label="Location">
                     {locations.map((loc) => {
                       const selected = value.includes(loc.id);
                       return (
                         <Pressable
                           key={loc.id}
+                          role="checkbox"
+                          aria-checked={selected}
                           style={[
                             styles.locationRow,
                             selected && styles.locationRowSelected,
@@ -319,7 +332,7 @@ export default function EmployeeEditScreen() {
                             {loc.name}
                           </Text>
                           {selected && (
-                            <Text style={styles.checkmark}>✓</Text>
+                            <Text style={styles.checkmark} aria-hidden>✓</Text>
                           )}
                         </Pressable>
                       );
@@ -345,9 +358,10 @@ export default function EmployeeEditScreen() {
               name="isActive"
               render={({ field: { onChange, value } }) => (
                 <Switch
+                  aria-label="Active"
                   value={value}
                   onValueChange={onChange}
-                  trackColor={{ false: '#E5E7EB', true: '#111827' }}
+                  trackColor={{ false: '#6B7280', true: '#111827' }}
                   thumbColor="#fff"
                 />
               )}
@@ -356,12 +370,14 @@ export default function EmployeeEditScreen() {
         )}
 
         <Pressable
+          role="button"
+          aria-label="Save"
           style={[styles.submitButton, (!isDirty || isSubmitting) && styles.submitButtonDisabled]}
           onPress={handleSubmit(onSubmit)}
           disabled={!isDirty || isSubmitting}
         >
           {isSubmitting ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator aria-label="Loading" color="#fff" />
           ) : (
             <Text style={styles.submitText}>Save</Text>
           )}
@@ -391,12 +407,12 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 20,
   },
-  errorBannerText: { fontSize: 13, color: '#EF4444' },
+  errorBannerText: { fontSize: 13, color: '#B91C1C' },
   field: { marginBottom: 24 },
   label: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#6B7280',
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -406,12 +422,14 @@ const styles = StyleSheet.create({
   },
   inputError: { borderColor: '#EF4444' },
   inputDisabled: { backgroundColor: '#F9FAFB', justifyContent: 'center' },
-  inputDisabledText: { fontSize: 15, color: '#9CA3AF' },
-  fieldError: { fontSize: 12, color: '#EF4444', marginTop: 4 },
+  inputDisabledText: { fontSize: 15, color: '#6B7280' },
+  fieldError: { fontSize: 12, color: '#DC2626', marginTop: 4 },
   roleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   rolePill: {
     paddingHorizontal: 14,
     paddingVertical: 10,
+    minHeight: 44,
+    justifyContent: 'center',
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -443,7 +461,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   switchLabel: { flex: 1, marginRight: 16 },
-  switchHint: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+  switchHint: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   submitButton: {
     backgroundColor: '#111827',
     borderRadius: 8,

@@ -16,6 +16,7 @@ import { ErrorText } from '@/components/molecules/ErrorText';
 import { ListCard } from '@/components/molecules/ListCard';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { PhotoViewerModal } from '@/components/molecules/PhotoViewerModal';
+import { ScreenTitle } from '@/components/molecules/ScreenTitle';
 import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
@@ -38,10 +39,10 @@ function pointsBg(pts: number): string {
 }
 
 function rankBadgeStyle(rank: number): { bg: string; text: string } {
-  if (rank === 1) return { bg: '#F59E0B', text: '#fff' };
-  if (rank === 2) return { bg: '#9CA3AF', text: '#fff' };
+  if (rank === 1) return { bg: '#F59E0B', text: '#111827' };
+  if (rank === 2) return { bg: '#6B7280', text: '#fff' };
   if (rank === 3) return { bg: '#B45309', text: '#fff' };
-  return { bg: '#F3F4F6', text: '#6B7280' };
+  return { bg: '#F3F4F6', text: '#4B5563' };
 }
 
 function formatEntryDateTime(iso: string): string {
@@ -108,11 +109,19 @@ function ActivityRow({ entry, onViewPhotos }: ActivityRowProps) {
 
       <View style={styles.activityIcons}>
         {entry.imageUrls.length > 0 && (
-          <Pressable onPress={() => onViewPhotos(entry.imageUrls)} hitSlop={4}>
-            <Text style={styles.activityIcon}>📷</Text>
+          <Pressable
+            role="button"
+            aria-label={`View photos for ${entry.categoryName}`}
+            style={styles.activityPhotoButton}
+            onPress={() => onViewPhotos(entry.imageUrls)}
+            hitSlop={4}
+          >
+            <Text style={styles.activityIcon} aria-hidden>📷</Text>
           </Pressable>
         )}
-        {entry.notes !== null && <Text style={styles.activityIcon}>📝</Text>}
+        {entry.notes !== null && (
+          <Text style={styles.activityIcon} role="img" aria-label="Has a note">📝</Text>
+        )}
       </View>
     </View>
   );
@@ -126,8 +135,8 @@ interface NavCardProps {
 
 function NavCard({ label, icon, onPress }: NavCardProps) {
   return (
-    <Pressable style={styles.navCard} onPress={onPress}>
-      <Text style={styles.navCardIcon}>{icon}</Text>
+    <Pressable role="link" style={styles.navCard} onPress={onPress}>
+      <Text style={styles.navCardIcon} aria-hidden>{icon}</Text>
       <Text style={styles.navCardText}>{label}</Text>
     </Pressable>
   );
@@ -142,16 +151,16 @@ interface LocationScoreCardProps {
 }
 
 function LocationScoreCard({ locationName, score, rank, total, onPress }: LocationScoreCardProps) {
-  const badge = rank !== null ? rankBadgeStyle(rank) : { bg: '#F3F4F6', text: '#9CA3AF' };
+  const badge = rank !== null ? rankBadgeStyle(rank) : { bg: '#F3F4F6', text: '#4B5563' };
 
   return (
-    <Pressable style={styles.locationCard} onPress={onPress}>
+    <Pressable role="link" style={styles.locationCard} onPress={onPress}>
       <View style={styles.locationCardTop}>
         <View>
           <Text style={styles.locationCardLabel}>{locationName}</Text>
           <Text style={styles.scoreValue}>{score}</Text>
         </View>
-        <View style={[styles.rankBadgeCircle, { backgroundColor: badge.bg }]}>
+        <View style={[styles.rankBadgeCircle, { backgroundColor: badge.bg }]} aria-hidden>
           <Text style={[styles.rankBadgeNumber, { color: badge.text }]}>
             {rank !== null ? `#${rank}` : '–'}
           </Text>
@@ -162,7 +171,7 @@ function LocationScoreCard({ locationName, score, rank, total, onPress }: Locati
         <Text style={styles.viewScoresText}>
           {rank !== null ? `Rank #${rank} of ${total}` : 'View My Scores'}
         </Text>
-        <Text style={styles.chevron}>›</Text>
+        <Text style={styles.chevron} aria-hidden>›</Text>
       </View>
     </Pressable>
   );
@@ -211,15 +220,21 @@ export default function HomeScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.titleRow}>
-          <Text style={styles.appTitle}>Twilight Cafe</Text>
+          <ScreenTitle style={styles.appTitle} documentTitle="Home · Twilight Cafe">
+            Twilight Cafe
+          </ScreenTitle>
           <Pressable
+            role="link"
+            aria-label={
+              unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'
+            }
             style={styles.bellButton}
             onPress={() => router.navigate('/notifications')}
             hitSlop={8}
           >
-            <Text style={styles.bellIcon}>🔔</Text>
+            <Text style={styles.bellIcon} aria-hidden>🔔</Text>
             {unreadCount > 0 && (
-              <View style={styles.bellBadge}>
+              <View style={styles.bellBadge} aria-hidden>
                 <Text style={styles.bellBadgeText}>
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </Text>
@@ -229,9 +244,14 @@ export default function HomeScreen() {
         </View>
 
         {webPushPermission === 'default' && (
-          <Pressable style={styles.notifyBanner} onPress={requestWebPushPermission}>
+          <Pressable
+            role="button"
+            aria-label="Turn on notifications"
+            style={styles.notifyBanner}
+            onPress={requestWebPushPermission}
+          >
             <Text style={styles.notifyBannerText}>🔔 Turn on notifications</Text>
-            <Text style={styles.notifyBannerChevron}>›</Text>
+            <Text style={styles.notifyBannerChevron} aria-hidden>›</Text>
           </Pressable>
         )}
         {subscribeError !== null && (
@@ -292,13 +312,18 @@ export default function HomeScreen() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <SectionLabel>Recent Activity</SectionLabel>
-                <Pressable onPress={() => router.navigate('/scores/my')}>
+                <Pressable
+                  role="link"
+                  aria-label="View all recent activity"
+                  style={styles.viewAllButton}
+                  onPress={() => router.navigate('/scores/my')}
+                >
                   <Text style={styles.viewAllText}>View All</Text>
                 </Pressable>
               </View>
 
               {isLoading ? (
-                <ActivityIndicator style={styles.loader} />
+                <ActivityIndicator aria-label="Loading" style={styles.loader} />
               ) : error ? (
                 <ErrorText style={styles.errorText}>{error}</ErrorText>
               ) : recentEntries.length === 0 ? (
@@ -350,12 +375,14 @@ export default function HomeScreen() {
         )}
 
         <Pressable
+          role="button"
+          aria-label="Sign Out"
           style={[styles.signOutButton, isSigningOut && styles.signOutButtonDisabled]}
           onPress={handleSignOut}
           disabled={isSigningOut}
         >
           {isSigningOut ? (
-            <ActivityIndicator color="#EF4444" />
+            <ActivityIndicator aria-label="Loading" color="#EF4444" />
           ) : (
             <Text style={styles.signOutText}>Sign Out</Text>
           )}
@@ -390,15 +417,18 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   bellButton: {
-    padding: 4,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bellIcon: {
     fontSize: 22,
   },
   bellBadge: {
     position: 'absolute',
-    top: -2,
-    right: -2,
+    top: 2,
+    right: 2,
     minWidth: 16,
     height: 16,
     borderRadius: 8,
@@ -420,6 +450,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    minHeight: 44,
   },
   notifyBannerText: {
     fontSize: 14,
@@ -519,7 +550,7 @@ const styles = StyleSheet.create({
   },
   chevron: {
     fontSize: 20,
-    color: '#9CA3AF',
+    color: '#6B7280',
     fontWeight: '600',
   },
   section: {
@@ -530,10 +561,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  viewAllButton: {
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+  },
   viewAllText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#3B82F6',
+    color: '#1D4ED8',
   },
   loader: {
     marginVertical: 16,
@@ -570,11 +607,17 @@ const styles = StyleSheet.create({
   },
   activityMeta: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#6B7280',
   },
   activityIcons: {
     flexDirection: 'row',
     gap: 6,
+  },
+  activityPhotoButton: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   activityIcon: {
     fontSize: 14,
@@ -618,7 +661,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   signOutText: {
-    color: '#EF4444',
+    color: '#DC2626',
     fontSize: 15,
     fontWeight: '600',
   },

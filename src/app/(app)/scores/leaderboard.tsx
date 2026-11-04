@@ -28,9 +28,9 @@ function formatCycleDate(iso: string): string {
 }
 
 function pointsColor(pts: number): string {
-  if (pts > BASE_SCORE) return '#16A34A';
-  if (pts < BASE_SCORE) return '#DC2626';
-  return '#9CA3AF';
+  if (pts > BASE_SCORE) return '#166534';
+  if (pts < BASE_SCORE) return '#B91C1C';
+  return '#6B7280';
 }
 
 function rankBadgeStyle(rank: number): {
@@ -38,10 +38,10 @@ function rankBadgeStyle(rank: number): {
   text: string;
   size: number;
 } {
-  if (rank === 1) return { bg: '#F59E0B', text: '#fff', size: 32 };
-  if (rank === 2) return { bg: '#9CA3AF', text: '#fff', size: 30 };
+  if (rank === 1) return { bg: '#F59E0B', text: '#111827', size: 32 };
+  if (rank === 2) return { bg: '#6B7280', text: '#fff', size: 30 };
   if (rank === 3) return { bg: '#B45309', text: '#fff', size: 30 };
-  return { bg: '#F3F4F6', text: '#6B7280', size: 28 };
+  return { bg: '#F3F4F6', text: '#4B5563', size: 28 };
 }
 
 interface EntryRowProps {
@@ -54,7 +54,11 @@ function EntryRow({ entry, isCurrentUser }: EntryRowProps) {
   const displayName = entry.fullName ?? entry.email;
 
   return (
-    <View style={[styles.row, isCurrentUser && styles.rowHighlight]}>
+    <View
+      role="group"
+      aria-label={`Rank ${entry.rank}: ${displayName}${isCurrentUser ? ' (you)' : ''}, score ${entry.totalPoints}`}
+      style={[styles.row, isCurrentUser && styles.rowHighlight]}
+    >
       <View
         style={[
           styles.rankBadge,
@@ -131,7 +135,7 @@ export default function LeaderboardScreen() {
 
         {/* Content */}
         {isLoading ? (
-          <ActivityIndicator style={styles.loader} size="large" />
+          <ActivityIndicator aria-label="Loading" style={styles.loader} size="large" />
         ) : error ? (
           <ErrorText style={styles.errorText}>{error}</ErrorText>
         ) : entries.length === 0 ? (
@@ -220,11 +224,11 @@ const styles = StyleSheet.create({
   youText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#3B82F6',
+    color: '#1D4ED8',
   },
   rowMeta: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#6B7280',
   },
   points: {
     fontSize: 16,

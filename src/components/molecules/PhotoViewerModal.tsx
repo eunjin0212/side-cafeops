@@ -14,18 +14,30 @@ export function PhotoViewerModal({ imageUrls, onClose }: PhotoViewerModalProps) 
       animationType="fade"
       onRequestClose={onClose}
     >
-      <Pressable style={styles.backdrop} onPress={onClose}>
+      <Pressable style={styles.backdrop} onPress={onClose} focusable={false}>
         <ScrollView
           style={styles.scrollArea}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {(imageUrls ?? []).map((uri) => (
-            <Image key={uri} source={{ uri }} style={styles.image} contentFit="contain" />
+          {(imageUrls ?? []).map((uri, index) => (
+            <Image
+              key={uri}
+              source={{ uri }}
+              alt={`Photo ${index + 1} of ${imageUrls?.length ?? 0}`}
+              style={styles.image}
+              contentFit="contain"
+            />
           ))}
         </ScrollView>
-        <Pressable style={styles.closeButton} onPress={onClose} hitSlop={10}>
-          <Text style={styles.closeText}>×</Text>
+        <Pressable
+          role="button"
+          aria-label="Close photo viewer"
+          style={styles.closeButton}
+          onPress={onClose}
+          hitSlop={10}
+        >
+          <Text style={styles.closeText} aria-hidden>×</Text>
         </Pressable>
       </Pressable>
     </Modal>
@@ -59,9 +71,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 52,
     right: 20,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',

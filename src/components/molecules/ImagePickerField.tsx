@@ -42,25 +42,36 @@ export function ImagePickerField({
     <View style={styles.row}>
       {images.map((uri, idx) => (
         <View key={`${uri}-${idx}`} style={styles.thumb}>
-          <Image source={{ uri }} style={styles.thumbImg} contentFit="cover" />
+          <Image
+            source={{ uri }}
+            alt={`Selected photo ${idx + 1}`}
+            style={styles.thumbImg}
+            contentFit="cover"
+          />
           <Pressable
+            role="button"
+            aria-label={`Remove selected photo ${idx + 1}`}
             style={styles.removeBtn}
             onPress={() => onRemove(idx)}
             hitSlop={6}
             disabled={disabled}
           >
-            <Text style={styles.removeBtnText}>×</Text>
+            <View style={styles.removeBtnCircle}>
+              <Text style={styles.removeBtnText} aria-hidden>×</Text>
+            </View>
           </Pressable>
         </View>
       ))}
 
       {images.length < maxImages && (
         <Pressable
+          role="button"
+          aria-label="Add photo"
           style={[styles.addBtn, (busy || disabled) && styles.addBtnDisabled]}
           onPress={handleAdd}
           disabled={busy || disabled}
         >
-          <Text style={styles.addIcon}>📷</Text>
+          <Text style={styles.addIcon} aria-hidden>📷</Text>
           <Text style={styles.addLabel}>
             {busy ? '...' : 'Photo'}
           </Text>
@@ -92,8 +103,14 @@ const styles = StyleSheet.create({
   },
   removeBtn: {
     position: 'absolute',
-    top: -6,
-    right: -6,
+    top: -18,
+    right: -18,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removeBtnCircle: {
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -127,7 +144,7 @@ const styles = StyleSheet.create({
   },
   addLabel: {
     fontSize: 11,
-    color: '#9CA3AF',
+    color: '#6B7280',
     fontWeight: '500',
   },
 });

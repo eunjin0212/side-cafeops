@@ -24,7 +24,7 @@ interface EmployeeRowProps {
 
 function EmployeeRow({ employee, onPress }: EmployeeRowProps) {
   return (
-    <Pressable style={styles.row} onPress={onPress}>
+    <Pressable role="link" style={styles.row} onPress={onPress}>
       <View style={styles.rowMain}>
         <Text style={styles.name}>{employee.fullName ?? employee.email}</Text>
         <Text style={styles.role}>
@@ -49,7 +49,7 @@ export default function EmployeeListScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator aria-label="Loading" size="large" />
       </View>
     );
   }
@@ -70,11 +70,16 @@ export default function EmployeeListScreen() {
           title="Employees"
           right={
             <>
-              <Pressable onPress={() => router.navigate('/employees/invitations')}>
+              <Pressable
+                role="link"
+                style={styles.headerLinkButton}
+                onPress={() => router.navigate('/employees/invitations')}
+              >
                 <Text style={styles.headerLink}>Invitations</Text>
               </Pressable>
               {canInvite && (
                 <Pressable
+                  role="link"
                   style={styles.inviteButton}
                   onPress={() => router.navigate('/employees/invite')}
                 >
@@ -118,6 +123,10 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     backgroundColor: '#fff',
   },
+  headerLinkButton: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
   headerLink: {
     fontSize: 13,
     color: '#6B7280',
@@ -125,6 +134,8 @@ const styles = StyleSheet.create({
   inviteButton: {
     paddingHorizontal: 14,
     paddingVertical: 8,
+    minHeight: 44,
+    justifyContent: 'center',
     backgroundColor: '#111827',
     borderRadius: 8,
   },

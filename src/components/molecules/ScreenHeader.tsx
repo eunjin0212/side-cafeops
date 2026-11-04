@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { type Href } from 'expo-router';
 
+import { ScreenTitle } from '@/components/molecules/ScreenTitle';
 import { goBack } from '@/utils/navigation';
 
 export interface ScreenHeaderProps {
@@ -14,7 +15,13 @@ export interface ScreenHeaderProps {
 export function ScreenHeader({ backHref, title, subtitle, right }: ScreenHeaderProps) {
   return (
     <View style={styles.header}>
-      <Pressable onPress={() => goBack(backHref)} hitSlop={8}>
+      <Pressable
+        role="link"
+        aria-label="Back"
+        style={styles.backButton}
+        onPress={() => goBack(backHref)}
+        hitSlop={8}
+      >
         <Text style={styles.backText}>← Back</Text>
       </Pressable>
 
@@ -22,7 +29,7 @@ export function ScreenHeader({ backHref, title, subtitle, right }: ScreenHeaderP
         <View style={styles.row}>
           {title ? (
             <View style={styles.titleBlock}>
-              <Text style={styles.title}>{title}</Text>
+              <ScreenTitle style={styles.title}>{title}</ScreenTitle>
               {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
             </View>
           ) : (
@@ -38,6 +45,12 @@ export function ScreenHeader({ backHref, title, subtitle, right }: ScreenHeaderP
 const styles = StyleSheet.create({
   header: {
     gap: 12,
+  },
+  backButton: {
+    alignSelf: 'flex-start',
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   backText: {
     fontSize: 15,
@@ -58,7 +71,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#6B7280',
     fontWeight: '500',
   },
   right: {

@@ -15,7 +15,9 @@ import {
 import { z } from 'zod';
 
 import { ErrorText } from '@/components/molecules/ErrorText';
+import { ScreenTitle } from '@/components/molecules/ScreenTitle';
 import { signIn } from '@/services/authService';
+import { webOnlyProps } from '@/utils/a11y';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required'),
@@ -57,16 +59,20 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.inner} role="form">
-        <Text style={styles.title}>Twilight Cafe & Bar</Text>
+        <ScreenTitle style={styles.title} documentTitle="Sign In · Twilight Cafe">
+          Twilight Cafe & Bar
+        </ScreenTitle>
 
+        <Text style={styles.label}>Email</Text>
         <Controller
           control={control}
           name="email"
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={[styles.input, errors.email && styles.inputError]}
-              placeholder="Email"
-              placeholderTextColor="#9CA3AF"
+              aria-label="Email"
+              placeholder="you@example.com"
+              placeholderTextColor="#6B7280"
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -77,10 +83,21 @@ export default function LoginScreen() {
               nativeID="email"
               autoComplete="email"
               textContentType="username"
+              {...webOnlyProps({
+                'aria-required': true,
+                'aria-invalid': errors.email !== undefined,
+                'aria-describedby': errors.email ? 'login-email-error' : undefined,
+              })}
             />
           )}
         />
-        {errors.email && <Text style={styles.fieldError}>{errors.email.message}</Text>}
+        {errors.email && (
+          <Text role="alert" nativeID="login-email-error" style={styles.fieldError}>
+            {errors.email.message}
+          </Text>
+        )}
+
+        <Text style={styles.label}>Password</Text>
 
         <View style={styles.passwordWrapper}>
           <Controller
@@ -93,8 +110,9 @@ export default function LoginScreen() {
                   styles.passwordInput,
                   errors.password && styles.inputError,
                 ]}
-                placeholder="Password"
-                placeholderTextColor="#9CA3AF"
+                aria-label="Password"
+                placeholder="Enter your password"
+                placeholderTextColor="#6B7280"
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -105,10 +123,17 @@ export default function LoginScreen() {
                 nativeID="password"
                 autoComplete="current-password"
                 textContentType="password"
+                {...webOnlyProps({
+                  'aria-required': true,
+                  'aria-invalid': errors.password !== undefined,
+                  'aria-describedby': errors.password ? 'login-password-error' : undefined,
+                })}
               />
             )}
           />
           <Pressable
+            role="button"
+            aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
             style={styles.passwordToggle}
             onPress={() => setIsPasswordVisible((visible) => !visible)}
             hitSlop={8}
@@ -118,23 +143,31 @@ export default function LoginScreen() {
             </Text>
           </Pressable>
         </View>
-        {errors.password && <Text style={styles.fieldError}>{errors.password.message}</Text>}
+        {errors.password && (
+          <Text role="alert" nativeID="login-password-error" style={styles.fieldError}>
+            {errors.password.message}
+          </Text>
+        )}
 
         {authError !== null && <ErrorText>{authError}</ErrorText>}
 
         <Pressable
+          role="button"
+          aria-label="Sign In"
           style={[styles.button, isLoading && styles.buttonDisabled]}
           onPress={handleSubmit(onSubmit)}
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator aria-label="Loading" color="#fff" />
           ) : (
             <Text style={styles.buttonText}>Sign In</Text>
           )}
         </Pressable>
 
         <Pressable
+          role="link"
+          aria-label="How to install this app on your phone"
           style={styles.installLink}
           onPress={() => router.push('/install')}
           hitSlop={8}
@@ -164,10 +197,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: '#111827',
   },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: -6,
+  },
   input: {
     height: 52,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: '#6B7280',
     borderRadius: 8,
     paddingHorizontal: 16,
     fontSize: 16,
@@ -190,7 +229,10 @@ const styles = StyleSheet.create({
   },
   passwordToggle: {
     position: 'absolute',
-    right: 16,
+    right: 8,
+    paddingHorizontal: 8,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   passwordToggleText: {
     fontSize: 14,
@@ -216,6 +258,8 @@ const styles = StyleSheet.create({
   installLink: {
     marginTop: 12,
     alignItems: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
   },
   installLinkText: {
     fontSize: 13,

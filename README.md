@@ -19,6 +19,10 @@ Built with React Native (Expo) and Supabase.
 example ID general.manager.cafeops@example.com
 password 1234
 
+## Accessibility
+
+[How the web app was audited against WCAG 2.1 AA, what changed, and what is still unverified](docs/ACCESSIBILITY.md)
+
 ⸻
 
 ### ✨ Features

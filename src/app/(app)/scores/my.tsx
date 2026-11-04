@@ -68,11 +68,15 @@ function EntryRow({ entry, onViewPhotos }: EntryRowProps) {
           </Text>
           {entry.imageUrls.length > 0 && (
             <Pressable
-              style={styles.photoBadge}
+              role="button"
+              aria-label={`View photos for ${entry.categoryName}`}
+              style={styles.photoButton}
               onPress={() => onViewPhotos(entry.imageUrls)}
               hitSlop={4}
             >
-              <Text style={styles.photoBadgeText}>Photo</Text>
+              <View style={styles.photoBadge}>
+                <Text style={styles.photoBadgeText}>Photo</Text>
+              </View>
             </Pressable>
           )}
         </View>
@@ -132,7 +136,7 @@ export default function MyScoreScreen() {
         )}
 
         {isLoading ? (
-          <ActivityIndicator style={styles.loader} size="large" />
+          <ActivityIndicator aria-label="Loading" style={styles.loader} size="large" />
         ) : error ? (
           <ErrorText style={styles.errorText}>{error}</ErrorText>
         ) : !stats ? (
@@ -145,7 +149,7 @@ export default function MyScoreScreen() {
               <StatCol
                 label="Positive"
                 value={stats.positive > 0 ? `+${stats.positive}` : '0'}
-                color={stats.positive > 0 ? '#16A34A' : '#6B7280'}
+                color={stats.positive > 0 ? '#166534' : '#6B7280'}
               />
               <View style={styles.statDivider} />
               <StatCol
@@ -220,7 +224,7 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#9CA3AF',
+    color: '#6B7280',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
@@ -261,6 +265,12 @@ const styles = StyleSheet.create({
     color: '#111827',
     flexShrink: 1,
   },
+  photoButton: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   photoBadge: {
     backgroundColor: '#F3F4F6',
     borderRadius: 4,
@@ -270,7 +280,7 @@ const styles = StyleSheet.create({
   photoBadgeText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#4B5563',
   },
   entryNote: {
     fontSize: 13,
@@ -279,7 +289,7 @@ const styles = StyleSheet.create({
   },
   entryDate: {
     fontSize: 11,
-    color: '#D1D5DB',
+    color: '#6B7280',
     marginTop: 1,
   },
   entryPoints: {

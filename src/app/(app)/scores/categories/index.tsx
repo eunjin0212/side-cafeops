@@ -11,6 +11,7 @@ import { router } from 'expo-router';
 import { useScoreCategories } from '@/hooks/useScoreCategories';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { webOnlyProps } from '@/utils/a11y';
 import { can } from '@/constants/permissions';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { ScoreCategory } from '@/types/score';
@@ -28,6 +29,8 @@ function CategoryRow({ category, canManage, isLast }: CategoryRowProps) {
   const isPositive = category.points >= 0;
   return (
     <Pressable
+      role={canManage ? 'link' : undefined}
+      focusable={canManage}
       style={[styles.row, !isLast && styles.rowBorder]}
       onPress={canManage ? () => router.navigate(`/scores/categories/${category.id}/edit`) : undefined}
       disabled={!canManage}
@@ -52,7 +55,7 @@ export default function ScoreCategoriesScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator aria-label="Loading" size="large" />
       </View>
     );
   }
@@ -76,6 +79,9 @@ export default function ScoreCategoriesScreen() {
           right={
             canManage && (
               <Pressable
+                role="link"
+                aria-label="Add category"
+                style={styles.addButton}
                 onPress={() => router.navigate('/scores/categories/new')}
                 hitSlop={8}
               >
@@ -91,7 +97,13 @@ export default function ScoreCategoriesScreen() {
         if (rows.length === 0 && !canManage) return null;
         return (
           <View key={section} style={styles.section}>
-            <Text style={styles.sectionLabel}>{SCORE_SECTION_LABELS[section]}</Text>
+            <Text
+              role="heading"
+              style={styles.sectionLabel}
+              {...webOnlyProps({ 'aria-level': 2 })}
+            >
+              {SCORE_SECTION_LABELS[section]}
+            </Text>
             <View style={styles.card}>
               {rows.length === 0 ? (
                 <View style={styles.row}>
@@ -129,6 +141,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: { marginBottom: 28 },
+  addButton: { minWidth: 44, minHeight: 44, alignItems: 'flex-end', justifyContent: 'center' },
   addText: { fontSize: 15, color: '#111827', fontWeight: '600' },
   section: { marginBottom: 24 },
   sectionLabel: {
@@ -157,8 +170,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F3F4F6',
   },
   rowName: { flex: 1, fontSize: 15, color: '#111827' },
-  rowNameInactive: { color: '#9CA3AF' },
+  rowNameInactive: { color: '#6B7280' },
   rowPoints: { fontSize: 15, fontWeight: '600', marginLeft: 12 },
-  pointsPositive: { color: '#10B981' },
-  pointsNegative: { color: '#EF4444' },
+  pointsPositive: { color: '#166534' },
+  pointsNegative: { color: '#DC2626' },
 });

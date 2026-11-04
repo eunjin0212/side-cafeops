@@ -11,6 +11,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEmployee } from '@/hooks/useEmployee';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { ScreenTitle } from '@/components/molecules/ScreenTitle';
 import { EmptyText } from '@/components/molecules/EmptyText';
 import { ErrorText } from '@/components/molecules/ErrorText';
 import { ROLE_LABELS } from '@/constants/roles';
@@ -66,7 +67,7 @@ export default function EmployeeDetailScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator aria-label="Loading" size="large" />
       </View>
     );
   }
@@ -96,6 +97,9 @@ export default function EmployeeDetailScreen() {
             <>
               {showScoreButton && (
                 <Pressable
+                  role="link"
+                  aria-label={`Score ${employee.fullName ?? employee.email}`}
+                  style={styles.headerAction}
                   onPress={() => router.navigate(`/scores/entry?profileId=${id}`)}
                   hitSlop={8}
                 >
@@ -104,6 +108,9 @@ export default function EmployeeDetailScreen() {
               )}
               {showEditButton && (
                 <Pressable
+                  role="link"
+                  aria-label={`Edit ${employee.fullName ?? employee.email}`}
+                  style={styles.headerAction}
                   onPress={() => router.navigate(`/employees/${id}/edit`)}
                   hitSlop={8}
                 >
@@ -116,7 +123,7 @@ export default function EmployeeDetailScreen() {
       </View>
 
       <View style={styles.profile}>
-        <Text style={styles.name}>{employee.fullName ?? employee.email}</Text>
+        <ScreenTitle style={styles.name}>{employee.fullName ?? employee.email}</ScreenTitle>
         <View style={styles.badges}>
           <View style={styles.roleBadge}>
             <Text style={styles.roleBadgeText}>{ROLE_LABELS[employee.role]}</Text>
@@ -172,6 +179,12 @@ const styles = StyleSheet.create({
   },
   headerSpacer: {
     marginBottom: 28,
+  },
+  headerAction: {
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scoreText: {
     fontSize: 15,

@@ -16,14 +16,14 @@ describe('formatPoints()', () => {
 
 describe('pointsColor()', () => {
   it('is green for positive points', () => {
-    expect(pointsColor(5)).toBe('#16A34A');
+    expect(pointsColor(5)).toBe('#166534');
   });
 
   it('is red for negative points', () => {
-    expect(pointsColor(-5)).toBe('#DC2626');
+    expect(pointsColor(-5)).toBe('#B91C1C');
   });
 
   it('is gray for zero', () => {
-    expect(pointsColor(0)).toBe('#6B7280');
+    expect(pointsColor(0)).toBe('#4B5563');
   });
 });

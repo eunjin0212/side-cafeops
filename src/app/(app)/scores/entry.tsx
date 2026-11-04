@@ -47,6 +47,7 @@ export default function ScoreEntryScreen() {
   const [employeeSearch, setEmployeeSearch] = useState('');
   const [expandedSections, setExpandedSections] = useState<Set<ScoreSection>>(new Set());
   const [submitted, setSubmitted] = useState(false);
+  const [submittedCount, setSubmittedCount] = useState(0);
 
   const { profile: currentProfile, isLoading: profileLoading } = usePermissionGate(
     'manageScores',
@@ -167,6 +168,7 @@ export default function ScoreEntryScreen() {
           setExpandedSections(new Set());
           setNotes('');
           setImageUris([]);
+          setSubmittedCount(totalEntries);
           setSubmitted(true);
           setTimeout(() => {
             setSubmitted(false);
@@ -186,7 +188,7 @@ export default function ScoreEntryScreen() {
   }
 
   const submitLabel = submitted
-    ? `✓ ${totalEntries} ${totalEntries === 1 ? 'entry' : 'entries'} submitted`
+    ? `✓ ${submittedCount} ${submittedCount === 1 ? 'entry' : 'entries'} submitted`
     : !effectiveLocationId
       ? 'Select a location'
       : selectedProfileIds.length === 0
@@ -198,7 +200,7 @@ export default function ScoreEntryScreen() {
   if (profileLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator aria-label="Loading" size="large" />
       </View>
     );
   }
@@ -251,13 +253,15 @@ export default function ScoreEntryScreen() {
                   {selectedEmployees.map((emp) => (
                     <Pressable
                       key={emp.id}
+                      role="button"
+                      aria-label={`Remove ${emp.fullName ?? emp.email}`}
                       style={styles.chip}
                       onPress={() => toggleEmployee(emp.id)}
                     >
                       <Text style={styles.chipText} numberOfLines={1}>
                         {emp.fullName ?? emp.email}
                       </Text>
-                      <Text style={styles.chipRemove}>×</Text>
+                      <Text style={styles.chipRemove} aria-hidden>×</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -265,13 +269,14 @@ export default function ScoreEntryScreen() {
 
               {/* Search input */}
               <TextInput
+                aria-label="Search employees"
                 style={styles.searchInput}
                 placeholder={
                   selectedProfileIds.length > 0
                     ? 'Search to add more...'
                     : 'Search employees...'
                 }
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="#6B7280"
                 value={employeeSearch}
                 onChangeText={setEmployeeSearch}
                 autoCapitalize="none"
@@ -281,7 +286,7 @@ export default function ScoreEntryScreen() {
 
               {/* Search results */}
               {employeesLoading ? (
-                <ActivityIndicator style={styles.loader} />
+                <ActivityIndicator aria-label="Loading" style={styles.loader} />
               ) : employeeSearch.trim().length > 0 ? (
                 searchResults.length === 0 ? (
                   <EmptyText style={styles.emptyText}>No employees found.</EmptyText>
@@ -292,6 +297,8 @@ export default function ScoreEntryScreen() {
                       return (
                         <Pressable
                           key={emp.id}
+                          role="checkbox"
+                          aria-checked={isSelected}
                           style={[styles.employeeRow, isSelected && styles.rowSelected]}
                           onPress={() => toggleEmployee(emp.id)}
                         >
@@ -302,7 +309,7 @@ export default function ScoreEntryScreen() {
                               isSelected && styles.checkboxActive,
                             ]}
                           >
-                            {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                            {isSelected && <Text style={styles.checkmark} aria-hidden>✓</Text>}
                           </View>
                           <View style={styles.rowContent}>
                             <Text
@@ -342,7 +349,7 @@ export default function ScoreEntryScreen() {
             </View>
 
             {categoriesLoading ? (
-              <ActivityIndicator style={styles.loader} />
+              <ActivityIndicator aria-label="Loading" style={styles.loader} />
             ) : (
               <ListCard dividerInset={14}>
                 {SCORE_SECTIONS.map((section) => {
@@ -360,6 +367,9 @@ export default function ScoreEntryScreen() {
                     <View key={section}>
                       {/* Section accordion header */}
                       <Pressable
+                        role="button"
+                        aria-expanded={isExpanded}
+                        aria-label={`${SCORE_SECTION_LABELS[section]}, ${selectedInSection.length} selected`}
                         style={styles.accordionHeader}
                         onPress={() => toggleSection(section)}
                       >
@@ -374,7 +384,7 @@ export default function ScoreEntryScreen() {
                               </Text>
                             </View>
                           )}
-                          <Text style={styles.chevron}>
+                          <Text style={styles.chevron} aria-hidden>
                             {isExpanded ? '▲' : '▼'}
                           </Text>
                         </View>
@@ -388,6 +398,8 @@ export default function ScoreEntryScreen() {
                             <View key={cat.id}>
                               <View style={[styles.divider, { marginLeft: 48 }]} />
                               <Pressable
+                                role="checkbox"
+                                aria-checked={isSelected}
                                 style={[
                                   styles.categoryRow,
                                   isSelected && styles.rowSelected,
@@ -402,7 +414,7 @@ export default function ScoreEntryScreen() {
                                   ]}
                                 >
                                   {isSelected && (
-                                    <Text style={styles.checkmark}>✓</Text>
+                                    <Text style={styles.checkmark} aria-hidden>✓</Text>
                                   )}
                                 </View>
                                 <Text
@@ -440,9 +452,10 @@ export default function ScoreEntryScreen() {
           <View style={styles.block}>
             <SectionLabel>Notes (optional)</SectionLabel>
             <TextInput
+              aria-label="Notes (optional)"
               style={styles.notesInput}
               placeholder="Add a note..."
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor="#6B7280"
               value={notes}
               onChangeText={setNotes}
               multiline
@@ -466,6 +479,11 @@ export default function ScoreEntryScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
+      {/* Announces the result; the submit label alone is on a disabled button. */}
+      <View aria-live="polite" style={styles.visuallyHidden}>
+        {submitted && <Text>{submitLabel}</Text>}
+      </View>
+
       {/* Fixed bottom bar */}
       <View style={styles.bottomBar}>
         {selectedProfileIds.length > 0 && selectedCategoryIds.length > 0 && (
@@ -484,12 +502,14 @@ export default function ScoreEntryScreen() {
         )}
 
         <Pressable
+          role="button"
+          aria-label={submitLabel}
           style={[styles.submitButton, !canSubmit && styles.submitButtonDisabled]}
           onPress={handleSubmit}
           disabled={!canSubmit}
         >
           {isPending ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator aria-label="Loading" color="#fff" />
           ) : (
             <Text style={styles.submitText}>{submitLabel}</Text>
           )}
@@ -503,6 +523,13 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#F9FAFB',
+  },
+  visuallyHidden: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    overflow: 'hidden',
+    opacity: 0,
   },
   center: {
     flex: 1,
@@ -550,6 +577,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
+    minHeight: 44,
     gap: 6,
     maxWidth: 180,
   },
@@ -561,16 +589,17 @@ const styles = StyleSheet.create({
   },
   chipRemove: {
     fontSize: 15,
-    color: '#9CA3AF',
+    color: '#E5E7EB',
     lineHeight: 16,
   },
   searchInput: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#6B7280',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
+    minHeight: 44,
     fontSize: 15,
     color: '#111827',
   },
@@ -594,12 +623,12 @@ const styles = StyleSheet.create({
   checkboxCircle: {
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: '#D1D5DB',
+    borderColor: '#6B7280',
   },
   checkboxSquare: {
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: '#D1D5DB',
+    borderColor: '#6B7280',
   },
   checkboxActive: {
     backgroundColor: '#111827',
@@ -624,7 +653,7 @@ const styles = StyleSheet.create({
   },
   rowSublabel: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#6B7280',
   },
   singleLocationText: {
     fontSize: 15,
@@ -682,7 +711,7 @@ const styles = StyleSheet.create({
   },
   chevron: {
     fontSize: 10,
-    color: '#9CA3AF',
+    color: '#6B7280',
   },
   divider: {
     height: 1,
@@ -698,14 +727,14 @@ const styles = StyleSheet.create({
   },
   hintText: {
     fontSize: 14,
-    color: '#D1D5DB',
+    color: '#6B7280',
     textAlign: 'center',
     paddingVertical: 8,
   },
   notesInput: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#6B7280',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 11,

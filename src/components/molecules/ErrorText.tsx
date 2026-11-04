@@ -7,7 +7,7 @@ export interface ErrorTextProps {
 }
 
 export function ErrorText({ children, style }: ErrorTextProps) {
-  return <Text style={[styles.text, style]}>{children}</Text>;
+  return <Text role="alert" style={[styles.text, style]}>{children}</Text>;
 }
 
 const styles = StyleSheet.create({

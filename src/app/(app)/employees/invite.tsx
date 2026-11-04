@@ -23,6 +23,7 @@ import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
 import { ROLE_HIERARCHY } from '@/constants/permissions';
 import { createInvitation } from '@/services/invitationService';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { webOnlyProps } from '@/utils/a11y';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
 
@@ -93,7 +94,7 @@ export default function InviteEmployeeScreen() {
   if (profileLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator aria-label="Loading" size="large" />
       </View>
     );
   }
@@ -111,7 +112,7 @@ export default function InviteEmployeeScreen() {
         <FormHeader title="Invite Employee" onDismiss={() => goBack('/employees')} />
 
         {submitError !== null && (
-          <View style={styles.errorBanner}>
+          <View role="alert" style={styles.errorBanner}>
             <Text style={styles.errorBannerText}>{submitError}</Text>
           </View>
         )}
@@ -125,8 +126,14 @@ export default function InviteEmployeeScreen() {
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 style={[styles.input, errors.email ? styles.inputError : null]}
+                aria-label="Email"
                 placeholder="employee@example.com"
-                placeholderTextColor="#9CA3AF"
+                {...webOnlyProps({
+                  'aria-required': true,
+                  'aria-invalid': errors.email !== undefined,
+                  'aria-describedby': errors.email ? 'invite-email-error' : undefined,
+                })}
+                placeholderTextColor="#6B7280"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -137,7 +144,9 @@ export default function InviteEmployeeScreen() {
             )}
           />
           {errors.email && (
-            <Text style={styles.fieldError}>{errors.email.message}</Text>
+            <Text role="alert" nativeID="invite-email-error" style={styles.fieldError}>
+              {errors.email.message}
+            </Text>
           )}
         </View>
 
@@ -148,10 +157,12 @@ export default function InviteEmployeeScreen() {
             control={control}
             name="role"
             render={({ field: { onChange, value } }) => (
-              <View style={styles.roleGrid}>
+              <View style={styles.roleGrid} role="radiogroup" aria-label="Role">
                 {availableRoles.map((option) => (
                   <Pressable
                     key={option.value}
+                    role="radio"
+                    aria-checked={value === option.value}
                     style={[
                       styles.rolePill,
                       value === option.value && styles.rolePillSelected,
@@ -185,10 +196,12 @@ export default function InviteEmployeeScreen() {
                   <Text style={styles.placeholderText}>No locations available</Text>
                 </View>
               ) : (
-                <View style={styles.locationList}>
+                <View style={styles.locationList} role="radiogroup" aria-label="Location">
                   {locations.map((loc) => (
                     <Pressable
                       key={loc.id}
+                      role="radio"
+                      aria-checked={value === loc.id}
                       style={[
                         styles.locationRow,
                         value === loc.id && styles.locationRowSelected,
@@ -204,7 +217,7 @@ export default function InviteEmployeeScreen() {
                         {loc.name}
                       </Text>
                       {value === loc.id && (
-                        <Text style={styles.checkmark}>✓</Text>
+                        <Text style={styles.checkmark} aria-hidden>✓</Text>
                       )}
                     </Pressable>
                   ))}
@@ -215,6 +228,8 @@ export default function InviteEmployeeScreen() {
         </View>
 
         <Pressable
+          role="button"
+          aria-label="Send Invite"
           style={[
             styles.submitButton,
             isSubmitting && styles.submitButtonDisabled,
@@ -223,7 +238,7 @@ export default function InviteEmployeeScreen() {
           disabled={isSubmitting}
         >
           {isSubmitting ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator aria-label="Loading" color="#fff" />
           ) : (
             <Text style={styles.submitText}>Send Invite</Text>
           )}
@@ -260,7 +275,7 @@ const styles = StyleSheet.create({
   },
   errorBannerText: {
     fontSize: 13,
-    color: '#EF4444',
+    color: '#B91C1C',
   },
   field: {
     marginBottom: 24,
@@ -273,7 +288,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#6B7280',
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -290,11 +305,11 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     fontSize: 15,
-    color: '#9CA3AF',
+    color: '#6B7280',
   },
   fieldError: {
     fontSize: 12,
-    color: '#EF4444',
+    color: '#DC2626',
     marginTop: 4,
   },
   roleGrid: {
@@ -305,6 +320,8 @@ const styles = StyleSheet.create({
   rolePill: {
     paddingHorizontal: 14,
     paddingVertical: 10,
+    minHeight: 44,
+    justifyContent: 'center',
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#E5E7EB',

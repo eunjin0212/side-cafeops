@@ -33,8 +33,8 @@ interface NotificationRowProps {
 
 function NotificationRow({ notification, onPress }: NotificationRowProps) {
   return (
-    <Pressable style={styles.row} onPress={onPress}>
-      {!notification.isRead && <View style={styles.unreadDot} />}
+    <Pressable role="button" style={styles.row} onPress={onPress}>
+      {!notification.isRead && <View style={styles.unreadDot} role="img" aria-label="Unread" />}
       <View style={styles.rowContent}>
         <Text
           style={[styles.rowTitle, !notification.isRead && styles.rowTitleUnread]}
@@ -81,7 +81,12 @@ export default function NotificationsScreen() {
         title="Notifications"
         right={
           unreadCount > 0 ? (
-            <Pressable onPress={markAllAsRead} hitSlop={8}>
+            <Pressable
+              role="button"
+              style={styles.markAllButton}
+              onPress={markAllAsRead}
+              hitSlop={8}
+            >
               <Text style={styles.markAllText}>Mark all read</Text>
             </Pressable>
           ) : undefined
@@ -89,7 +94,7 @@ export default function NotificationsScreen() {
       />
 
       {isLoading ? (
-        <ActivityIndicator style={styles.loader} size="large" />
+        <ActivityIndicator aria-label="Loading" style={styles.loader} size="large" />
       ) : error ? (
         <ErrorText style={styles.errorText}>{error}</ErrorText>
       ) : notifications.length === 0 ? (
@@ -123,10 +128,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 40,
   },
+  markAllButton: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
   markAllText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#3B82F6',
+    color: '#1D4ED8',
   },
   row: {
     flexDirection: 'row',
@@ -162,7 +171,7 @@ const styles = StyleSheet.create({
   },
   rowDate: {
     fontSize: 11,
-    color: '#D1D5DB',
+    color: '#6B7280',
     marginTop: 1,
   },
 });

@@ -30,8 +30,8 @@ const STATUS_LABEL: Record<InvitationStatus, string> = {
 const STATUS_COLORS: Record<InvitationStatus, { bg: string; text: string }> = {
   pending: { bg: '#FEF3C7', text: '#92400E' },
   accepted: { bg: '#D1FAE5', text: '#065F46' },
-  expired: { bg: '#F3F4F6', text: '#6B7280' },
-  cancelled: { bg: '#F3F4F6', text: '#6B7280' },
+  expired: { bg: '#F3F4F6', text: '#4B5563' },
+  cancelled: { bg: '#F3F4F6', text: '#4B5563' },
 };
 
 function formatDate(iso: string): string {
@@ -109,6 +109,8 @@ function InvitationRow({ invitation }: InvitationRowProps) {
         <View style={styles.actions}>
           {canCancel && (
             <Pressable
+              role="button"
+              aria-label={`Cancel invitation for ${invitation.email}`}
               style={[
                 styles.actionButton,
                 styles.cancelButton,
@@ -118,7 +120,7 @@ function InvitationRow({ invitation }: InvitationRowProps) {
               disabled={isAnyBusy}
             >
               {isCancelling ? (
-                <ActivityIndicator size="small" color="#EF4444" />
+                <ActivityIndicator aria-label="Loading" size="small" color="#EF4444" />
               ) : (
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               )}
@@ -126,6 +128,8 @@ function InvitationRow({ invitation }: InvitationRowProps) {
           )}
           {canResend && (
             <Pressable
+              role="button"
+              aria-label={`Resend invitation to ${invitation.email}`}
               style={[
                 styles.actionButton,
                 styles.resendButton,
@@ -135,7 +139,7 @@ function InvitationRow({ invitation }: InvitationRowProps) {
               disabled={isAnyBusy}
             >
               {isResending ? (
-                <ActivityIndicator size="small" color="#374151" />
+                <ActivityIndicator aria-label="Loading" size="small" color="#374151" />
               ) : (
                 <Text style={styles.resendButtonText}>Resend</Text>
               )}
@@ -145,7 +149,7 @@ function InvitationRow({ invitation }: InvitationRowProps) {
       )}
 
       {actionError !== null && (
-        <Text style={styles.actionError}>{actionError}</Text>
+        <Text role="alert" style={styles.actionError}>{actionError}</Text>
       )}
     </View>
   );
@@ -158,7 +162,7 @@ export default function InvitationsScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator aria-label="Loading" size="large" />
       </View>
     );
   }
@@ -251,7 +255,7 @@ const styles = StyleSheet.create({
   },
   dates: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#6B7280',
   },
   actions: {
     flexDirection: 'row',
@@ -266,7 +270,7 @@ const styles = StyleSheet.create({
     minWidth: 76,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 32,
+    height: 44,
   },
   cancelButton: {
     borderColor: '#FCA5A5',
@@ -280,7 +284,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#EF4444',
+    color: '#DC2626',
   },
   resendButtonText: {
     fontSize: 12,
@@ -289,7 +293,7 @@ const styles = StyleSheet.create({
   },
   actionError: {
     fontSize: 12,
-    color: '#EF4444',
+    color: '#DC2626',
     marginTop: 4,
   },
   separator: {

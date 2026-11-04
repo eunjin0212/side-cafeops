@@ -20,6 +20,7 @@ import { usePermissionGate } from '@/hooks/usePermissionGate';
 import { createScoreCategory } from '@/services/scoreCategoryService';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { webOnlyProps } from '@/utils/a11y';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
 
@@ -80,7 +81,7 @@ export default function NewScoreCategoryScreen() {
   if (profileLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator aria-label="Loading" size="large" />
       </View>
     );
   }
@@ -98,7 +99,7 @@ export default function NewScoreCategoryScreen() {
         <FormHeader title="New Category" onDismiss={() => goBack('/scores/categories')} />
 
         {submitError !== null && (
-          <View style={styles.errorBanner}>
+          <View role="alert" style={styles.errorBanner}>
             <Text style={styles.errorBannerText}>{submitError}</Text>
           </View>
         )}
@@ -111,15 +112,25 @@ export default function NewScoreCategoryScreen() {
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 style={[styles.input, errors.name ? styles.inputError : null]}
+                aria-label="Name"
                 placeholder="e.g. Late / late notice"
-                placeholderTextColor="#9CA3AF"
+                {...webOnlyProps({
+                  'aria-required': true,
+                  'aria-invalid': errors.name !== undefined,
+                  'aria-describedby': errors.name ? 'new-category-name-error' : undefined,
+                })}
+                placeholderTextColor="#6B7280"
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
               />
             )}
           />
-          {errors.name && <Text style={styles.fieldError}>{errors.name.message}</Text>}
+          {errors.name && (
+            <Text role="alert" nativeID="new-category-name-error" style={styles.fieldError}>
+              {errors.name.message}
+            </Text>
+          )}
         </View>
 
         <View style={styles.field}>
@@ -128,10 +139,12 @@ export default function NewScoreCategoryScreen() {
             control={control}
             name="section"
             render={({ field: { onChange, value } }) => (
-              <View style={styles.pillGrid}>
+              <View style={styles.pillGrid} role="radiogroup" aria-label="Section">
                 {SCORE_SECTIONS.map((s) => (
                   <Pressable
                     key={s}
+                    role="radio"
+                    aria-checked={value === s}
                     style={[styles.pill, value === s && styles.pillSelected]}
                     onPress={() => onChange(s)}
                   >
@@ -153,8 +166,14 @@ export default function NewScoreCategoryScreen() {
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 style={[styles.input, errors.points ? styles.inputError : null]}
+                aria-label="Points"
                 placeholder="e.g. -5 or 5"
-                placeholderTextColor="#9CA3AF"
+                {...webOnlyProps({
+                  'aria-required': true,
+                  'aria-invalid': errors.points !== undefined,
+                  'aria-describedby': errors.points ? 'new-category-points-error' : undefined,
+                })}
+                placeholderTextColor="#6B7280"
                 keyboardType="numbers-and-punctuation"
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -162,16 +181,22 @@ export default function NewScoreCategoryScreen() {
               />
             )}
           />
-          {errors.points && <Text style={styles.fieldError}>{errors.points.message}</Text>}
+          {errors.points && (
+            <Text role="alert" nativeID="new-category-points-error" style={styles.fieldError}>
+              {errors.points.message}
+            </Text>
+          )}
         </View>
 
         <Pressable
+          role="button"
+          aria-label="Create Category"
           style={[styles.submitButton, (!isDirty || isSubmitting) && styles.submitButtonDisabled]}
           onPress={handleSubmit(onSubmit)}
           disabled={!isDirty || isSubmitting}
         >
           {isSubmitting ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator aria-label="Loading" color="#fff" />
           ) : (
             <Text style={styles.submitText}>Create Category</Text>
           )}
@@ -196,12 +221,12 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 20,
   },
-  errorBannerText: { fontSize: 13, color: '#EF4444' },
+  errorBannerText: { fontSize: 13, color: '#B91C1C' },
   field: { marginBottom: 24 },
   label: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#6B7280',
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -210,11 +235,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   inputError: { borderColor: '#EF4444' },
-  fieldError: { fontSize: 12, color: '#EF4444', marginTop: 4 },
+  fieldError: { fontSize: 12, color: '#DC2626', marginTop: 4 },
   pillGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: {
     paddingHorizontal: 14,
     paddingVertical: 10,
+    minHeight: 44,
+    justifyContent: 'center',
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#E5E7EB',

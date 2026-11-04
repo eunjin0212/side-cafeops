@@ -3,7 +3,7 @@ export function formatPoints(points: number): string {
 }
 
 export function pointsColor(points: number): string {
-  if (points > 0) return '#16A34A';
-  if (points < 0) return '#DC2626';
-  return '#6B7280';
+  if (points > 0) return '#166534';
+  if (points < 0) return '#B91C1C';
+  return '#4B5563';
 }

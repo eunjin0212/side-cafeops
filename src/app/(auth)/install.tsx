@@ -2,6 +2,8 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { ScreenTitle } from '@/components/molecules/ScreenTitle';
+
 type Platform = 'ios' | 'android';
 
 const STEPS: Record<Platform, { icon: string; text: string }[]> = {
@@ -24,14 +26,18 @@ export default function InstallGuideScreen(): React.JSX.Element {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Install Twilight Cafe & Bar</Text>
+      <ScreenTitle style={styles.title} documentTitle="Install · Twilight Cafe">
+        Install Twilight Cafe & Bar
+      </ScreenTitle>
       <Text style={styles.subtitle}>
         Add this app to your home screen so you can open it like a regular app and receive
         notifications.
       </Text>
 
-      <View style={styles.tabs}>
+      <View style={styles.tabs} role="radiogroup" aria-label="Phone type">
         <Pressable
+          role="radio"
+          aria-checked={platform === 'ios'}
           style={[styles.tab, platform === 'ios' && styles.tabActive]}
           onPress={() => setPlatform('ios')}
         >
@@ -40,6 +46,8 @@ export default function InstallGuideScreen(): React.JSX.Element {
           </Text>
         </Pressable>
         <Pressable
+          role="radio"
+          aria-checked={platform === 'android'}
           style={[styles.tab, platform === 'android' && styles.tabActive]}
           onPress={() => setPlatform('android')}
         >
@@ -53,7 +61,7 @@ export default function InstallGuideScreen(): React.JSX.Element {
         {STEPS[platform].map((step, index) => (
           <View key={index} style={styles.step}>
             <View style={styles.stepIconWrap}>
-              <Text style={styles.stepIcon}>{step.icon}</Text>
+              <Text style={styles.stepIcon} aria-hidden>{step.icon}</Text>
             </View>
             <View style={styles.stepBody}>
               <Text style={styles.stepNumber}>Step {index + 1}</Text>
@@ -69,7 +77,12 @@ export default function InstallGuideScreen(): React.JSX.Element {
           : 'Once installed, open the app from your home screen and turn on notifications from the home tab.'}
       </Text>
 
-      <Pressable style={styles.backLink} onPress={() => router.replace('/(auth)/login')}>
+      <Pressable
+        role="link"
+        aria-label="Back to sign in"
+        style={styles.backLink}
+        onPress={() => router.replace('/(auth)/login')}
+      >
         <Text style={styles.backLinkText}>← Back to sign in</Text>
       </Pressable>
     </ScrollView>
@@ -125,7 +138,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#4B5563',
   },
   tabTextActive: {
     color: '#111827',
@@ -156,7 +169,7 @@ const styles = StyleSheet.create({
   stepNumber: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#208AEF',
+    color: '#1D4ED8',
     marginBottom: 2,
     textTransform: 'uppercase',
   },
@@ -177,6 +190,8 @@ const styles = StyleSheet.create({
   backLink: {
     marginTop: 28,
     alignItems: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
   },
   backLinkText: {
     fontSize: 14,

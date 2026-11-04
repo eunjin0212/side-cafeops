@@ -15,6 +15,14 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
         <ScrollViewStyleReset />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              :focus-visible { outline: 2px solid #1D4ED8 !important; outline-offset: 2px; }
+              [tabindex="-1"]:focus { outline: none !important; }
+            `,
+          }}
+        />
 
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

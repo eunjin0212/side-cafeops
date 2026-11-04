@@ -1,13 +1,19 @@
 import { ReactNode } from 'react';
 import { StyleProp, StyleSheet, Text, TextStyle } from 'react-native';
 
+import { webOnlyProps } from '@/utils/a11y';
+
 export interface SectionLabelProps {
   children: ReactNode;
   style?: StyleProp<TextStyle>;
 }
 
 export function SectionLabel({ children, style }: SectionLabelProps) {
-  return <Text style={[styles.text, style]}>{children}</Text>;
+  return (
+    <Text role="heading" style={[styles.text, style]} {...webOnlyProps({ 'aria-level': 2 })}>
+      {children}
+    </Text>
+  );
 }
 
 const styles = StyleSheet.create({
