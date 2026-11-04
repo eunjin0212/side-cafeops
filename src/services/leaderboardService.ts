@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { serviceError } from '@/services/serviceError';
-import { LeaderboardEntry, CycleSummary } from '@/types/leaderboard';
+import { LeaderboardEntry } from '@/types/leaderboard';
 import { EmployeeRole } from '@/types/employee';
 import { BASE_SCORE } from '@/constants/scoring';
 
@@ -34,22 +34,4 @@ export async function getLeaderboard(locationId?: string): Promise<LeaderboardEn
   });
   if (error) throw serviceError('leaderboardService: load', error, 'Failed to load leaderboard.');
   return (data as RpcRow[]).map(mapEntry);
-}
-
-export async function getCurrentCycle(): Promise<CycleSummary | null> {
-  const { data, error } = await supabase
-    .from('score_cycles')
-    .select('id, started_at, ended_at')
-    .eq('is_active', true)
-    .gt('ended_at', new Date().toISOString())
-    .order('started_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.error('leaderboardService: load current cycle', error);
-    return null;
-  }
-  if (!data) return null;
-  return { id: data.id, startedAt: data.started_at, endedAt: data.ended_at };
 }

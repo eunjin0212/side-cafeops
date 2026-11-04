@@ -307,6 +307,7 @@ Fail to update daily record -1
 * Performance Score = `BASE_SCORE + SUM(score_entries.points)`.
 * Positive Points = sum of score entries where `points > 0`.
 * Negative Points = sum of score entries where `points < 0`.
+* Score cycles run continuously on a fixed 14-day calendar, independent of score entry (see `get_or_create_current_cycle()`).
 * Rankings are ordered by summed score-entry points within the active 14-day cycle.
 * Displayed ranking scores must include `BASE_SCORE`.
 * Adding the same `BASE_SCORE` to every employee does not affect ranking order.

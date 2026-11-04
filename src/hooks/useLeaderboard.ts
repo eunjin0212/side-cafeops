@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getLeaderboard, getCurrentCycle } from '@/services/leaderboardService';
+import { getLeaderboard } from '@/services/leaderboardService';
+import { getCurrentCycle } from '@/services/scoreCycleService';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { queryErrorMessage } from '@/utils/errors';
 import { LeaderboardEntry, CycleSummary } from '@/types/leaderboard';

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { getMyScoreEntries } from '@/services/scoreEntryService';
-import { getCurrentCycle } from '@/services/leaderboardService';
+import { getCurrentCycle } from '@/services/scoreCycleService';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useScoreCategories } from '@/hooks/useScoreCategories';
 import { useLocations } from '@/hooks/useLocations';
@@ -35,7 +35,7 @@ export function useMyScores(): MyScores {
   const cycleId = cycleResult.data?.id;
 
   const entriesResult = useQuery({
-    queryKey: QUERY_KEYS.scoreEntries(profile?.id ?? ''),
+    queryKey: QUERY_KEYS.scoreEntriesForCycle(profile?.id ?? '', cycleId ?? ''),
     queryFn: () => getMyScoreEntries(profile!.id, cycleId!),
     enabled: !!profile && !!cycleId,
   });
@@ -66,9 +66,12 @@ export function useMyScores(): MyScores {
     cycle: cycleResult.data ?? null,
     entries,
     base: BASE_SCORE,
-    isLoading: entriesResult.isLoading,
+    isLoading: cycleResult.isLoading || entriesResult.isLoading,
     isFetching: entriesResult.isFetching,
-    error: queryErrorMessage(entriesResult.error, 'Failed to load score entries.'),
+    error: queryErrorMessage(
+      cycleResult.error ?? entriesResult.error,
+      'Failed to load score entries.',
+    ),
     refetch: entriesResult.refetch,
   };
 }

@@ -17,7 +17,7 @@ export function useCreateScoreEntry() {
       });
       // Refresh all leaderboard views (all location filters)
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.leaderboardAll });
-      // Submitting can implicitly create a new cycle (get_or_create_current_cycle)
+      // A submission made just after a boundary lands in the new cycle.
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentCycle });
     },
   });

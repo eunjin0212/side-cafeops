@@ -4,6 +4,7 @@ import {
   CreateScoreEntriesBatchInput,
 } from '@/types/score';
 import { serviceError } from '@/services/serviceError';
+import { getCurrentCycleId } from '@/services/scoreCycleService';
 import { uploadScoreImages } from '@/services/storageService';
 
 const ENTRY_QUERY =
@@ -37,20 +38,8 @@ function mapScoreEntry(row: {
   };
 }
 
-async function getCurrentCycleId(): Promise<string> {
-  const { data, error } = await supabase.rpc('get_or_create_current_cycle');
-  if (error) {
-    throw serviceError(
-      'scoreEntryService: resolve cycle',
-      error,
-      'Failed to resolve current score cycle.',
-    );
-  }
-  return data as string;
-}
-
 // Read-only fetch for a known cycle — the caller resolves the current
-// cycle (leaderboardService.getCurrentCycle) so both the cycle summary
+// cycle (scoreCycleService.getCurrentCycle) so both the cycle summary
 // and these entries always agree on which cycle is "current."
 export async function getMyScoreEntries(
   profileId: string,
