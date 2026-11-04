@@ -34,3 +34,8 @@ export type UpdateEmployeeInput = {
   role?: EmployeeRole;
   isActive?: boolean;
 };
+
+export type SaveEmployeeInput = {
+  profile: UpdateEmployeeInput;
+  locationIds?: string[];
+};

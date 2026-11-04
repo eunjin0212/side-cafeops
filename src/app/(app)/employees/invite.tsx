@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -12,17 +11,15 @@ import {
   View,
 } from 'react-native';
 import { router } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 import { usePermissionGate } from '@/hooks/usePermissionGate';
 import { useLocations } from '@/hooks/useLocations';
+import { useCreateInvitation } from '@/hooks/useCreateInvitation';
 import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
 import { ROLE_HIERARCHY } from '@/constants/permissions';
-import { createInvitation } from '@/services/invitationService';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 import { webOnlyProps } from '@/utils/a11y';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
@@ -47,9 +44,8 @@ export default function InviteEmployeeScreen() {
     '/employees',
   );
   const { locations } = useLocations();
-  const queryClient = useQueryClient();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { mutate: createInvitation, isPending: isSubmitting, error } = useCreateInvitation();
+  const submitError = error?.message ?? null;
 
   const availableRoles = currentProfile
     ? ROLE_OPTIONS.filter(
@@ -69,26 +65,17 @@ export default function InviteEmployeeScreen() {
     },
   });
 
-  async function onSubmit(data: InviteFormValues): Promise<void> {
-    setSubmitError(null);
-    setIsSubmitting(true);
-    try {
-      await createInvitation({
-        email: data.email,
-        role: data.role,
-        locationId: data.locationId,
-      });
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invitations });
-      Alert.alert('Invitation Sent', `Invitation sent to ${data.email}.`, [
-        { text: 'OK', onPress: () => router.navigate('/employees') },
-      ]);
-    } catch (err) {
-      setSubmitError(
-        err instanceof Error ? err.message : 'Failed to send invitation.',
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+  function onSubmit(data: InviteFormValues): void {
+    createInvitation(
+      { email: data.email, role: data.role, locationId: data.locationId },
+      {
+        onSuccess: () => {
+          Alert.alert('Invitation Sent', `Invitation sent to ${data.email}.`, [
+            { text: 'OK', onPress: () => router.navigate('/employees') },
+          ]);
+        },
+      },
+    );
   }
 
   if (profileLoading) {

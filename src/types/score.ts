@@ -36,15 +36,6 @@ export type ScoreEntry = {
   createdAt: string;
 };
 
-export type CreateScoreEntryInput = {
-  profileId: string;
-  categoryId: string;
-  points: number;
-  notes?: string;
-  correctionFor?: string;
-  locationId?: string | null;
-};
-
 export type ScoreEntryProfileSelection = {
   profileId: string;
   locationId: string | null;

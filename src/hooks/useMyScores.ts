@@ -21,10 +21,6 @@ export type MyScores = {
   cycle: CycleSummary | null;
   entries: EnrichedEntry[];
   base: number;
-  positivePoints: number;
-  negativePoints: number;
-  totalPoints: number;
-  performanceScore: number;
   isLoading: boolean;
   isFetching: boolean;
   error: string | null;
@@ -71,19 +67,6 @@ export function useMyScores(): MyScores {
     });
   }, [entriesResult.data, categoryMap, locationMap]);
 
-  const positivePoints = useMemo(
-    () => entries.reduce((sum, e) => (e.points > 0 ? sum + e.points : sum), 0),
-    [entries],
-  );
-
-  const negativePoints = useMemo(
-    () => entries.reduce((sum, e) => (e.points < 0 ? sum + e.points : sum), 0),
-    [entries],
-  );
-
-  const totalPoints = positivePoints + negativePoints;
-  const performanceScore = BASE_SCORE + totalPoints;
-
   const error =
     entriesResult.error instanceof Error
       ? entriesResult.error.message
@@ -95,10 +78,6 @@ export function useMyScores(): MyScores {
     cycle: cycleResult.data ?? null,
     entries,
     base: BASE_SCORE,
-    positivePoints,
-    negativePoints,
-    totalPoints,
-    performanceScore,
     isLoading: entriesResult.isLoading,
     isFetching: entriesResult.isFetching,
     error,

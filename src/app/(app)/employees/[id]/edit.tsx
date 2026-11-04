@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,7 +13,6 @@ import {
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -21,7 +20,7 @@ import { z } from 'zod';
 import { useEmployee } from '@/hooks/useEmployee';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useLocations } from '@/hooks/useLocations';
-import { updateEmployee, updateEmployeeLocations } from '@/services/employeeService';
+import { useSaveEmployee } from '@/hooks/useSaveEmployee';
 import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
 import {
   canEditEmployeeRole,
@@ -31,7 +30,6 @@ import {
   ROLE_HIERARCHY,
 } from '@/constants/permissions';
 import { UpdateEmployeeInput } from '@/types/employee';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 import { webOnlyProps } from '@/utils/a11y';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
@@ -51,9 +49,8 @@ export default function EmployeeEditScreen() {
   const { employee, isLoading: employeeLoading } = useEmployee(id);
   const { profile: currentProfile } = useCurrentProfile();
   const { locations } = useLocations();
-  const queryClient = useQueryClient();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { mutate: saveEmployee, isPending: isSubmitting, error: saveError } = useSaveEmployee(id);
+  const submitError = saveError?.message ?? null;
 
   const canSelf =
     currentProfile !== null && canEditOwnProfile(currentProfile.id, id);
@@ -107,41 +104,23 @@ export default function EmployeeEditScreen() {
     }
   }, [employee, reset]);
 
-  async function performSave(data: EditFormValues): Promise<void> {
-    setSubmitError(null);
-    setIsSubmitting(true);
-    try {
-      const profileInput: UpdateEmployeeInput = {};
-      if (canSelf) {
-        profileInput.fullName = data.fullName !== '' ? data.fullName : undefined;
-        profileInput.phone = data.phone !== '' ? data.phone : undefined;
-      }
-      if (canRole && data.role) {
-        profileInput.role = data.role;
-      }
-      if (canDeactivate) {
-        profileInput.isActive = data.isActive;
-      }
-
-      if (Object.keys(profileInput).length > 0) {
-        await updateEmployee(id, profileInput);
-      }
-
-      if (canLocation) {
-        await updateEmployeeLocations(id, data.locationIds);
-      }
-
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.employee(id) });
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.employees });
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentProfile });
-      router.replace(`/employees/${id}`);
-    } catch (err) {
-      setSubmitError(
-        err instanceof Error ? err.message : 'Failed to save. Please try again.',
-      );
-    } finally {
-      setIsSubmitting(false);
+  function performSave(data: EditFormValues): void {
+    const profile: UpdateEmployeeInput = {};
+    if (canSelf) {
+      profile.fullName = data.fullName !== '' ? data.fullName : undefined;
+      profile.phone = data.phone !== '' ? data.phone : undefined;
     }
+    if (canRole && data.role) {
+      profile.role = data.role;
+    }
+    if (canDeactivate) {
+      profile.isActive = data.isActive;
+    }
+
+    saveEmployee(
+      { profile, locationIds: canLocation ? data.locationIds : undefined },
+      { onSuccess: () => router.replace(`/employees/${id}`) },
+    );
   }
 
   function onSubmit(data: EditFormValues): void {
@@ -156,14 +135,14 @@ export default function EmployeeEditScreen() {
           {
             text: 'Deactivate',
             style: 'destructive',
-            onPress: () => { void performSave(data); },
+            onPress: () => performSave(data),
           },
         ],
       );
       return;
     }
 
-    void performSave(data);
+    performSave(data);
   }
 
   if (employeeLoading || !employee || !currentProfile) {

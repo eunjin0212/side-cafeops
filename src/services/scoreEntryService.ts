@@ -1,7 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import {
   ScoreEntry,
-  CreateScoreEntryInput,
   CreateScoreEntriesBatchInput,
 } from '@/types/score';
 import { uploadScoreImages } from '@/services/storageService';
@@ -41,44 +40,6 @@ async function getCurrentCycleId(): Promise<string> {
   const { data, error } = await supabase.rpc('get_or_create_current_cycle');
   if (error) throw new Error('Failed to resolve current score cycle.');
   return data as string;
-}
-
-export async function createScoreEntry(
-  input: CreateScoreEntryInput,
-): Promise<ScoreEntry> {
-  const cycleId = await getCurrentCycleId();
-
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) throw new Error('Authentication required.');
-
-  const { data, error } = await supabase
-    .from('score_entries')
-    .insert({
-      cycle_id: cycleId,
-      profile_id: input.profileId,
-      category_id: input.categoryId,
-      points: input.points,
-      notes: input.notes ?? null,
-      image_urls: [],
-      submitted_by: user.id,
-      correction_for: input.correctionFor ?? null,
-      location_id: input.locationId ?? null,
-    })
-    .select(ENTRY_QUERY)
-    .single();
-
-  if (error) {
-    if (error.code === '42501') {
-      throw new Error('You do not have permission to submit score entries.');
-    }
-    throw new Error('Failed to submit score entry. Please try again.');
-  }
-
-  return mapScoreEntry(data);
 }
 
 // Read-only fetch for a known cycle — the caller resolves the current

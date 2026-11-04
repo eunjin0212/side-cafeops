@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -12,16 +12,14 @@ import {
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 import { usePermissionGate } from '@/hooks/usePermissionGate';
 import { useScoreCategories } from '@/hooks/useScoreCategories';
-import { updateScoreCategory } from '@/services/scoreCategoryService';
+import { useUpdateScoreCategory } from '@/hooks/useUpdateScoreCategory';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 import { webOnlyProps } from '@/utils/a11y';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
@@ -46,9 +44,8 @@ export default function EditScoreCategoryScreen() {
     '/scores/categories',
   );
   const { categories, isLoading } = useScoreCategories();
-  const queryClient = useQueryClient();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { mutate: updateCategory, isPending: isSubmitting, error } = useUpdateScoreCategory(id);
+  const submitError = error?.message ?? null;
 
   const category = categories.find((c) => c.id === id) ?? null;
 
@@ -78,25 +75,16 @@ export default function EditScoreCategoryScreen() {
     }
   }, [category, reset]);
 
-  async function onSubmit(data: EditCategoryValues): Promise<void> {
-    setSubmitError(null);
-    setIsSubmitting(true);
-    try {
-      await updateScoreCategory(id, {
+  function onSubmit(data: EditCategoryValues): void {
+    updateCategory(
+      {
         name: data.name.trim(),
         section: data.section,
         points: parseInt(data.points, 10),
         isActive: data.isActive,
-      });
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.scoreCategories });
-      router.replace('/scores/categories');
-    } catch (err) {
-      setSubmitError(
-        err instanceof Error ? err.message : 'Failed to update category. Please try again.',
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+      },
+      { onSuccess: () => router.replace('/scores/categories') },
+    );
   }
 
   if (profileLoading || isLoading || !category) {

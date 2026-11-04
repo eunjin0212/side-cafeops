@@ -15,12 +15,11 @@ import { LocationTabs } from '@/components/molecules/LocationTabs';
 import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyText } from '@/components/molecules/EmptyText';
 import { ErrorText } from '@/components/molecules/ErrorText';
+import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
 import { BASE_SCORE } from '@/constants/scoring';
 import { LeaderboardEntry } from '@/types/leaderboard';
 import { useState } from 'react';
-
-const LOCATIONS_UNRESTRICTED_ROLES = ['general_manager', 'owner'];
 
 function formatCycleDate(iso: string): string {
   const d = new Date(iso);
@@ -98,7 +97,7 @@ export default function LeaderboardScreen() {
   const { locations: allLocations } = useLocations();
   const { profile: currentProfile } = useCurrentProfile();
   const canBrowseAllLocations =
-    currentProfile !== null && LOCATIONS_UNRESTRICTED_ROLES.includes(currentProfile.role);
+    currentProfile !== null && can(currentProfile.role, 'browseAllLocations');
 
   // GM/owner may filter across every location; everyone else may only
   // switch between the locations they themselves work at (if more than one).

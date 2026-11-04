@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -11,15 +10,13 @@ import {
   View,
 } from 'react-native';
 import { router } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 import { usePermissionGate } from '@/hooks/usePermissionGate';
-import { createScoreCategory } from '@/services/scoreCategoryService';
+import { useCreateScoreCategory } from '@/hooks/useCreateScoreCategory';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 import { webOnlyProps } from '@/utils/a11y';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
@@ -41,9 +38,8 @@ export default function NewScoreCategoryScreen() {
     'manageScoreCategories',
     '/scores/categories',
   );
-  const queryClient = useQueryClient();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { mutate: createCategory, isPending: isSubmitting, error } = useCreateScoreCategory();
+  const submitError = error?.message ?? null;
 
   const {
     control,
@@ -58,24 +54,15 @@ export default function NewScoreCategoryScreen() {
     },
   });
 
-  async function onSubmit(data: NewCategoryValues): Promise<void> {
-    setSubmitError(null);
-    setIsSubmitting(true);
-    try {
-      await createScoreCategory({
+  function onSubmit(data: NewCategoryValues): void {
+    createCategory(
+      {
         name: data.name.trim(),
         section: data.section,
         points: parseInt(data.points, 10),
-      });
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.scoreCategories });
-      router.replace('/scores/categories');
-    } catch (err) {
-      setSubmitError(
-        err instanceof Error ? err.message : 'Failed to create category. Please try again.',
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+      },
+      { onSuccess: () => router.replace('/scores/categories') },
+    );
   }
 
   if (profileLoading) {

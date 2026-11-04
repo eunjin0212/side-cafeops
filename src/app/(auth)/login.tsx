@@ -16,7 +16,7 @@ import { z } from 'zod';
 
 import { ErrorText } from '@/components/molecules/ErrorText';
 import { ScreenTitle } from '@/components/molecules/ScreenTitle';
-import { signIn } from '@/services/authService';
+import { useSignIn } from '@/hooks/useSignIn';
 import { webOnlyProps } from '@/utils/a11y';
 
 const loginSchema = z.object({
@@ -28,8 +28,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
+  const { mutate: signIn, isPending: isLoading, error } = useSignIn();
+  const authError = error?.message ?? null;
 
   const {
     control,
@@ -40,17 +40,8 @@ export default function LoginScreen() {
     defaultValues: { email: '', password: '' },
   });
 
-  async function onSubmit(data: LoginFormValues): Promise<void> {
-    setAuthError(null);
-    setIsLoading(true);
-    try {
-      await signIn(data.email, data.password);
-      router.replace('/');
-    } catch {
-      setAuthError('Invalid email or password.');
-    } finally {
-      setIsLoading(false);
-    }
+  function onSubmit(data: LoginFormValues): void {
+    signIn(data, { onSuccess: () => router.replace('/') });
   }
 
   return (

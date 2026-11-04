@@ -6,7 +6,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSession } from '@/hooks/useSession';
 import { isUnhandledKeyboardActivation } from '@/utils/a11y';
 
-const queryClient = new QueryClient();
+// By default an offline mutation pauses and replays when back online, which
+// shows an endless spinner and later resends whatever the user had typed.
+// Failing immediately lets the screen show an error instead.
+const queryClient = new QueryClient({
+  defaultOptions: { mutations: { networkMode: 'always' } },
+});
 
 // On web, tapping a Pressable (e.g. a list row) to navigate leaves it
 // DOM-focused. expo-router then freezes the outgoing screen and marks it

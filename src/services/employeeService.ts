@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import {
   Employee,
   EmployeeLocation,
+  SaveEmployeeInput,
   UpdateEmployeeInput,
 } from '@/types/employee';
 import { unwrapJoin } from '@/utils/supabaseJoin';
@@ -89,7 +90,7 @@ export async function getEmployee(id: string): Promise<Employee> {
   return mapEmployee(data);
 }
 
-export async function updateEmployeeLocations(
+async function updateEmployeeLocations(
   profileId: string,
   locationIds: string[],
 ): Promise<void> {
@@ -143,7 +144,7 @@ export async function updateEmployeeLocations(
   }
 }
 
-export async function updateEmployee(
+async function updateEmployee(
   id: string,
   input: UpdateEmployeeInput
 ): Promise<Employee> {
@@ -159,4 +160,16 @@ export async function updateEmployee(
 
   if (error) throw wrapError('update employee', error);
   return getEmployee(id);
+}
+
+// Not atomic: the profile is saved first, so if the location update then fails
+// the profile change stays and the caller sees the error.
+export async function saveEmployee(id: string, input: SaveEmployeeInput): Promise<void> {
+  if (Object.keys(input.profile).length > 0) {
+    await updateEmployee(id, input.profile);
+  }
+
+  if (input.locationIds !== undefined) {
+    await updateEmployeeLocations(id, input.locationIds);
+  }
 }

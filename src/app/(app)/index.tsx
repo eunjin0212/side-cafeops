@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -27,8 +26,9 @@ import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
 import { EnrichedEntry, useMyScores } from '@/hooks/useMyScores';
 import { useNotifications } from '@/hooks/useNotifications';
 import { usePushNotificationRegistration } from '@/hooks/usePushNotificationRegistration';
-import { signOut } from '@/services/authService';
+import { useSignOut } from '@/hooks/useSignOut';
 import { formatPoints, pointsColor } from '@/utils/points';
+import { computeLocationStats } from '@/utils/scoreStats';
 
 // ─── helpers ────────────────────────────────────────────────
 
@@ -72,12 +72,6 @@ function formatLocationsLabel(locations: { id: string; name: string }[]): string
   if (locations.length === 0) return null;
   if (locations.length <= 2) return locations.map((l) => l.name).join(', ');
   return `${locations.length} Locations`;
-}
-
-function locationNetPoints(entries: EnrichedEntry[], locationId: string): number {
-  return entries
-    .filter((e) => e.locationId === locationId)
-    .reduce((sum, e) => sum + e.points, 0);
 }
 
 // ─── sub-components ─────────────────────────────────────────
@@ -191,20 +185,11 @@ export default function HomeScreen() {
   const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(undefined);
   const [viewingPhotos, setViewingPhotos] = useState<string[] | null>(null);
 
-  const queryClient = useQueryClient();
-  const [isSigningOut, setIsSigningOut] = useState(false);
-  const [signOutError, setSignOutError] = useState<string | null>(null);
+  const { mutate: signOut, isPending: isSigningOut, error: signOutFailure } = useSignOut();
+  const signOutError = signOutFailure?.message ?? null;
 
-  async function handleSignOut(): Promise<void> {
-    setSignOutError(null);
-    setIsSigningOut(true);
-    try {
-      await signOut();
-      queryClient.clear();
-    } catch {
-      setSignOutError('Failed to sign out. Please try again.');
-      setIsSigningOut(false);
-    }
+  function handleSignOut(): void {
+    signOut();
   }
 
   const showScoreDashboard = profile !== null && profile.role !== 'owner';
@@ -300,7 +285,7 @@ export default function HomeScreen() {
               return (
                 <LocationScoreCard
                   locationName={loc.name}
-                  score={BASE_SCORE + locationNetPoints(entries, loc.id)}
+                  score={computeLocationStats(entries, loc.id, BASE_SCORE).score}
                   rank={lr.rank}
                   total={lr.total}
                   onPress={() => router.navigate('/scores/my')}

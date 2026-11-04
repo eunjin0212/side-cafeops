@@ -80,10 +80,12 @@ These are static checks. They catch a missing role, not a wrong one, and do not 
 - **Real screen readers.** No testing with VoiceOver, TalkBack, or NVDA. The accessibility tree shows what is exposed, not how it sounds in use.
 - **Native iOS and Android builds.** Only the web build was tested. Some ARIA props are web-only, and `aria-live` is not announced on iOS.
 - **Photo viewer and photo picker.** The code was updated, but the test accounts had no photos to open, so the dialog and its focus handling were not exercised.
-- **Score submission announcement.** Submitting would create permanent score records, which cannot be deleted, so the live region was not observed firing.
+- **Score submission against the real database.** Score records can't be deleted, so the write requests were intercepted in the browser. The live region fired once with the correct count, but no real entry was created.
 - **Browser zoom.** Reflow was checked at 320 px on the score entry screen only.
 
 ## Known gaps
+
+- **Focus after submitting with the keyboard.** Submit buttons are disabled while saving, which drops focus to the page body. The result is still announced, but keyboard users lose their place.
 
 - **Arrow keys in radio groups.** Radios work with Tab and Space, but the full ARIA pattern also uses arrow keys.
 - **Confirmation dialogs on web.** `Alert.alert` does nothing in react-native-web. Deactivating an employee on web never saves, because the save runs from the dialog, and a successful invitation shows no confirmation. This is a functional bug as well as an accessibility one.

@@ -54,8 +54,8 @@ export default function EmployeeDetailScreen() {
     currentProfile !== null &&
     employee !== null &&
     (canEditOwnProfile(currentProfile.id, id) ||
-      canEditEmployeeRole(currentProfile.role, employee?.role ?? 'owner') ||
-      canEditEmployeeLocation(currentProfile.role, employee?.role ?? 'owner'));
+      canEditEmployeeRole(currentProfile.role, employee.role) ||
+      canEditEmployeeLocation(currentProfile.role, employee.role));
 
   const showScoreButton =
     currentProfile !== null &&

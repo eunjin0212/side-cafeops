@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -8,13 +7,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useQueryClient } from '@tanstack/react-query';
 
+import { useInvitationActions } from '@/hooks/useInvitationActions';
 import { useInvitations } from '@/hooks/useInvitations';
-import { cancelInvitation, resendInvitation } from '@/services/invitationService';
 import { Invitation, InvitationStatus } from '@/types/invitation';
 import { ROLE_LABELS } from '@/constants/roles';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
 import { EmptyText } from '@/components/molecules/EmptyText';
@@ -47,39 +44,23 @@ interface InvitationRowProps {
 }
 
 function InvitationRow({ invitation }: InvitationRowProps) {
-  const queryClient = useQueryClient();
-  const [isCancelling, setIsCancelling] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const { cancel, resend } = useInvitationActions();
+  const isCancelling = cancel.isPending;
+  const isResending = resend.isPending;
+  const actionError = cancel.error?.message ?? resend.error?.message ?? null;
 
   const canCancel = invitation.status === 'pending';
   const canResend = invitation.status === 'pending' || invitation.status === 'expired';
   const isAnyBusy = isCancelling || isResending;
 
-  async function handleCancel(): Promise<void> {
-    setActionError(null);
-    setIsCancelling(true);
-    try {
-      await cancelInvitation(invitation.id);
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invitations });
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to cancel.');
-    } finally {
-      setIsCancelling(false);
-    }
+  function handleCancel(): void {
+    resend.reset();
+    cancel.mutate(invitation.id);
   }
 
-  async function handleResend(): Promise<void> {
-    setActionError(null);
-    setIsResending(true);
-    try {
-      await resendInvitation(invitation.id);
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invitations });
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to resend.');
-    } finally {
-      setIsResending(false);
-    }
+  function handleResend(): void {
+    cancel.reset();
+    resend.mutate(invitation.id);
   }
 
   const colors = STATUS_COLORS[invitation.status];

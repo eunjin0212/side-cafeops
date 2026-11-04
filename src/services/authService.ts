@@ -49,13 +49,29 @@ function resolvePrimaryLocation(
 
 export async function signIn(email: string, password: string): Promise<Session> {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw error;
+  if (error) {
+    if (error.code === 'invalid_credentials') {
+      throw new Error('Invalid email or password.');
+    }
+    console.error('signIn: failed', error);
+    throw new Error('Unable to sign in. Please try again.');
+  }
   return data.session;
 }
 
 export async function signOut(): Promise<void> {
   const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  if (error) {
+    console.error('signOut: failed', error);
+    throw new Error('Failed to sign out. Please try again.');
+  }
+}
+
+export function subscribeToSession(onChange: (session: Session | null) => void): () => void {
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => onChange(session));
+  return () => subscription.unsubscribe();
 }
 
 export async function getCurrentProfile(): Promise<CurrentProfile | null> {
