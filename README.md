@@ -16,8 +16,7 @@ Built with React Native (Expo) and Supabase.
 
 [URL](https://side-cafeops.vercel.app/)
 
-example ID general.manager.cafeops@example.com
-password 1234
+Demo login (trainee role): `trainee.cafeops@example.com` / `1234`
 
 ## Accessibility
 

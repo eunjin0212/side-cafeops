@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getInvitations } from '@/services/invitationService';
 import { Invitation } from '@/types/invitation';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { queryErrorMessage } from '@/utils/errors';
 
 export function useInvitations(): {
   invitations: Invitation[];
@@ -20,7 +21,7 @@ export function useInvitations(): {
     invitations: data ?? [],
     isLoading,
     isRefreshing: !isLoading && isFetching,
-    error: error instanceof Error ? error.message : error ? 'Failed to load invitations.' : null,
+    error: queryErrorMessage(error, 'Failed to load invitations.'),
     refetch,
   };
 }

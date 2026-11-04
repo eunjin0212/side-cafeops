@@ -1,4 +1,4 @@
-import { formatPoints, pointsColor } from '@/utils/points';
+import { formatPoints, pointsColor, rankBadgeColors } from '@/utils/points';
 
 describe('formatPoints()', () => {
   it('prefixes positive points with +', () => {
@@ -25,5 +25,18 @@ describe('pointsColor()', () => {
 
   it('is gray for zero', () => {
     expect(pointsColor(0)).toBe('#4B5563');
+  });
+});
+
+describe('rankBadgeColors()', () => {
+  it('highlights the top three', () => {
+    expect(rankBadgeColors(1).bg).toBe('#F59E0B');
+    expect(rankBadgeColors(2).bg).toBe('#6B7280');
+    expect(rankBadgeColors(3).bg).toBe('#B45309');
+  });
+
+  it('is neutral below third place and when unranked', () => {
+    expect(rankBadgeColors(4)).toEqual(rankBadgeColors(null));
+    expect(rankBadgeColors(null).bg).toBe('#F3F4F6');
   });
 });

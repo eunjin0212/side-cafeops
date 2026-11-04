@@ -12,6 +12,7 @@ import { useInvitationActions } from '@/hooks/useInvitationActions';
 import { useInvitations } from '@/hooks/useInvitations';
 import { Invitation, InvitationStatus } from '@/types/invitation';
 import { ROLE_LABELS } from '@/constants/roles';
+import { formatDotDate } from '@/utils/dates';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
 import { EmptyText } from '@/components/molecules/EmptyText';
@@ -30,14 +31,6 @@ const STATUS_COLORS: Record<InvitationStatus, { bg: string; text: string }> = {
   expired: { bg: '#F3F4F6', text: '#4B5563' },
   cancelled: { bg: '#F3F4F6', text: '#4B5563' },
 };
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}.${m}.${day}`;
-}
 
 interface InvitationRowProps {
   invitation: Invitation;
@@ -82,8 +75,8 @@ function InvitationRow({ invitation }: InvitationRowProps) {
         {invitation.locationName ? ` · ${invitation.locationName}` : ''}
       </Text>
       <Text style={styles.dates}>
-        Invited {formatDate(invitation.createdAt)} · Expires{' '}
-        {formatDate(invitation.expiresAt)}
+        Invited {formatDotDate(invitation.createdAt)} · Expires{' '}
+        {formatDotDate(invitation.expiresAt)}
       </Text>
 
       {(canCancel || canResend) && (

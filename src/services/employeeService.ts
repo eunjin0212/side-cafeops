@@ -5,6 +5,7 @@ import {
   SaveEmployeeInput,
   UpdateEmployeeInput,
 } from '@/types/employee';
+import { serviceError } from '@/services/serviceError';
 import { unwrapJoin } from '@/utils/supabaseJoin';
 
 const EMPLOYEE_QUERY = `
@@ -62,11 +63,7 @@ function mapEmployee(row: {
 }
 
 function wrapError(context: string, error: { code?: string; message: string }): Error {
-  console.error(`employeeService: ${context}`, error);
-  if (error.code === '42501') {
-    return new Error('You do not have permission to perform this action.');
-  }
-  return new Error(`Failed to ${context}. Please try again.`);
+  return serviceError(`employeeService: ${context}`, error, `Failed to ${context}. Please try again.`);
 }
 
 export async function getEmployees(): Promise<Employee[]> {

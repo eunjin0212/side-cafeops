@@ -3,6 +3,7 @@ import {
   ScoreEntry,
   CreateScoreEntriesBatchInput,
 } from '@/types/score';
+import { serviceError } from '@/services/serviceError';
 import { uploadScoreImages } from '@/services/storageService';
 
 const ENTRY_QUERY =
@@ -38,7 +39,13 @@ function mapScoreEntry(row: {
 
 async function getCurrentCycleId(): Promise<string> {
   const { data, error } = await supabase.rpc('get_or_create_current_cycle');
-  if (error) throw new Error('Failed to resolve current score cycle.');
+  if (error) {
+    throw serviceError(
+      'scoreEntryService: resolve cycle',
+      error,
+      'Failed to resolve current score cycle.',
+    );
+  }
   return data as string;
 }
 
@@ -56,7 +63,7 @@ export async function getMyScoreEntries(
     .eq('cycle_id', cycleId)
     .order('created_at', { ascending: false });
 
-  if (error) throw new Error('Failed to load score entries.');
+  if (error) throw serviceError('scoreEntryService: load', error, 'Failed to load score entries.');
   return data.map(mapScoreEntry);
 }
 
@@ -97,10 +104,12 @@ export async function createScoreEntries(
     .select(ENTRY_QUERY);
 
   if (error) {
-    if (error.code === '42501') {
-      throw new Error('You do not have permission to submit score entries.');
-    }
-    throw new Error('Failed to submit score entries. Please try again.');
+    throw serviceError(
+      'scoreEntryService: submit',
+      error,
+      'Failed to submit score entries. Please try again.',
+      'You do not have permission to submit score entries.',
+    );
   }
 
   return data.map(mapScoreEntry);

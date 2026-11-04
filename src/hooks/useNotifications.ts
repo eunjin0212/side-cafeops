@@ -7,6 +7,7 @@ import {
 } from '@/services/notificationService';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { queryErrorMessage } from '@/utils/errors';
 import { AppNotification } from '@/types/notification';
 
 export function useNotifications(): {
@@ -54,8 +55,7 @@ export function useNotifications(): {
     unreadCount,
     isLoading,
     isFetching,
-    error:
-      error instanceof Error ? error.message : error ? 'Failed to load notifications.' : null,
+    error: queryErrorMessage(error, 'Failed to load notifications.'),
     refetch,
     markAsRead: (id: string) => markReadMutation.mutate(id),
     markAllAsRead: () => markAllReadMutation.mutate(),

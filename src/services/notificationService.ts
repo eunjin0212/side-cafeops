@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { serviceError } from '@/services/serviceError';
 import { AppNotification, NotificationType } from '@/types/notification';
 
 const NOTIFICATION_QUERY =
@@ -35,8 +36,11 @@ export async function getMyNotifications(profileId: string): Promise<AppNotifica
     .limit(50);
 
   if (error) {
-    console.error('notificationService: load notifications', error);
-    throw new Error('Failed to load notifications. Please try again.');
+    throw serviceError(
+      'notificationService: load notifications',
+      error,
+      'Failed to load notifications. Please try again.',
+    );
   }
   return data.map(mapNotification);
 }
@@ -48,8 +52,11 @@ export async function markNotificationRead(id: string): Promise<void> {
     .eq('id', id);
 
   if (error) {
-    console.error('notificationService: mark read', error);
-    throw new Error('Failed to update notification. Please try again.');
+    throw serviceError(
+      'notificationService: mark read',
+      error,
+      'Failed to update notification. Please try again.',
+    );
   }
 }
 
@@ -61,8 +68,11 @@ export async function markAllNotificationsRead(profileId: string): Promise<void>
     .eq('is_read', false);
 
   if (error) {
-    console.error('notificationService: mark all read', error);
-    throw new Error('Failed to update notifications. Please try again.');
+    throw serviceError(
+      'notificationService: mark all read',
+      error,
+      'Failed to update notifications. Please try again.',
+    );
   }
 }
 
@@ -100,7 +110,10 @@ export async function registerWebPushSubscription(
     );
 
   if (error) {
-    console.error('notificationService: register web push subscription', error);
-    throw new Error('Failed to save your notification subscription. Please try again.');
+    throw serviceError(
+      'notificationService: register web push subscription',
+      error,
+      'Failed to save your notification subscription. Please try again.',
+    );
   }
 }

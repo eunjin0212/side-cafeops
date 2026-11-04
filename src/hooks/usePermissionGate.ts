@@ -3,7 +3,7 @@ import { router, type Href } from 'expo-router';
 
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { can, Permission } from '@/constants/permissions';
-import { CurrentProfile } from '@/services/authService';
+import { CurrentProfile } from '@/types/employee';
 
 // Redirects away and reports "still loading" for as long as the profile
 // hasn't resolved OR the resolved profile lacks the permission — so a

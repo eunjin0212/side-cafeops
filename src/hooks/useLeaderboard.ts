@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { getLeaderboard, getCurrentCycle } from '@/services/leaderboardService';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { queryErrorMessage } from '@/utils/errors';
 import { LeaderboardEntry, CycleSummary } from '@/types/leaderboard';
 
 export function useLeaderboard(locationId?: string): {
@@ -27,12 +28,7 @@ export function useLeaderboard(locationId?: string): {
     cycle: cycleResult.data ?? null,
     isLoading: entriesResult.isLoading,
     isFetching: entriesResult.isFetching,
-    error:
-      entriesResult.error instanceof Error
-        ? entriesResult.error.message
-        : entriesResult.error
-          ? 'Failed to load leaderboard.'
-          : null,
+    error: queryErrorMessage(entriesResult.error, 'Failed to load leaderboard.'),
     refetch: entriesResult.refetch,
   };
 }

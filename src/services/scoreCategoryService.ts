@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { serviceError } from '@/services/serviceError';
 import {
   ScoreCategory,
   CreateScoreCategoryInput,
@@ -35,7 +36,13 @@ export async function getScoreCategories(): Promise<ScoreCategory[]> {
     .order('section')
     .order('name');
 
-  if (error) throw error;
+  if (error) {
+    throw serviceError(
+      'scoreCategoryService: load',
+      error,
+      'Failed to load categories. Please try again.',
+    );
+  }
   return data.map(mapScoreCategory);
 }
 
@@ -49,10 +56,12 @@ export async function createScoreCategory(
     .single();
 
   if (error) {
-    if (error.code === '42501') {
-      throw new Error('You do not have permission to create score categories.');
-    }
-    throw new Error('Failed to create category. Please try again.');
+    throw serviceError(
+      'scoreCategoryService: create',
+      error,
+      'Failed to create category. Please try again.',
+      'You do not have permission to create score categories.',
+    );
   }
 
   return mapScoreCategory(data);
@@ -75,10 +84,12 @@ export async function updateScoreCategory(
     .single();
 
   if (error) {
-    if (error.code === '42501') {
-      throw new Error('You do not have permission to update score categories.');
-    }
-    throw new Error('Failed to update category. Please try again.');
+    throw serviceError(
+      'scoreCategoryService: update',
+      error,
+      'Failed to update category. Please try again.',
+      'You do not have permission to update score categories.',
+    );
   }
 
   return mapScoreCategory(data);

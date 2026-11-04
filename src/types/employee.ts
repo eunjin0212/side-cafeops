@@ -39,3 +39,15 @@ export type SaveEmployeeInput = {
   profile: UpdateEmployeeInput;
   locationIds?: string[];
 };
+
+export type CurrentProfile = {
+  id: string;
+  email: string;
+  fullName: string | null;
+  role: EmployeeRole;
+  isActive: boolean;
+  avatarUrl: string | null;
+  locationId: string | null;
+  locationName: string | null;
+  locations: { id: string; name: string }[];
+};

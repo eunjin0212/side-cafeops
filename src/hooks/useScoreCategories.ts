@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getScoreCategories } from '@/services/scoreCategoryService';
 import { ScoreCategory } from '@/types/score';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { queryErrorMessage } from '@/utils/errors';
 
 export function useScoreCategories(): {
   categories: ScoreCategory[];
@@ -17,6 +18,6 @@ export function useScoreCategories(): {
   return {
     categories: data ?? [],
     isLoading,
-    error: error instanceof Error ? error.message : error ? 'Failed to load categories.' : null,
+    error: queryErrorMessage(error, 'Failed to load categories.'),
   };
 }

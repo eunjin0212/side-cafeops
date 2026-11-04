@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { serviceError } from '@/services/serviceError';
 import { EmployeeRole } from '@/types/employee';
 import {
   CreateInvitationInput,
@@ -72,10 +73,12 @@ export async function createInvitation(
     .single();
 
   if (error) {
-    if (error.code === '42501') {
-      throw new Error('You do not have permission to invite employees.');
-    }
-    throw new Error('Failed to send invitation. Please try again.');
+    throw serviceError(
+      'invitationService: create',
+      error,
+      'Failed to send invitation. Please try again.',
+      'You do not have permission to invite employees.',
+    );
   }
 
   return mapInvitation(data as InvitationRow);
@@ -89,10 +92,12 @@ export async function cancelInvitation(id: string): Promise<void> {
     .eq('status', 'pending');
 
   if (error) {
-    if (error.code === '42501') {
-      throw new Error('You do not have permission to cancel this invitation.');
-    }
-    throw new Error('Failed to cancel invitation. Please try again.');
+    throw serviceError(
+      'invitationService: cancel',
+      error,
+      'Failed to cancel invitation. Please try again.',
+      'You do not have permission to cancel this invitation.',
+    );
   }
 }
 
@@ -108,10 +113,12 @@ export async function resendInvitation(id: string): Promise<void> {
     .in('status', ['pending', 'expired']);
 
   if (error) {
-    if (error.code === '42501') {
-      throw new Error('You do not have permission to resend this invitation.');
-    }
-    throw new Error('Failed to resend invitation. Please try again.');
+    throw serviceError(
+      'invitationService: resend',
+      error,
+      'Failed to resend invitation. Please try again.',
+      'You do not have permission to resend this invitation.',
+    );
   }
 }
 
@@ -122,7 +129,7 @@ export async function getInvitations(): Promise<Invitation[]> {
     .order('created_at', { ascending: false });
 
   if (error) {
-    throw new Error('Failed to load invitations.');
+    throw serviceError('invitationService: load', error, 'Failed to load invitations.');
   }
 
   return (data as InvitationRow[]).map(mapInvitation);

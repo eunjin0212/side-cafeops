@@ -10,6 +10,19 @@ import {
 // ─── can() ───────────────────────────────────────────────────────────────────
 
 describe('can()', () => {
+  describe('viewScoreDashboard', () => {
+    it('owner has no score dashboard', () => {
+      expect(can('owner', 'viewScoreDashboard')).toBe(false);
+    });
+
+    it.each(['trainee', 'staff', 'supervisor', 'location_manager', 'general_manager'] as const)(
+      '%s has a score dashboard',
+      (role) => {
+        expect(can(role, 'viewScoreDashboard')).toBe(true);
+      },
+    );
+  });
+
   describe('browseAllLocations', () => {
     it.each(['general_manager', 'owner'] as const)('%s can browse all locations', (role) => {
       expect(can(role, 'browseAllLocations')).toBe(true);

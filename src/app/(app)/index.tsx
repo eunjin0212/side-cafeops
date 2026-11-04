@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,168 +9,26 @@ import {
   View,
 } from 'react-native';
 
+import { ActivityRow } from '@/components/molecules/ActivityRow';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import { ErrorText } from '@/components/molecules/ErrorText';
 import { ListCard } from '@/components/molecules/ListCard';
+import { LocationScoreCard } from '@/components/molecules/LocationScoreCard';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
+import { NavCard } from '@/components/molecules/NavCard';
 import { PhotoViewerModal } from '@/components/molecules/PhotoViewerModal';
+import { ProfileSummary } from '@/components/molecules/ProfileSummary';
 import { ScreenTitle } from '@/components/molecules/ScreenTitle';
 import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { can } from '@/constants/permissions';
-import { ROLE_LABELS } from '@/constants/roles';
-import { SCORE_SECTION_LABELS } from '@/constants/scoreSections';
 import { BASE_SCORE } from '@/constants/scoring';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
-import { EnrichedEntry, useMyScores } from '@/hooks/useMyScores';
+import { useMyScores } from '@/hooks/useMyScores';
 import { useNotifications } from '@/hooks/useNotifications';
 import { usePushNotificationRegistration } from '@/hooks/usePushNotificationRegistration';
 import { useSignOut } from '@/hooks/useSignOut';
-import { formatPoints, pointsColor } from '@/utils/points';
 import { computeLocationStats } from '@/utils/scoreStats';
-
-// ─── helpers ────────────────────────────────────────────────
-
-function pointsBg(pts: number): string {
-  if (pts > 0) return '#DCFCE7';
-  if (pts < 0) return '#FEE2E2';
-  return '#F3F4F6';
-}
-
-function rankBadgeStyle(rank: number): { bg: string; text: string } {
-  if (rank === 1) return { bg: '#F59E0B', text: '#111827' };
-  if (rank === 2) return { bg: '#6B7280', text: '#fff' };
-  if (rank === 3) return { bg: '#B45309', text: '#fff' };
-  return { bg: '#F3F4F6', text: '#4B5563' };
-}
-
-function formatEntryDateTime(iso: string): string {
-  const d = new Date(iso);
-  const now = new Date();
-  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  const isSameDay = (a: Date, b: Date) =>
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
-
-  if (isSameDay(d, now)) return `Today, ${time}`;
-
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  if (isSameDay(d, yesterday)) return `Yesterday, ${time}`;
-
-  return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${time}`;
-}
-
-function getInitial(fullName: string | null, email: string): string {
-  const source = fullName && fullName.trim().length > 0 ? fullName : email;
-  return source.charAt(0).toUpperCase();
-}
-
-function formatLocationsLabel(locations: { id: string; name: string }[]): string | null {
-  if (locations.length === 0) return null;
-  if (locations.length <= 2) return locations.map((l) => l.name).join(', ');
-  return `${locations.length} Locations`;
-}
-
-// ─── sub-components ─────────────────────────────────────────
-
-interface ActivityRowProps {
-  entry: EnrichedEntry;
-  onViewPhotos: (imageUrls: string[]) => void;
-}
-
-function ActivityRow({ entry, onViewPhotos }: ActivityRowProps) {
-  return (
-    <View style={styles.activityRow}>
-      <View style={[styles.pointsBadge, { backgroundColor: pointsBg(entry.points) }]}>
-        <Text style={[styles.pointsBadgeText, { color: pointsColor(entry.points) }]}>
-          {formatPoints(entry.points)}
-        </Text>
-      </View>
-
-      <View style={styles.activityMain}>
-        <Text style={styles.activityName} numberOfLines={1}>
-          {entry.categoryName}
-        </Text>
-        <Text style={styles.activityMeta} numberOfLines={1}>
-          {SCORE_SECTION_LABELS[entry.section]}
-          {entry.locationName ? ` · ${entry.locationName}` : ''} ·{' '}
-          {formatEntryDateTime(entry.createdAt)}
-        </Text>
-      </View>
-
-      <View style={styles.activityIcons}>
-        {entry.imageUrls.length > 0 && (
-          <Pressable
-            role="button"
-            aria-label={`View photos for ${entry.categoryName}`}
-            style={styles.activityPhotoButton}
-            onPress={() => onViewPhotos(entry.imageUrls)}
-            hitSlop={4}
-          >
-            <Text style={styles.activityIcon} aria-hidden>📷</Text>
-          </Pressable>
-        )}
-        {entry.notes !== null && (
-          <Text style={styles.activityIcon} role="img" aria-label="Has a note">📝</Text>
-        )}
-      </View>
-    </View>
-  );
-}
-
-interface NavCardProps {
-  label: string;
-  icon: string;
-  onPress: () => void;
-}
-
-function NavCard({ label, icon, onPress }: NavCardProps) {
-  return (
-    <Pressable role="link" style={styles.navCard} onPress={onPress}>
-      <Text style={styles.navCardIcon} aria-hidden>{icon}</Text>
-      <Text style={styles.navCardText}>{label}</Text>
-    </Pressable>
-  );
-}
-
-interface LocationScoreCardProps {
-  locationName: string;
-  score: number;
-  rank: number | null;
-  total: number;
-  onPress: () => void;
-}
-
-function LocationScoreCard({ locationName, score, rank, total, onPress }: LocationScoreCardProps) {
-  const badge = rank !== null ? rankBadgeStyle(rank) : { bg: '#F3F4F6', text: '#4B5563' };
-
-  return (
-    <Pressable role="link" style={styles.locationCard} onPress={onPress}>
-      <View style={styles.locationCardTop}>
-        <View>
-          <Text style={styles.locationCardLabel}>{locationName}</Text>
-          <Text style={styles.scoreValue}>{score}</Text>
-        </View>
-        <View style={[styles.rankBadgeCircle, { backgroundColor: badge.bg }]} aria-hidden>
-          <Text style={[styles.rankBadgeNumber, { color: badge.text }]}>
-            {rank !== null ? `#${rank}` : '–'}
-          </Text>
-        </View>
-      </View>
-      <View style={styles.cardDivider} />
-      <View style={styles.viewScoresRow}>
-        <Text style={styles.viewScoresText}>
-          {rank !== null ? `Rank #${rank} of ${total}` : 'View My Scores'}
-        </Text>
-        <Text style={styles.chevron} aria-hidden>›</Text>
-      </View>
-    </Pressable>
-  );
-}
-
-// ─── screen ─────────────────────────────────────────────────
 
 export default function HomeScreen() {
   const { profile } = useCurrentProfile();
@@ -192,13 +49,14 @@ export default function HomeScreen() {
     signOut();
   }
 
-  const showScoreDashboard = profile !== null && profile.role !== 'owner';
-  const locationsLabel = profile ? formatLocationsLabel(profile.locations) : null;
+  const showScoreDashboard = profile !== null && can(profile.role, 'viewScoreDashboard');
 
   const effectiveLocationId = selectedLocationId ?? profile?.locationId ?? locations[0]?.id;
   const recentEntries = entries
     .filter((e) => e.locationId === effectiveLocationId)
     .slice(0, 3);
+  const activeLocation = locations.find((l) => l.id === effectiveLocationId);
+  const activeRank = myLocationRanks.find((r) => r.locationId === effectiveLocationId);
 
   return (
     <>
@@ -243,29 +101,7 @@ export default function HomeScreen() {
           <ErrorText style={styles.notifyError}>{subscribeError}</ErrorText>
         )}
 
-        <View style={styles.profileRow}>
-          {profile?.avatarUrl ? (
-            <Image source={{ uri: profile.avatarUrl }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarFallback}>
-              <Text style={styles.avatarInitial}>
-                {profile ? getInitial(profile.fullName, profile.email) : '?'}
-              </Text>
-            </View>
-          )}
-          <View style={styles.profileText}>
-            <Text style={styles.greeting}>
-              {profile ? `Hi, ${profile.fullName ?? profile.email}! 👋` : 'Loading...'}
-            </Text>
-            {profile && (
-              <Text style={styles.subGreeting}>
-                {locationsLabel
-                  ? `${locationsLabel} · ${ROLE_LABELS[profile.role]}`
-                  : ROLE_LABELS[profile.role]}
-              </Text>
-            )}
-          </View>
-        </View>
+        <ProfileSummary profile={profile} />
 
         {/* Score dashboard — not shown for owner */}
         {showScoreDashboard && (
@@ -278,20 +114,15 @@ export default function HomeScreen() {
               />
             )}
 
-            {(() => {
-              const loc = locations.find((l) => l.id === effectiveLocationId);
-              const lr = myLocationRanks.find((r) => r.locationId === effectiveLocationId);
-              if (!loc || !lr || lr.isLoading) return null;
-              return (
-                <LocationScoreCard
-                  locationName={loc.name}
-                  score={computeLocationStats(entries, loc.id, BASE_SCORE).score}
-                  rank={lr.rank}
-                  total={lr.total}
-                  onPress={() => router.navigate('/scores/my')}
-                />
-              );
-            })()}
+            {activeLocation && activeRank && !activeRank.isLoading && (
+              <LocationScoreCard
+                locationName={activeLocation.name}
+                score={computeLocationStats(entries, activeLocation.id, BASE_SCORE).score}
+                rank={activeRank.rank}
+                total={activeRank.total}
+                onPress={() => router.navigate('/scores/my')}
+              />
+            )}
 
             {/* Recent Activity */}
             <View style={styles.section}>
@@ -378,8 +209,6 @@ export default function HomeScreen() {
   );
 }
 
-// ─── styles ─────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   scroll: {
     flex: 1,
@@ -449,95 +278,6 @@ const styles = StyleSheet.create({
   notifyError: {
     marginTop: 6,
   },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-  },
-  avatarFallback: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#111827',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitial: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  profileText: {
-    gap: 2,
-  },
-  greeting: {
-    fontSize: 19,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  subGreeting: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  locationCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: 18,
-    gap: 16,
-  },
-  locationCardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  locationCardLabel: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-  scoreValue: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: '#111827',
-  },
-  rankBadgeCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  rankBadgeNumber: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  cardDivider: {
-    height: 1,
-    backgroundColor: '#F3F4F6',
-  },
-  viewScoresRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  viewScoresText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  chevron: {
-    fontSize: 20,
-    color: '#6B7280',
-    fontWeight: '600',
-  },
   section: {
     gap: 10,
   },
@@ -564,74 +304,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
   },
-  activityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  pointsBadge: {
-    minWidth: 44,
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  pointsBadgeText: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  activityMain: {
-    flex: 1,
-    gap: 2,
-  },
-  activityName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  activityMeta: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  activityIcons: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  activityPhotoButton: {
-    minWidth: 44,
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  activityIcon: {
-    fontSize: 14,
-  },
   navGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
-  },
-  navCard: {
-    flexBasis: '47%',
-    flexGrow: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-  },
-  navCardIcon: {
-    fontSize: 18,
-  },
-  navCardText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
   },
   signOutButton: {
     marginTop: 4,

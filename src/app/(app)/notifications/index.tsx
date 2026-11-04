@@ -15,16 +15,7 @@ import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import { ErrorText } from '@/components/molecules/ErrorText';
 import { AppNotification } from '@/types/notification';
-
-function formatDateTime(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
+import { formatDateTime } from '@/utils/dates';
 
 interface NotificationRowProps {
   notification: AppNotification;

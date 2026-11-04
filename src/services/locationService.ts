@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { serviceError } from '@/services/serviceError';
 import { Location } from '@/types/location';
 
 export async function getLocations(): Promise<Location[]> {
@@ -9,8 +10,11 @@ export async function getLocations(): Promise<Location[]> {
     .order('name', { ascending: true });
 
   if (error) {
-    console.error('locationService: load locations', error);
-    throw new Error('Failed to load locations. Please try again.');
+    throw serviceError(
+      'locationService: load locations',
+      error,
+      'Failed to load locations. Please try again.',
+    );
   }
 
   return data.map((row) => ({

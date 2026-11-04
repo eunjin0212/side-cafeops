@@ -7,15 +7,10 @@ import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useScoreCategories } from '@/hooks/useScoreCategories';
 import { useLocations } from '@/hooks/useLocations';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { queryErrorMessage } from '@/utils/errors';
 import { BASE_SCORE } from '@/constants/scoring';
-import { ScoreEntry, ScoreSection } from '@/types/score';
+import { EnrichedEntry } from '@/types/score';
 import { CycleSummary } from '@/types/leaderboard';
-
-export type EnrichedEntry = ScoreEntry & {
-  categoryName: string;
-  section: ScoreSection;
-  locationName: string | null;
-};
 
 export type MyScores = {
   cycle: CycleSummary | null;
@@ -67,20 +62,13 @@ export function useMyScores(): MyScores {
     });
   }, [entriesResult.data, categoryMap, locationMap]);
 
-  const error =
-    entriesResult.error instanceof Error
-      ? entriesResult.error.message
-      : entriesResult.error
-        ? 'Failed to load score entries.'
-        : null;
-
   return {
     cycle: cycleResult.data ?? null,
     entries,
     base: BASE_SCORE,
     isLoading: entriesResult.isLoading,
     isFetching: entriesResult.isFetching,
-    error,
+    error: queryErrorMessage(entriesResult.error, 'Failed to load score entries.'),
     refetch: entriesResult.refetch,
   };
 }

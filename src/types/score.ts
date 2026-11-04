@@ -36,6 +36,12 @@ export type ScoreEntry = {
   createdAt: string;
 };
 
+export type EnrichedEntry = ScoreEntry & {
+  categoryName: string;
+  section: ScoreSection;
+  locationName: string | null;
+};
+
 export type ScoreEntryProfileSelection = {
   profileId: string;
   locationId: string | null;

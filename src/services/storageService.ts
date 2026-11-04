@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { serviceError } from '@/services/serviceError';
 
 export async function uploadImage(
   uri: string,
@@ -17,8 +18,11 @@ export async function uploadImage(
     });
 
   if (error) {
-    console.error('storageService: upload image', error);
-    throw new Error('Failed to upload image. Please try again.');
+    throw serviceError(
+      'storageService: upload image',
+      error,
+      'Failed to upload image. Please try again.',
+    );
   }
 
   const {

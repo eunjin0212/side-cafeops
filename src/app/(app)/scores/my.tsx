@@ -9,7 +9,8 @@ import {
   View,
 } from 'react-native';
 
-import { useMyScores, EnrichedEntry } from '@/hooks/useMyScores';
+import { useMyScores } from '@/hooks/useMyScores';
+import { EnrichedEntry } from '@/types/score';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
@@ -18,20 +19,9 @@ import { EmptyState } from '@/components/molecules/EmptyState';
 import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { ErrorText } from '@/components/molecules/ErrorText';
 import { PhotoViewerModal } from '@/components/molecules/PhotoViewerModal';
+import { formatMonthDay } from '@/utils/dates';
 import { formatPoints, pointsColor } from '@/utils/points';
 import { computeLocationStats } from '@/utils/scoreStats';
-
-// ─── helpers ────────────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function formatCycleDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
 
 // ─── sub-components ─────────────────────────────────────────
 
@@ -85,7 +75,7 @@ function EntryRow({ entry, onViewPhotos }: EntryRowProps) {
             {entry.notes}
           </Text>
         )}
-        <Text style={styles.entryDate}>{formatDate(entry.createdAt)}</Text>
+        <Text style={styles.entryDate}>{formatMonthDay(entry.createdAt)}</Text>
       </View>
       <Text style={[styles.entryPoints, { color: pointsColor(entry.points) }]}>
         {formatPoints(entry.points)}
@@ -104,7 +94,7 @@ export default function MyScoreScreen() {
 
   const cycleLabel =
     cycle
-      ? `${formatCycleDate(cycle.startedAt)} – ${formatCycleDate(cycle.endedAt)}`
+      ? `${formatMonthDay(cycle.startedAt)} – ${formatMonthDay(cycle.endedAt)}`
       : null;
 
   const locations = profile?.locations ?? [];

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -19,28 +20,20 @@ import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
 import { BASE_SCORE } from '@/constants/scoring';
 import { LeaderboardEntry } from '@/types/leaderboard';
-import { useState } from 'react';
+import { formatMonthDay } from '@/utils/dates';
+import { rankBadgeColors } from '@/utils/points';
 
-function formatCycleDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function pointsColor(pts: number): string {
+// Colors a displayed score against the base, unlike utils/points' pointsColor,
+// which colors a point change against zero.
+function scoreColor(pts: number): string {
   if (pts > BASE_SCORE) return '#166534';
   if (pts < BASE_SCORE) return '#B91C1C';
   return '#6B7280';
 }
 
-function rankBadgeStyle(rank: number): {
-  bg: string;
-  text: string;
-  size: number;
-} {
-  if (rank === 1) return { bg: '#F59E0B', text: '#111827', size: 32 };
-  if (rank === 2) return { bg: '#6B7280', text: '#fff', size: 30 };
-  if (rank === 3) return { bg: '#B45309', text: '#fff', size: 30 };
-  return { bg: '#F3F4F6', text: '#4B5563', size: 28 };
+function rankBadgeSize(rank: number): number {
+  if (rank === 1) return 32;
+  return rank <= 3 ? 30 : 28;
 }
 
 interface EntryRowProps {
@@ -49,7 +42,8 @@ interface EntryRowProps {
 }
 
 function EntryRow({ entry, isCurrentUser }: EntryRowProps) {
-  const badge = rankBadgeStyle(entry.rank);
+  const badge = rankBadgeColors(entry.rank);
+  const badgeSize = rankBadgeSize(entry.rank);
   const displayName = entry.fullName ?? entry.email;
 
   return (
@@ -61,7 +55,7 @@ function EntryRow({ entry, isCurrentUser }: EntryRowProps) {
       <View
         style={[
           styles.rankBadge,
-          { width: badge.size, height: badge.size, backgroundColor: badge.bg },
+          { width: badgeSize, height: badgeSize, backgroundColor: badge.bg },
         ]}
       >
         <Text style={[styles.rankText, { color: badge.text, fontSize: entry.rank < 10 ? 13 : 11 }]}>
@@ -82,7 +76,7 @@ function EntryRow({ entry, isCurrentUser }: EntryRowProps) {
         </Text>
       </View>
 
-      <Text style={[styles.points, { color: pointsColor(entry.totalPoints) }]}>
+      <Text style={[styles.points, { color: scoreColor(entry.totalPoints) }]}>
         {entry.totalPoints}
       </Text>
     </View>
@@ -107,7 +101,7 @@ export default function LeaderboardScreen() {
 
   const cycleLabel =
     cycle
-      ? `${formatCycleDate(cycle.startedAt)} – ${formatCycleDate(cycle.endedAt)}`
+      ? `${formatMonthDay(cycle.startedAt)} – ${formatMonthDay(cycle.endedAt)}`
       : 'Current Cycle';
 
   return (

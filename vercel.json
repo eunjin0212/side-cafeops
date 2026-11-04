@@ -4,8 +4,8 @@
   "cleanUrls": true,
   "framework": null,
   "rewrites": [
-    { "source": "/employees/:id/edit", "destination": "/employees/[id]/edit.html" },
-    { "source": "/employees/:id", "destination": "/employees/[id].html" },
-    { "source": "/scores/categories/:id/edit", "destination": "/scores/categories/[id]/edit.html" }
+    { "source": "/employees/:id/edit", "destination": "/employees/[id]/edit" },
+    { "source": "/employees/:id", "destination": "/employees/[id]" },
+    { "source": "/scores/categories/:id/edit", "destination": "/scores/categories/[id]/edit" }
   ]
 }

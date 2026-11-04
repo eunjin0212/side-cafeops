@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getLocations } from '@/services/locationService';
 import { Location } from '@/types/location';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { queryErrorMessage } from '@/utils/errors';
 
 export function useLocations(): {
   locations: Location[];
@@ -17,6 +18,6 @@ export function useLocations(): {
   return {
     locations: data ?? [],
     isLoading,
-    error: error instanceof Error ? error.message : error ? 'Failed to load locations.' : null,
+    error: queryErrorMessage(error, 'Failed to load locations.'),
   };
 }

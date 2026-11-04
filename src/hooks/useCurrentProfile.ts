@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getCurrentProfile, CurrentProfile } from '@/services/authService';
+import { getCurrentProfile } from '@/services/authService';
+import { CurrentProfile } from '@/types/employee';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export function useCurrentProfile(): {

@@ -16,6 +16,7 @@ const PERMISSIONS = {
   manageScoreCategories: ['general_manager', 'owner'],
   manageLocations: ['general_manager', 'owner'],
   browseAllLocations: ['general_manager', 'owner'],
+  viewScoreDashboard: ['trainee', 'staff', 'supervisor', 'location_manager', 'general_manager'],
 } satisfies Record<string, EmployeeRole[]>;
 
 export type Permission = keyof typeof PERMISSIONS;

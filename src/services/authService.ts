@@ -1,20 +1,8 @@
 import { Session } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase';
-import { EmployeeRole } from '@/types/employee';
+import { CurrentProfile, EmployeeRole } from '@/types/employee';
 import { unwrapJoin } from '@/utils/supabaseJoin';
-
-export type CurrentProfile = {
-  id: string;
-  email: string;
-  fullName: string | null;
-  role: EmployeeRole;
-  isActive: boolean;
-  avatarUrl: string | null;
-  locationId: string | null;
-  locationName: string | null;
-  locations: { id: string; name: string }[];
-};
 
 type LocationRow = { name: string } | { name: string }[] | null;
 

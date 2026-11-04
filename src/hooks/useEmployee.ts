@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getEmployee } from '@/services/employeeService';
 import { Employee } from '@/types/employee';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { queryErrorMessage } from '@/utils/errors';
 
 export function useEmployee(id: string): {
   employee: Employee | null;
@@ -18,6 +19,6 @@ export function useEmployee(id: string): {
   return {
     employee: data ?? null,
     isLoading,
-    error: error instanceof Error ? error.message : error ? 'Failed to load employee.' : null,
+    error: queryErrorMessage(error, 'Failed to load employee.'),
   };
 }
