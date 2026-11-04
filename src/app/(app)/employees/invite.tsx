@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -21,6 +20,7 @@ import { useCreateInvitation } from '@/hooks/useCreateInvitation';
 import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
 import { ROLE_HIERARCHY } from '@/constants/permissions';
 import { webOnlyProps } from '@/utils/a11y';
+import { showNotice } from '@/utils/dialogs';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
 
@@ -70,9 +70,9 @@ export default function InviteEmployeeScreen() {
       { email: data.email, role: data.role, locationId: data.locationId },
       {
         onSuccess: () => {
-          Alert.alert('Invitation Sent', `Invitation sent to ${data.email}.`, [
-            { text: 'OK', onPress: () => router.navigate('/employees') },
-          ]);
+          showNotice('Invitation Sent', `Invitation sent to ${data.email}.`, () =>
+            router.navigate('/employees'),
+          );
         },
       },
     );

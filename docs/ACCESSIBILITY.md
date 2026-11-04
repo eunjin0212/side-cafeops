@@ -86,9 +86,7 @@ These are static checks. They catch a missing role, not a wrong one, and do not 
 ## Known gaps
 
 - **Focus after submitting with the keyboard.** Submit buttons are disabled while saving, which drops focus to the page body. The result is still announced, but keyboard users lose their place.
-
 - **Arrow keys in radio groups.** Radios work with Tab and Space, but the full ARIA pattern also uses arrow keys.
-- **Confirmation dialogs on web.** `Alert.alert` does nothing in react-native-web. Deactivating an employee on web never saves, because the save runs from the dialog, and a successful invitation shows no confirmation. This is a functional bug as well as an accessibility one.
 - **Employee detail error state.** It has no back link and no `<h1>`.
 - **List semantics.** Lists are visually grouped but are not exposed as lists.
 

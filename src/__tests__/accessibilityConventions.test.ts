@@ -75,6 +75,11 @@ describe('accessibility conventions', () => {
     expect(tagsMissing('ActivityIndicator', (tag) => tag.includes('aria-label='))).toEqual([]);
   });
 
+  it('uses utils/dialogs instead of Alert.alert, which does nothing on web', () => {
+    const violations = files.filter(({ source }) => source.includes('Alert.alert('));
+    expect(violations.map(({ name }) => name)).toEqual([]);
+  });
+
   it('does not use text colors that fail WCAG AA on light backgrounds', () => {
     const banned = /(?:\bcolor: |placeholderTextColor=|\btext: )['"]#(?:9CA3AF|D1D5DB|3B82F6|EF4444|10B981|16A34A|208AEF)['"]/gi;
     const violations = files.flatMap(({ name, source }) =>

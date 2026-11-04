@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -31,6 +30,7 @@ import {
 } from '@/constants/permissions';
 import { UpdateEmployeeInput } from '@/types/employee';
 import { webOnlyProps } from '@/utils/a11y';
+import { confirmDestructive } from '@/utils/dialogs';
 import { goBack } from '@/utils/navigation';
 import { FormHeader } from '@/components/molecules/FormHeader';
 
@@ -127,18 +127,12 @@ export default function EmployeeEditScreen() {
     const isDeactivating = canDeactivate && !data.isActive && employee?.isActive === true;
 
     if (isDeactivating) {
-      Alert.alert(
-        'Deactivate Employee',
-        `${employee?.fullName ?? employee?.email} will no longer be able to log in. Continue?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Deactivate',
-            style: 'destructive',
-            onPress: () => performSave(data),
-          },
-        ],
-      );
+      confirmDestructive({
+        title: 'Deactivate Employee',
+        message: `${employee?.fullName ?? employee?.email} will no longer be able to log in. Continue?`,
+        confirmLabel: 'Deactivate',
+        onConfirm: () => performSave(data),
+      });
       return;
     }
 
