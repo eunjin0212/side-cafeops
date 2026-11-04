@@ -399,16 +399,16 @@ Client-side permission checks (`src/constants/permissions.ts`) and RLS now repre
 * Score Entry Photos
 * Basic Leaderboard
 * Score RLS / Permission Audit
+* Continuous 14-day Score Cycles (verified on production 2026-11-04)
 
 ### Current Priority
 
 1. My Score Dashboard
 2. Update Leaderboard display to use `BASE_SCORE = 200`
-3. Verify Score Cycle lifecycle
-4. Notification Center
-5. Complete Invitation signup flow
-6. Recipe Management
-7. Role-based QA
-8. Production readiness
+3. Notification Center
+4. Complete Invitation signup flow
+5. Recipe Management
+6. Role-based QA
+7. Production readiness
 
 Do not build advanced features before the MVP is working.
