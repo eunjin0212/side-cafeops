@@ -19,6 +19,7 @@ export function useCreateScoreEntry() {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.leaderboardAll });
       // A submission made just after a boundary lands in the new cycle.
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentCycle });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.scoreCycles });
     },
   });
 }

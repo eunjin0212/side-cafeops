@@ -28,9 +28,14 @@ function mapEntry(row: RpcRow): LeaderboardEntry {
   };
 }
 
-export async function getLeaderboard(locationId?: string): Promise<LeaderboardEntry[]> {
+// Without a cycle, the database uses the current one.
+export async function getLeaderboard(
+  locationId?: string,
+  cycleId?: string,
+): Promise<LeaderboardEntry[]> {
   const { data, error } = await supabase.rpc('get_leaderboard', {
     p_location_id: locationId ?? null,
+    p_cycle_id: cycleId ?? null,
   });
   if (error) throw serviceError('leaderboardService: load', error, 'Failed to load leaderboard.');
   return (data as RpcRow[]).map(mapEntry);

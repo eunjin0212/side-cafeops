@@ -30,3 +30,19 @@ export async function getCurrentCycle(): Promise<CycleSummary> {
   }
   return { id: data.id, startedAt: data.started_at, endedAt: data.ended_at };
 }
+
+// Newest first. Resolves the current cycle first so a new one is included.
+export async function getScoreCycles(): Promise<CycleSummary[]> {
+  await getCurrentCycleId();
+
+  const { data, error } = await supabase
+    .from('score_cycles')
+    .select('id, started_at, ended_at')
+    .lte('started_at', new Date().toISOString())
+    .order('started_at', { ascending: false });
+
+  if (error) {
+    throw serviceError('scoreCycleService: load cycles', error, 'Failed to load score cycles.');
+  }
+  return data.map((row) => ({ id: row.id, startedAt: row.started_at, endedAt: row.ended_at }));
+}

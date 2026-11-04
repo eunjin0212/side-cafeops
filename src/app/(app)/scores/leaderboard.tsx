@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 
+import { CycleSelector } from '@/components/molecules/CycleSelector';
 import { EmptyText } from '@/components/molecules/EmptyText';
 import { ErrorText } from '@/components/molecules/ErrorText';
 import { ListCard } from '@/components/molecules/ListCard';
@@ -20,6 +21,7 @@ import { colors, fontSizes } from '@/constants/theme';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { useLocations } from '@/hooks/useLocations';
+import { useScoreCycles } from '@/hooks/useScoreCycles';
 import { LeaderboardEntry } from '@/types/leaderboard';
 import { formatMonthDay } from '@/utils/dates';
 import { rankBadgeColors } from '@/utils/points';
@@ -96,8 +98,13 @@ function EntryRow({ entry, isCurrentUser }: EntryRowProps) {
 export default function LeaderboardScreen() {
   const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(undefined);
 
-  const { entries, cycle, isLoading, isFetching, error, refetch } =
-    useLeaderboard(selectedLocationId);
+  const [selectedCycleId, setSelectedCycleId] = useState<string | undefined>(undefined);
+
+  const { entries, isLoading, isFetching, error, refetch } = useLeaderboard(
+    selectedLocationId,
+    selectedCycleId,
+  );
+  const { cycles } = useScoreCycles();
   const { locations: allLocations } = useLocations();
   const { profile: currentProfile } = useCurrentProfile();
   const canBrowseAllLocations =
@@ -106,6 +113,12 @@ export default function LeaderboardScreen() {
   // GM/owner may filter across every location; everyone else may only
   // switch between the locations they themselves work at (if more than one).
   const filterLocations = canBrowseAllLocations ? allLocations : (currentProfile?.locations ?? []);
+
+  // Newest first, so with nothing selected this is the current cycle.
+  const cycleIndex = selectedCycleId ? cycles.findIndex((c) => c.id === selectedCycleId) : 0;
+  const cycle = cycles[cycleIndex];
+  const previousCycle = cycles[cycleIndex + 1];
+  const nextCycle = cycles[cycleIndex - 1];
 
   const cycleLabel = cycle
     ? `${formatMonthDay(cycle.startedAt)} – ${formatMonthDay(cycle.endedAt)}`
@@ -120,7 +133,14 @@ export default function LeaderboardScreen() {
           <RefreshControl refreshing={isFetching && !isLoading} onRefresh={refetch} />
         }
       >
-        <ScreenHeader backHref="/" title="Leaderboard" subtitle={cycleLabel} />
+        <ScreenHeader backHref="/" title="Leaderboard" />
+
+        <CycleSelector
+          label={cycleLabel}
+          onPrevious={previousCycle ? () => setSelectedCycleId(previousCycle.id) : undefined}
+          onNext={nextCycle ? () => setSelectedCycleId(nextCycle.id) : undefined}
+          onCurrent={nextCycle ? () => setSelectedCycleId(undefined) : undefined}
+        />
 
         {/* Location filter — GM/owner browse every location; everyone
             else may only switch between locations they work at */}

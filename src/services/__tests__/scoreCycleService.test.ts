@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { getCurrentCycle, getCurrentCycleId } from '@/services/scoreCycleService';
+import { getCurrentCycle, getCurrentCycleId, getScoreCycles } from '@/services/scoreCycleService';
 
 jest.mock('@/lib/supabase', () => ({
   supabase: { rpc: jest.fn(), from: jest.fn() },
@@ -61,6 +61,37 @@ describe('scoreCycleService', () => {
       mockCycleRow({ data: null, error: { message: 'network down' } });
 
       await expect(getCurrentCycle()).rejects.toThrow('Failed to load score cycle.');
+    });
+  });
+
+  describe('getScoreCycles()', () => {
+    function mockCycleList(result: { data: unknown; error: unknown }): jest.Mock {
+      const order = jest.fn().mockResolvedValue(result);
+      const lte = jest.fn().mockReturnValue({ order });
+      const select = jest.fn().mockReturnValue({ lte });
+      mockedSupabase.from.mockReturnValue({ select });
+      return lte;
+    }
+
+    it('creates the current cycle first, then lists started cycles', async () => {
+      mockedSupabase.rpc.mockResolvedValue({ data: 'cycle-2', error: null });
+      const lte = mockCycleList({
+        data: [{ id: 'cycle-2', started_at: '2026-11-03', ended_at: '2026-11-17' }],
+        error: null,
+      });
+
+      await expect(getScoreCycles()).resolves.toEqual([
+        { id: 'cycle-2', startedAt: '2026-11-03', endedAt: '2026-11-17' },
+      ]);
+      expect(mockedSupabase.rpc).toHaveBeenCalledWith('get_or_create_current_cycle');
+      expect(lte).toHaveBeenCalledWith('started_at', expect.any(String));
+    });
+
+    it('hides database errors from users', async () => {
+      mockedSupabase.rpc.mockResolvedValue({ data: 'cycle-2', error: null });
+      mockCycleList({ data: null, error: { message: 'relation missing' } });
+
+      await expect(getScoreCycles()).rejects.toThrow('Failed to load score cycles.');
     });
   });
 });

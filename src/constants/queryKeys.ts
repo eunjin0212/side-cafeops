@@ -8,8 +8,10 @@ export const QUERY_KEYS = {
   scoreEntries: (profileId: string) => ['scoreEntries', profileId] as const,
   scoreEntriesForCycle: (profileId: string, cycleId: string) =>
     ['scoreEntries', profileId, cycleId] as const,
-  leaderboard: (locationId?: string) => ['leaderboard', locationId ?? 'all'] as const,
+  leaderboard: (locationId?: string, cycleId?: string) =>
+    ['leaderboard', locationId ?? 'all', cycleId ?? 'current'] as const,
   leaderboardAll: ['leaderboard'] as const,
   currentCycle: ['currentCycle'] as const,
+  scoreCycles: ['scoreCycles'] as const,
   notifications: (profileId: string) => ['notifications', profileId] as const,
 } as const;
