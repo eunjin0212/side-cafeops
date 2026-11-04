@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { ScreenTitle } from '@/components/molecules/ScreenTitle';
+import { colors, fontSizes } from '@/constants/theme';
 
 type Platform = 'ios' | 'android';
 
@@ -61,7 +62,9 @@ export default function InstallGuideScreen(): React.JSX.Element {
         {STEPS[platform].map((step, index) => (
           <View key={index} style={styles.step}>
             <View style={styles.stepIconWrap}>
-              <Text style={styles.stepIcon} aria-hidden>{step.icon}</Text>
+              <Text style={styles.stepIcon} aria-hidden>
+                {step.icon}
+              </Text>
             </View>
             <View style={styles.stepBody}>
               <Text style={styles.stepNumber}>Step {index + 1}</Text>
@@ -92,7 +95,7 @@ export default function InstallGuideScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   content: {
     flexGrow: 1,
@@ -101,14 +104,14 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   title: {
-    fontSize: 26,
+    fontSize: fontSizes.h2,
     fontWeight: '700',
     textAlign: 'center',
-    color: '#111827',
+    color: colors.text,
   },
   subtitle: {
-    fontSize: 15,
-    color: '#6B7280',
+    fontSize: fontSizes.xl,
+    color: colors.textMuted,
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 28,
@@ -116,7 +119,7 @@ const styles = StyleSheet.create({
   },
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
     borderRadius: 10,
     padding: 4,
     marginBottom: 24,
@@ -128,20 +131,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabActive: {
-    backgroundColor: '#fff',
-    shadowColor: '#000',
+    backgroundColor: colors.white,
+    shadowColor: colors.black,
     shadowOpacity: 0.08,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 1 },
     elevation: 1,
   },
   tabText: {
-    fontSize: 15,
+    fontSize: fontSizes.xl,
     fontWeight: '600',
-    color: '#4B5563',
+    color: colors.textTertiary,
   },
   tabTextActive: {
-    color: '#111827',
+    color: colors.text,
   },
   steps: {
     gap: 16,
@@ -155,36 +158,36 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepIcon: {
-    fontSize: 18,
+    fontSize: fontSizes.h4,
   },
   stepBody: {
     flex: 1,
     paddingTop: 2,
   },
   stepNumber: {
-    fontSize: 12,
+    fontSize: fontSizes.sm,
     fontWeight: '700',
-    color: '#1D4ED8',
+    color: colors.link,
     marginBottom: 2,
     textTransform: 'uppercase',
   },
   stepText: {
-    fontSize: 15,
-    color: '#111827',
+    fontSize: fontSizes.xl,
+    color: colors.text,
     lineHeight: 21,
   },
   note: {
-    fontSize: 13,
-    color: '#6B7280',
+    fontSize: fontSizes.md,
+    color: colors.textMuted,
     lineHeight: 19,
     marginTop: 28,
     padding: 14,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
     borderRadius: 10,
   },
   backLink: {
@@ -194,8 +197,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backLinkText: {
-    fontSize: 14,
+    fontSize: fontSizes.lg,
     fontWeight: '600',
-    color: '#6B7280',
+    color: colors.textMuted,
   },
 });

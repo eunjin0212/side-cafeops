@@ -2,8 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { serviceError } from '@/services/serviceError';
 import { AppNotification, NotificationType } from '@/types/notification';
 
-const NOTIFICATION_QUERY =
-  'id, profile_id, type, title, body, data, is_read, created_at' as const;
+const NOTIFICATION_QUERY = 'id, profile_id, type, title, body, data, is_read, created_at' as const;
 
 function mapNotification(row: {
   id: string;
@@ -46,10 +45,7 @@ export async function getMyNotifications(profileId: string): Promise<AppNotifica
 }
 
 export async function markNotificationRead(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('notifications')
-    .update({ is_read: true })
-    .eq('id', id);
+  const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', id);
 
   if (error) {
     throw serviceError(
@@ -76,10 +72,7 @@ export async function markAllNotificationsRead(profileId: string): Promise<void>
   }
 }
 
-export async function registerPushToken(
-  profileId: string,
-  expoPushToken: string,
-): Promise<void> {
+export async function registerPushToken(profileId: string, expoPushToken: string): Promise<void> {
   const { error } = await supabase
     .from('push_tokens')
     .upsert(
@@ -97,17 +90,15 @@ export async function registerWebPushSubscription(
   profileId: string,
   subscription: { endpoint: string; p256dh: string; auth: string },
 ): Promise<void> {
-  const { error } = await supabase
-    .from('web_push_subscriptions')
-    .upsert(
-      {
-        profile_id: profileId,
-        endpoint: subscription.endpoint,
-        p256dh: subscription.p256dh,
-        auth: subscription.auth,
-      },
-      { onConflict: 'endpoint' },
-    );
+  const { error } = await supabase.from('web_push_subscriptions').upsert(
+    {
+      profile_id: profileId,
+      endpoint: subscription.endpoint,
+      p256dh: subscription.p256dh,
+      auth: subscription.auth,
+    },
+    { onConflict: 'endpoint' },
+  );
 
   if (error) {
     throw serviceError(

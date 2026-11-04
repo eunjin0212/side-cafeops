@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
+import { can, canScoreEmployee } from '@/constants/permissions';
 import { useCreateScoreEntry } from '@/hooks/useCreateScoreEntry';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useLocations } from '@/hooks/useLocations';
 import { usePermissionGate } from '@/hooks/usePermissionGate';
 import { useScoreCategories } from '@/hooks/useScoreCategories';
-import { can, canScoreEmployee } from '@/constants/permissions';
 import { ScoreSection } from '@/types/score';
 
 // All of the score entry screen's state and rules, so the screen and its
@@ -37,9 +37,7 @@ export function useScoreEntryForm(preselectedId: string | undefined) {
   // locations they themselves work at.
   const canBrowseAllLocations =
     currentProfile !== null && can(currentProfile.role, 'browseAllLocations');
-  const scoringLocations = canBrowseAllLocations
-    ? allLocations
-    : (currentProfile?.locations ?? []);
+  const scoringLocations = canBrowseAllLocations ? allLocations : (currentProfile?.locations ?? []);
 
   // Arriving from an employee's detail page ("Score" button) preselects
   // that employee — also auto-pick whichever of their locations the actor
@@ -75,20 +73,14 @@ export function useScoreEntryForm(preselectedId: string | undefined) {
   const searchResults =
     employeeSearch.trim().length > 0
       ? scorableEmployees.filter((e) =>
-          (e.fullName ?? e.email)
-            .toLowerCase()
-            .includes(employeeSearch.toLowerCase()),
+          (e.fullName ?? e.email).toLowerCase().includes(employeeSearch.toLowerCase()),
         )
       : [];
 
-  const selectedEmployees = scorableEmployees.filter((e) =>
-    selectedProfileIds.includes(e.id),
-  );
+  const selectedEmployees = scorableEmployees.filter((e) => selectedProfileIds.includes(e.id));
 
   const activeCategories = categories.filter((c) => c.isActive);
-  const selectedCategories = activeCategories.filter((c) =>
-    selectedCategoryIds.includes(c.id),
-  );
+  const selectedCategories = activeCategories.filter((c) => selectedCategoryIds.includes(c.id));
   const totalPoints = selectedCategories.reduce((sum, c) => sum + c.points, 0);
   const totalEntries = selectedProfileIds.length * selectedCategoryIds.length;
 

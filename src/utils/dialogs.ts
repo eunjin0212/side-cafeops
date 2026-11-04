@@ -10,7 +10,12 @@ export interface ConfirmOptions {
   onConfirm: () => void;
 }
 
-export function confirmDestructive({ title, message, confirmLabel, onConfirm }: ConfirmOptions): void {
+export function confirmDestructive({
+  title,
+  message,
+  confirmLabel,
+  onConfirm,
+}: ConfirmOptions): void {
   if (Platform.OS === 'web') {
     if (window.confirm(`${title}\n\n${message}`)) onConfirm();
     return;

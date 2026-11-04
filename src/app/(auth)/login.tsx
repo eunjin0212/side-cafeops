@@ -3,7 +3,6 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,8 +15,10 @@ import { z } from 'zod';
 
 import { ErrorText } from '@/components/molecules/ErrorText';
 import { ScreenTitle } from '@/components/molecules/ScreenTitle';
+import { SubmitButton } from '@/components/molecules/SubmitButton';
+import { colors, fontSizes } from '@/constants/theme';
 import { useSignIn } from '@/hooks/useSignIn';
-import { webOnlyProps } from '@/utils/a11y';
+import { fieldA11yProps } from '@/utils/a11y';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required'),
@@ -63,7 +64,7 @@ export default function LoginScreen() {
               style={[styles.input, errors.email && styles.inputError]}
               aria-label="Email"
               placeholder="you@example.com"
-              placeholderTextColor="#6B7280"
+              placeholderTextColor={colors.textMuted}
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -74,10 +75,10 @@ export default function LoginScreen() {
               nativeID="email"
               autoComplete="email"
               textContentType="username"
-              {...webOnlyProps({
-                'aria-required': true,
-                'aria-invalid': errors.email !== undefined,
-                'aria-describedby': errors.email ? 'login-email-error' : undefined,
+              {...fieldA11yProps({
+                required: true,
+                error: errors.email?.message,
+                errorId: 'login-email-error',
               })}
             />
           )}
@@ -96,14 +97,10 @@ export default function LoginScreen() {
             name="password"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                style={[
-                  styles.input,
-                  styles.passwordInput,
-                  errors.password && styles.inputError,
-                ]}
+                style={[styles.input, styles.passwordInput, errors.password && styles.inputError]}
                 aria-label="Password"
                 placeholder="Enter your password"
-                placeholderTextColor="#6B7280"
+                placeholderTextColor={colors.textMuted}
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -114,10 +111,10 @@ export default function LoginScreen() {
                 nativeID="password"
                 autoComplete="current-password"
                 textContentType="password"
-                {...webOnlyProps({
-                  'aria-required': true,
-                  'aria-invalid': errors.password !== undefined,
-                  'aria-describedby': errors.password ? 'login-password-error' : undefined,
+                {...fieldA11yProps({
+                  required: true,
+                  error: errors.password?.message,
+                  errorId: 'login-password-error',
                 })}
               />
             )}
@@ -129,9 +126,7 @@ export default function LoginScreen() {
             onPress={() => setIsPasswordVisible((visible) => !visible)}
             hitSlop={8}
           >
-            <Text style={styles.passwordToggleText}>
-              {isPasswordVisible ? 'Hide' : 'Show'}
-            </Text>
+            <Text style={styles.passwordToggleText}>{isPasswordVisible ? 'Hide' : 'Show'}</Text>
           </Pressable>
         </View>
         {errors.password && (
@@ -142,19 +137,12 @@ export default function LoginScreen() {
 
         {authError !== null && <ErrorText>{authError}</ErrorText>}
 
-        <Pressable
-          role="button"
-          aria-label="Sign In"
-          style={[styles.button, isLoading && styles.buttonDisabled]}
+        <SubmitButton
+          label="Sign In"
           onPress={handleSubmit(onSubmit)}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator aria-label="Loading" color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Sign In</Text>
-          )}
-        </Pressable>
+          isLoading={isLoading}
+          style={styles.submit}
+        />
 
         <Pressable
           role="link"
@@ -171,9 +159,15 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
+  submit: {
+    height: 52,
+    justifyContent: 'center',
+    paddingVertical: 0,
+    marginTop: 4,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   inner: {
     flex: 1,
@@ -182,34 +176,34 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   title: {
-    fontSize: 28,
+    fontSize: fontSizes.h2,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 16,
-    color: '#111827',
+    color: colors.text,
   },
   label: {
-    fontSize: 13,
+    fontSize: fontSizes.md,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.textSecondary,
     marginBottom: -6,
   },
   input: {
     height: 52,
     borderWidth: 1,
-    borderColor: '#6B7280',
+    borderColor: colors.textMuted,
     borderRadius: 8,
     paddingHorizontal: 16,
-    fontSize: 16,
-    color: '#111827',
-    backgroundColor: '#F9FAFB',
+    fontSize: fontSizes.xxl,
+    color: colors.text,
+    backgroundColor: colors.background,
   },
   inputError: {
-    borderColor: '#DC2626',
+    borderColor: colors.danger,
   },
   fieldError: {
-    fontSize: 12,
-    color: '#DC2626',
+    fontSize: fontSizes.sm,
+    color: colors.danger,
     marginTop: -4,
   },
   passwordWrapper: {
@@ -226,25 +220,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   passwordToggleText: {
-    fontSize: 14,
+    fontSize: fontSizes.lg,
     fontWeight: '600',
-    color: '#6B7280',
-  },
-  button: {
-    height: 52,
-    backgroundColor: '#111827',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 4,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: colors.textMuted,
   },
   installLink: {
     marginTop: 12,
@@ -253,8 +231,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   installLinkText: {
-    fontSize: 13,
+    fontSize: fontSizes.md,
     fontWeight: '600',
-    color: '#6B7280',
+    color: colors.textMuted,
   },
 });

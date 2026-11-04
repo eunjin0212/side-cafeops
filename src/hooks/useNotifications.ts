@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { QUERY_KEYS } from '@/constants/queryKeys';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import {
   getMyNotifications,
   markAllNotificationsRead,
   markNotificationRead,
 } from '@/services/notificationService';
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
-import { QUERY_KEYS } from '@/constants/queryKeys';
-import { queryErrorMessage } from '@/utils/errors';
 import { AppNotification } from '@/types/notification';
+import { queryErrorMessage } from '@/utils/errors';
 
 export function useNotifications(): {
   notifications: AppNotification[];

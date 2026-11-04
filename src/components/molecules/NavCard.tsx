@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+import { colors, fontSizes } from '@/constants/theme';
+
 export interface NavCardProps {
   label: string;
   icon: string;
@@ -9,7 +11,9 @@ export interface NavCardProps {
 export function NavCard({ label, icon, onPress }: NavCardProps) {
   return (
     <Pressable role="link" style={styles.card} onPress={onPress}>
-      <Text style={styles.icon} aria-hidden>{icon}</Text>
+      <Text style={styles.icon} aria-hidden>
+        {icon}
+      </Text>
       <Text style={styles.label}>{label}</Text>
     </Pressable>
   );
@@ -22,19 +26,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
   icon: {
-    fontSize: 18,
+    fontSize: fontSizes.h4,
   },
   label: {
-    fontSize: 14,
+    fontSize: fontSizes.lg,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
   },
 });

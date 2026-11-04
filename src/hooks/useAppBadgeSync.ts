@@ -19,8 +19,7 @@ export function useAppBadgeSync(): void {
 
   useEffect(() => {
     if (!getBadgeSupport()) return;
-    const sync =
-      unreadCount > 0 ? navigator.setAppBadge(unreadCount) : navigator.clearAppBadge();
+    const sync = unreadCount > 0 ? navigator.setAppBadge(unreadCount) : navigator.clearAppBadge();
     sync.catch((err: unknown) => {
       console.error('useAppBadgeSync: failed to sync app badge', err);
     });

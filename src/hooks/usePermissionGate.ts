@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
 import { router, type Href } from 'expo-router';
+import { useEffect } from 'react';
 
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { can, Permission } from '@/constants/permissions';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { CurrentProfile } from '@/types/employee';
 
 // Redirects away and reports "still loading" for as long as the profile

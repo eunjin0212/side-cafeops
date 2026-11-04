@@ -8,17 +8,18 @@ import {
   View,
 } from 'react-native';
 
-import { useLeaderboard } from '@/hooks/useLeaderboard';
-import { useLocations } from '@/hooks/useLocations';
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
-import { ScreenHeader } from '@/components/molecules/ScreenHeader';
-import { LocationTabs } from '@/components/molecules/LocationTabs';
-import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyText } from '@/components/molecules/EmptyText';
 import { ErrorText } from '@/components/molecules/ErrorText';
+import { ListCard } from '@/components/molecules/ListCard';
+import { LocationTabs } from '@/components/molecules/LocationTabs';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { can } from '@/constants/permissions';
 import { ROLE_LABELS } from '@/constants/roles';
 import { BASE_SCORE } from '@/constants/scoring';
+import { colors, fontSizes } from '@/constants/theme';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { useLocations } from '@/hooks/useLocations';
 import { LeaderboardEntry } from '@/types/leaderboard';
 import { formatMonthDay } from '@/utils/dates';
 import { rankBadgeColors } from '@/utils/points';
@@ -26,9 +27,9 @@ import { rankBadgeColors } from '@/utils/points';
 // Colors a displayed score against the base, unlike utils/points' pointsColor,
 // which colors a point change against zero.
 function scoreColor(pts: number): string {
-  if (pts > BASE_SCORE) return '#166534';
-  if (pts < BASE_SCORE) return '#B91C1C';
-  return '#6B7280';
+  if (pts > BASE_SCORE) return colors.success;
+  if (pts < BASE_SCORE) return colors.dangerStrong;
+  return colors.textMuted;
 }
 
 function rankBadgeSize(rank: number): number {
@@ -58,7 +59,12 @@ function EntryRow({ entry, isCurrentUser }: EntryRowProps) {
           { width: badgeSize, height: badgeSize, backgroundColor: badge.bg },
         ]}
       >
-        <Text style={[styles.rankText, { color: badge.text, fontSize: entry.rank < 10 ? 13 : 11 }]}>
+        <Text
+          style={[
+            styles.rankText,
+            { color: badge.text, fontSize: entry.rank < 10 ? fontSizes.md : fontSizes.xs },
+          ]}
+        >
           {entry.rank}
         </Text>
       </View>
@@ -68,7 +74,11 @@ function EntryRow({ entry, isCurrentUser }: EntryRowProps) {
           <Text style={styles.rowName} numberOfLines={1}>
             {displayName}
           </Text>
-          {isCurrentUser && <View style={styles.youBadge}><Text style={styles.youText}>You</Text></View>}
+          {isCurrentUser && (
+            <View style={styles.youBadge}>
+              <Text style={styles.youText}>You</Text>
+            </View>
+          )}
         </View>
         <Text style={styles.rowMeta} numberOfLines={1}>
           {ROLE_LABELS[entry.role]}
@@ -95,14 +105,11 @@ export default function LeaderboardScreen() {
 
   // GM/owner may filter across every location; everyone else may only
   // switch between the locations they themselves work at (if more than one).
-  const filterLocations = canBrowseAllLocations
-    ? allLocations
-    : (currentProfile?.locations ?? []);
+  const filterLocations = canBrowseAllLocations ? allLocations : (currentProfile?.locations ?? []);
 
-  const cycleLabel =
-    cycle
-      ? `${formatMonthDay(cycle.startedAt)} – ${formatMonthDay(cycle.endedAt)}`
-      : 'Current Cycle';
+  const cycleLabel = cycle
+    ? `${formatMonthDay(cycle.startedAt)} – ${formatMonthDay(cycle.endedAt)}`
+    : 'Current Cycle';
 
   return (
     <View style={styles.root}>
@@ -152,7 +159,7 @@ export default function LeaderboardScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   scroll: {
     flex: 1,
@@ -182,7 +189,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   rowHighlight: {
-    backgroundColor: '#FEFCE8',
+    backgroundColor: colors.highlight,
   },
   rankBadge: {
     borderRadius: 100,
@@ -203,28 +210,28 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   rowName: {
-    fontSize: 14,
+    fontSize: fontSizes.lg,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
     flexShrink: 1,
   },
   youBadge: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: colors.linkSurface,
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 1,
   },
   youText: {
-    fontSize: 10,
+    fontSize: fontSizes.xxs,
     fontWeight: '700',
-    color: '#1D4ED8',
+    color: colors.link,
   },
   rowMeta: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontSize: fontSizes.sm,
+    color: colors.textMuted,
   },
   points: {
-    fontSize: 16,
+    fontSize: fontSizes.xxl,
     fontWeight: '700',
     minWidth: 40,
     textAlign: 'right',

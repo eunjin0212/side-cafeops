@@ -1,17 +1,10 @@
 import { supabase } from '@/lib/supabase';
 import { serviceError } from '@/services/serviceError';
 import { EmployeeRole } from '@/types/employee';
-import {
-  CreateInvitationInput,
-  Invitation,
-  InvitationStatus,
-} from '@/types/invitation';
+import { CreateInvitationInput, Invitation, InvitationStatus } from '@/types/invitation';
 import { unwrapJoin } from '@/utils/supabaseJoin';
 
-type LocationResult =
-  | { id: string; name: string }
-  | { id: string; name: string }[]
-  | null;
+type LocationResult = { id: string; name: string } | { id: string; name: string }[] | null;
 
 type InvitationRow = {
   id: string;
@@ -49,9 +42,7 @@ function mapInvitation(row: InvitationRow): Invitation {
   };
 }
 
-export async function createInvitation(
-  input: CreateInvitationInput,
-): Promise<Invitation> {
+export async function createInvitation(input: CreateInvitationInput): Promise<Invitation> {
   const {
     data: { user },
     error: userError,

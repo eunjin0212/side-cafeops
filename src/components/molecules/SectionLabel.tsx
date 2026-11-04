@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { StyleProp, StyleSheet, Text, TextStyle } from 'react-native';
 
+import { colors, fontSizes } from '@/constants/theme';
 import { webOnlyProps } from '@/utils/a11y';
 
 export interface SectionLabelProps {
@@ -18,9 +19,9 @@ export function SectionLabel({ children, style }: SectionLabelProps) {
 
 const styles = StyleSheet.create({
   text: {
-    fontSize: 12,
+    fontSize: fontSizes.sm,
     fontWeight: '700',
-    color: '#6B7280',
+    color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },

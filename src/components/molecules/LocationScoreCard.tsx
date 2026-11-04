@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { colors, fontSizes } from '@/constants/theme';
 import { rankBadgeColors } from '@/utils/points';
 
 export interface LocationScoreCardProps {
@@ -37,7 +38,9 @@ export function LocationScoreCard({
         <Text style={styles.footerText}>
           {rank !== null ? `Rank #${rank} of ${total}` : 'View My Scores'}
         </Text>
-        <Text style={styles.chevron} aria-hidden>›</Text>
+        <Text style={styles.chevron} aria-hidden>
+          ›
+        </Text>
       </View>
     </Pressable>
   );
@@ -45,10 +48,10 @@ export function LocationScoreCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
     padding: 18,
     gap: 16,
   },
@@ -58,14 +61,14 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   label: {
-    fontSize: 13,
-    color: '#6B7280',
+    fontSize: fontSizes.md,
+    color: colors.textMuted,
     marginBottom: 4,
   },
   score: {
-    fontSize: 40,
+    fontSize: fontSizes.display,
     fontWeight: '800',
-    color: '#111827',
+    color: colors.text,
   },
   rankCircle: {
     width: 56,
@@ -76,12 +79,12 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   rankNumber: {
-    fontSize: 18,
+    fontSize: fontSizes.h4,
     fontWeight: '800',
   },
   divider: {
     height: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
   },
   footer: {
     flexDirection: 'row',
@@ -89,13 +92,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   footerText: {
-    fontSize: 15,
+    fontSize: fontSizes.xl,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
   },
   chevron: {
-    fontSize: 20,
-    color: '#6B7280',
+    fontSize: fontSizes.h4,
+    color: colors.textMuted,
     fontWeight: '600',
   },
 });

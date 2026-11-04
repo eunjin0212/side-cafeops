@@ -8,15 +8,18 @@ import {
   View,
 } from 'react-native';
 
+import { CenteredScreen } from '@/components/molecules/CenteredScreen';
+import { EmptyText } from '@/components/molecules/EmptyText';
+import { ErrorText } from '@/components/molecules/ErrorText';
+import { FormHeader } from '@/components/molecules/FormHeader';
+import { LoadingScreen } from '@/components/molecules/LoadingScreen';
+import { ROLE_LABELS } from '@/constants/roles';
+import { colors, fontSizes } from '@/constants/theme';
 import { useInvitationActions } from '@/hooks/useInvitationActions';
 import { useInvitations } from '@/hooks/useInvitations';
 import { Invitation, InvitationStatus } from '@/types/invitation';
-import { ROLE_LABELS } from '@/constants/roles';
 import { formatDotDate } from '@/utils/dates';
 import { goBack } from '@/utils/navigation';
-import { FormHeader } from '@/components/molecules/FormHeader';
-import { EmptyText } from '@/components/molecules/EmptyText';
-import { ErrorText } from '@/components/molecules/ErrorText';
 
 const STATUS_LABEL: Record<InvitationStatus, string> = {
   pending: 'Pending',
@@ -26,10 +29,22 @@ const STATUS_LABEL: Record<InvitationStatus, string> = {
 };
 
 const STATUS_COLORS: Record<InvitationStatus, { bg: string; text: string }> = {
-  pending: { bg: '#FEF3C7', text: '#92400E' },
-  accepted: { bg: '#D1FAE5', text: '#065F46' },
-  expired: { bg: '#F3F4F6', text: '#4B5563' },
-  cancelled: { bg: '#F3F4F6', text: '#4B5563' },
+  pending: {
+    bg: colors.warningSurface,
+    text: colors.warning,
+  },
+  accepted: {
+    bg: colors.successSurface,
+    text: colors.successStrong,
+  },
+  expired: {
+    bg: colors.surfaceMuted,
+    text: colors.textTertiary,
+  },
+  cancelled: {
+    bg: colors.surfaceMuted,
+    text: colors.textTertiary,
+  },
 };
 
 interface InvitationRowProps {
@@ -56,7 +71,7 @@ function InvitationRow({ invitation }: InvitationRowProps) {
     resend.mutate(invitation.id);
   }
 
-  const colors = STATUS_COLORS[invitation.status];
+  const statusColors = STATUS_COLORS[invitation.status];
 
   return (
     <View style={styles.row}>
@@ -64,8 +79,8 @@ function InvitationRow({ invitation }: InvitationRowProps) {
         <Text style={styles.email} numberOfLines={1}>
           {invitation.email}
         </Text>
-        <View style={[styles.badge, { backgroundColor: colors.bg }]}>
-          <Text style={[styles.badgeText, { color: colors.text }]}>
+        <View style={[styles.badge, { backgroundColor: statusColors.bg }]}>
+          <Text style={[styles.badgeText, { color: statusColors.text }]}>
             {STATUS_LABEL[invitation.status]}
           </Text>
         </View>
@@ -94,7 +109,7 @@ function InvitationRow({ invitation }: InvitationRowProps) {
               disabled={isAnyBusy}
             >
               {isCancelling ? (
-                <ActivityIndicator aria-label="Loading" size="small" color="#EF4444" />
+                <ActivityIndicator aria-label="Loading" size="small" color={colors.dangerAccent} />
               ) : (
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               )}
@@ -113,7 +128,7 @@ function InvitationRow({ invitation }: InvitationRowProps) {
               disabled={isAnyBusy}
             >
               {isResending ? (
-                <ActivityIndicator aria-label="Loading" size="small" color="#374151" />
+                <ActivityIndicator aria-label="Loading" size="small" color={colors.textSecondary} />
               ) : (
                 <Text style={styles.resendButtonText}>Resend</Text>
               )}
@@ -123,36 +138,37 @@ function InvitationRow({ invitation }: InvitationRowProps) {
       )}
 
       {actionError !== null && (
-        <Text role="alert" style={styles.actionError}>{actionError}</Text>
+        <Text role="alert" style={styles.actionError}>
+          {actionError}
+        </Text>
       )}
     </View>
   );
 }
 
 export default function InvitationsScreen() {
-  const { invitations, isLoading, isRefreshing, error, refetch } =
-    useInvitations();
+  const { invitations, isLoading, isRefreshing, error, refetch } = useInvitations();
 
   if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator aria-label="Loading" size="large" />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (error) {
     return (
-      <View style={styles.center}>
+      <CenteredScreen>
         <ErrorText>{error}</ErrorText>
-      </View>
+      </CenteredScreen>
     );
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <FormHeader title="Invitations" dismissLabel="Close" onDismiss={() => goBack('/employees')} />
+        <FormHeader
+          title="Invitations"
+          dismissLabel="Close"
+          onDismiss={() => goBack('/employees')}
+        />
       </View>
       <FlatList
         data={invitations}
@@ -160,16 +176,14 @@ export default function InvitationsScreen() {
         renderItem={({ item }) => <InvitationRow invitation={item} />}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
-          <View style={styles.center}>
+          <CenteredScreen>
             <EmptyText>No invitations yet.</EmptyText>
-          </View>
+          </CenteredScreen>
         }
         contentContainerStyle={
           invitations.length === 0 ? styles.emptyContainer : styles.listContent
         }
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={refetch} />
-        }
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refetch} />}
       />
     </View>
   );
@@ -178,18 +192,12 @@ export default function InvitationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 60,
-    backgroundColor: '#fff',
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   listContent: {
     paddingVertical: 8,
@@ -210,9 +218,9 @@ const styles = StyleSheet.create({
   },
   email: {
     flex: 1,
-    fontSize: 15,
+    fontSize: fontSizes.xl,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
   },
   badge: {
     paddingHorizontal: 8,
@@ -220,16 +228,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: fontSizes.xs,
     fontWeight: '600',
   },
   meta: {
-    fontSize: 13,
-    color: '#6B7280',
+    fontSize: fontSizes.md,
+    color: colors.textMuted,
   },
   dates: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontSize: fontSizes.sm,
+    color: colors.textMuted,
   },
   actions: {
     flexDirection: 'row',
@@ -247,32 +255,32 @@ const styles = StyleSheet.create({
     height: 44,
   },
   cancelButton: {
-    borderColor: '#FCA5A5',
+    borderColor: colors.dangerOutline,
   },
   resendButton: {
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
   },
   actionButtonDisabled: {
     opacity: 0.5,
   },
   cancelButtonText: {
-    fontSize: 12,
+    fontSize: fontSizes.sm,
     fontWeight: '600',
-    color: '#DC2626',
+    color: colors.danger,
   },
   resendButtonText: {
-    fontSize: 12,
+    fontSize: fontSizes.sm,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.textSecondary,
   },
   actionError: {
-    fontSize: 12,
-    color: '#DC2626',
+    fontSize: fontSizes.sm,
+    color: colors.danger,
     marginTop: 4,
   },
   separator: {
     height: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
     marginHorizontal: 20,
   },
 });

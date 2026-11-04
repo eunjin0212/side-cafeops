@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { getLocations } from '@/services/locationService';
 import { Location } from '@/types/location';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 import { queryErrorMessage } from '@/utils/errors';
 
 export function useLocations(): {

@@ -1,7 +1,7 @@
 import { useQueries } from '@tanstack/react-query';
 
-import { getLeaderboard } from '@/services/leaderboardService';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { getLeaderboard } from '@/services/leaderboardService';
 
 export type LocationRank = {
   locationId: string;

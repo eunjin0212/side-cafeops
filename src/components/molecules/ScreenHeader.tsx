@@ -1,8 +1,9 @@
+import { type Href } from 'expo-router';
 import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { type Href } from 'expo-router';
 
 import { ScreenTitle } from '@/components/molecules/ScreenTitle';
+import { colors, fontSizes } from '@/constants/theme';
 import { goBack } from '@/utils/navigation';
 
 export interface ScreenHeaderProps {
@@ -53,8 +54,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backText: {
-    fontSize: 15,
-    color: '#6B7280',
+    fontSize: fontSizes.xl,
+    color: colors.textMuted,
   },
   row: {
     flexDirection: 'row',
@@ -65,13 +66,13 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   title: {
-    fontSize: 22,
+    fontSize: fontSizes.h3,
     fontWeight: '700',
-    color: '#111827',
+    color: colors.text,
   },
   subtitle: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontSize: fontSizes.sm,
+    color: colors.textMuted,
     fontWeight: '500',
   },
   right: {

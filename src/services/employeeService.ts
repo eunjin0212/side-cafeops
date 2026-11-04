@@ -1,11 +1,11 @@
 import { supabase } from '@/lib/supabase';
+import { serviceError } from '@/services/serviceError';
 import {
   Employee,
   EmployeeLocation,
   SaveEmployeeInput,
   UpdateEmployeeInput,
 } from '@/types/employee';
-import { serviceError } from '@/services/serviceError';
 import { unwrapJoin } from '@/utils/supabaseJoin';
 
 const EMPLOYEE_QUERY = `
@@ -63,7 +63,11 @@ function mapEmployee(row: {
 }
 
 function wrapError(context: string, error: { code?: string; message: string }): Error {
-  return serviceError(`employeeService: ${context}`, error, `Failed to ${context}. Please try again.`);
+  return serviceError(
+    `employeeService: ${context}`,
+    error,
+    `Failed to ${context}. Please try again.`,
+  );
 }
 
 export async function getEmployees(): Promise<Employee[]> {
@@ -87,10 +91,7 @@ export async function getEmployee(id: string): Promise<Employee> {
   return mapEmployee(data);
 }
 
-async function updateEmployeeLocations(
-  profileId: string,
-  locationIds: string[],
-): Promise<void> {
+async function updateEmployeeLocations(profileId: string, locationIds: string[]): Promise<void> {
   const { data: current, error: fetchError } = await supabase
     .from('employee_locations')
     .select('location_id, is_primary')
@@ -107,13 +108,13 @@ async function updateEmployeeLocations(
   // the employee is left with an extra (recoverable) location rather than
   // missing one they should still have.
   if (toAdd.length > 0) {
-    const { error } = await supabase
-      .from('employee_locations')
-      .insert(toAdd.map((locationId) => ({
+    const { error } = await supabase.from('employee_locations').insert(
+      toAdd.map((locationId) => ({
         profile_id: profileId,
         location_id: locationId,
         is_primary: false,
-      })));
+      })),
+    );
     if (error) throw wrapError('update employee locations', error);
   }
 
@@ -141,10 +142,7 @@ async function updateEmployeeLocations(
   }
 }
 
-async function updateEmployee(
-  id: string,
-  input: UpdateEmployeeInput
-): Promise<Employee> {
+async function updateEmployee(id: string, input: UpdateEmployeeInput): Promise<Employee> {
   const { error } = await supabase
     .from('profiles')
     .update({

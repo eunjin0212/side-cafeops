@@ -1,23 +1,18 @@
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { useScoreEntryForm } from '@/hooks/useScoreEntryForm';
-import { ImagePickerField } from '@/components/molecules/ImagePickerField';
-import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { EmptyText } from '@/components/molecules/EmptyText';
-import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { ErrorText } from '@/components/molecules/ErrorText';
+import { ImagePickerField } from '@/components/molecules/ImagePickerField';
+import { LoadingScreen } from '@/components/molecules/LoadingScreen';
 import { LocationTabs } from '@/components/molecules/LocationTabs';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { SectionLabel } from '@/components/molecules/SectionLabel';
+import { SubmitButton } from '@/components/molecules/SubmitButton';
 import { CategoryPicker } from '@/components/organisms/CategoryPicker';
 import { EmployeePicker } from '@/components/organisms/EmployeePicker';
+import { colors, fontSizes } from '@/constants/theme';
+import { useScoreEntryForm } from '@/hooks/useScoreEntryForm';
 import { formatPoints, pointsColor } from '@/utils/points';
 
 export default function ScoreEntryScreen() {
@@ -25,11 +20,7 @@ export default function ScoreEntryScreen() {
   const form = useScoreEntryForm(profileId);
 
   if (form.profileLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator aria-label="Loading" size="large" />
-      </View>
-    );
+    return <LoadingScreen background={colors.background} />;
   }
 
   const employeeCount = form.selectedProfileIds.length;
@@ -90,7 +81,7 @@ export default function ScoreEntryScreen() {
               aria-label="Notes (optional)"
               style={styles.notesInput}
               placeholder="Add a note..."
-              placeholderTextColor="#6B7280"
+              placeholderTextColor={colors.textMuted}
               value={form.notes}
               onChangeText={form.setNotes}
               multiline
@@ -132,28 +123,25 @@ export default function ScoreEntryScreen() {
           </View>
         )}
 
-        <Pressable
-          role="button"
-          aria-label={form.submitLabel}
-          style={[styles.submitButton, !form.canSubmit && styles.submitButtonDisabled]}
+        <SubmitButton
+          label={form.submitLabel}
           onPress={form.submit}
+          isLoading={form.isPending}
           disabled={!form.canSubmit}
-        >
-          {form.isPending ? (
-            <ActivityIndicator aria-label="Loading" color="#fff" />
-          ) : (
-            <Text style={styles.submitText}>{form.submitLabel}</Text>
-          )}
-        </Pressable>
+          style={styles.submit}
+        />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  submit: {
+    marginTop: 0,
+  },
   root: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   visuallyHidden: {
     position: 'absolute',
@@ -161,12 +149,6 @@ const styles = StyleSheet.create({
     height: 1,
     overflow: 'hidden',
     opacity: 0,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
   },
   scroll: {
     flex: 1,
@@ -181,29 +163,29 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   singleLocationText: {
-    fontSize: 15,
+    fontSize: fontSizes.xl,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
   },
   notesInput: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: '#6B7280',
+    borderColor: colors.textMuted,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 11,
-    fontSize: 14,
-    color: '#111827',
+    fontSize: fontSizes.lg,
+    color: colors.text,
     minHeight: 80,
   },
   errorText: {
-    fontSize: 13,
+    fontSize: fontSizes.md,
     textAlign: 'center',
   },
   bottomBar: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: colors.border,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 32,
@@ -216,25 +198,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   bottomSummaryText: {
-    fontSize: 13,
-    color: '#6B7280',
+    fontSize: fontSizes.md,
+    color: colors.textMuted,
   },
   bottomTotal: {
-    fontSize: 15,
+    fontSize: fontSizes.xl,
     fontWeight: '700',
-  },
-  submitButton: {
-    backgroundColor: '#111827',
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  submitButtonDisabled: {
-    opacity: 0.35,
-  },
-  submitText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

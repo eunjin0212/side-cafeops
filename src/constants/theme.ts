@@ -1,65 +1,52 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+export const colors = {
+  white: '#FFFFFF',
+  black: '#000000',
 
-import '@/global.css';
+  text: '#111827',
+  textSecondary: '#374151',
+  textTertiary: '#4B5563',
+  textMuted: '#6B7280',
 
-import { Platform } from 'react-native';
+  background: '#F9FAFB',
+  surfaceMuted: '#F3F4F6',
+  border: '#E5E7EB',
+  borderStrong: '#D1D5DB',
 
-export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
+  link: '#1D4ED8',
+  linkAccent: '#3B82F6',
+  linkSurface: '#EFF6FF',
+
+  danger: '#DC2626',
+  dangerStrong: '#B91C1C',
+  dangerAccent: '#EF4444',
+  dangerOutline: '#FCA5A5',
+  dangerBadge: '#FEE2E2',
+  dangerSurface: '#FEF2F2',
+
+  success: '#166534',
+  successStrong: '#065F46',
+  successBadge: '#DCFCE7',
+  successSurface: '#D1FAE5',
+  successTint: '#F0FDF4',
+
+  warning: '#92400E',
+  warningSurface: '#FEF3C7',
+  highlight: '#FEFCE8',
+
+  rankGold: '#F59E0B',
+  rankBronze: '#B45309',
 } as const;
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
-
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
-
-export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
+export const fontSizes = {
+  xxs: 10,
+  xs: 11,
+  sm: 12,
+  md: 13,
+  lg: 14,
+  xl: 15,
+  xxl: 16,
+  h4: 18,
+  h3: 22,
+  h2: 28,
+  display: 40,
 } as const;
-
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
-export const MaxContentWidth = 800;

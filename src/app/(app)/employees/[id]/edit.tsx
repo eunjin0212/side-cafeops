@@ -1,38 +1,35 @@
-import { useEffect } from 'react';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useEmployee } from '@/hooks/useEmployee';
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
-import { useLocations } from '@/hooks/useLocations';
-import { useSaveEmployee } from '@/hooks/useSaveEmployee';
-import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
+import { ErrorBanner } from '@/components/molecules/ErrorBanner';
+import { FormField } from '@/components/molecules/FormField';
+import { FormHeader } from '@/components/molecules/FormHeader';
+import { FormScreen } from '@/components/molecules/FormScreen';
+import { LoadingScreen } from '@/components/molecules/LoadingScreen';
+import { OptionList } from '@/components/molecules/OptionList';
+import { PillRadioGroup } from '@/components/molecules/PillRadioGroup';
+import { ReadOnlyValue } from '@/components/molecules/ReadOnlyValue';
+import { SubmitButton } from '@/components/molecules/SubmitButton';
+import { SwitchField } from '@/components/molecules/SwitchField';
+import { TextField } from '@/components/molecules/TextField';
 import {
-  canEditEmployeeRole,
-  canEditEmployeeLocation,
-  canEditOwnProfile,
   canDeactivateEmployee,
+  canEditEmployeeLocation,
+  canEditEmployeeRole,
+  canEditOwnProfile,
   ROLE_HIERARCHY,
 } from '@/constants/permissions';
+import { EMPLOYEE_ROLES, ROLE_OPTIONS } from '@/constants/roles';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { useEmployee } from '@/hooks/useEmployee';
+import { useLocations } from '@/hooks/useLocations';
+import { useSaveEmployee } from '@/hooks/useSaveEmployee';
 import { UpdateEmployeeInput } from '@/types/employee';
-import { webOnlyProps } from '@/utils/a11y';
 import { confirmDestructive } from '@/utils/dialogs';
 import { goBack } from '@/utils/navigation';
-import { FormHeader } from '@/components/molecules/FormHeader';
 
 const editSchema = z.object({
   fullName: z.string(),
@@ -49,11 +46,9 @@ export default function EmployeeEditScreen() {
   const { employee, isLoading: employeeLoading } = useEmployee(id);
   const { profile: currentProfile } = useCurrentProfile();
   const { locations } = useLocations();
-  const { mutate: saveEmployee, isPending: isSubmitting, error: saveError } = useSaveEmployee(id);
-  const submitError = saveError?.message ?? null;
+  const { mutate: saveEmployee, isPending, error } = useSaveEmployee(id);
 
-  const canSelf =
-    currentProfile !== null && canEditOwnProfile(currentProfile.id, id);
+  const canSelf = currentProfile !== null && canEditOwnProfile(currentProfile.id, id);
   const canRole =
     currentProfile !== null &&
     employee !== null &&
@@ -71,9 +66,7 @@ export default function EmployeeEditScreen() {
     canDeactivateEmployee(currentProfile.role, employee.role);
 
   const availableRoles = currentProfile
-    ? ROLE_OPTIONS.filter(
-        (opt) => ROLE_HIERARCHY[opt.value] < ROLE_HIERARCHY[currentProfile.role],
-      )
+    ? ROLE_OPTIONS.filter((opt) => ROLE_HIERARCHY[opt.value] < ROLE_HIERARCHY[currentProfile.role])
     : [];
 
   const {
@@ -140,308 +133,121 @@ export default function EmployeeEditScreen() {
   }
 
   if (employeeLoading || !employee || !currentProfile) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator aria-label="Loading" size="large" />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        <FormHeader title="Edit Employee" onDismiss={() => goBack(`/employees/${id}`)} />
+    <FormScreen>
+      <FormHeader title="Edit Employee" onDismiss={() => goBack(`/employees/${id}`)} />
+      <ErrorBanner message={error?.message ?? null} />
 
-        {submitError !== null && (
-          <View role="alert" style={styles.errorBanner}>
-            <Text style={styles.errorBannerText}>{submitError}</Text>
-          </View>
-        )}
+      <FormField label="Email">
+        <ReadOnlyValue>{employee.email}</ReadOnlyValue>
+      </FormField>
 
-        {/* Email — always read-only */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Email</Text>
-          <View style={[styles.input, styles.inputDisabled]}>
-            <Text style={styles.inputDisabledText}>{employee.email}</Text>
-          </View>
-        </View>
-
-        {/* Full Name — only if canEditSelf */}
-        {canSelf && (
-          <View style={styles.field}>
-            <Text style={styles.label}>Full Name</Text>
-            <Controller
-              control={control}
-              name="fullName"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={[styles.input, errors.fullName ? styles.inputError : null]}
-                  aria-label="Full Name"
-                  placeholder="John Doe"
-                  {...webOnlyProps({
-                    'aria-invalid': errors.fullName !== undefined,
-                    'aria-describedby': errors.fullName ? 'edit-employee-name-error' : undefined,
-                  })}
-                  placeholderTextColor="#6B7280"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-              )}
+      {canSelf && (
+        <Controller
+          control={control}
+          name="fullName"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextField
+              label="Full Name"
+              errorId="edit-employee-name-error"
+              error={errors.fullName?.message}
+              placeholder="John Doe"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
             />
-            {errors.fullName && (
-              <Text role="alert" nativeID="edit-employee-name-error" style={styles.fieldError}>
-                {errors.fullName.message}
-              </Text>
-            )}
-          </View>
-        )}
-
-        {/* Phone — only if canEditSelf */}
-        {canSelf && (
-          <View style={styles.field}>
-            <Text style={styles.label}>Phone</Text>
-            <Controller
-              control={control}
-              name="phone"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={styles.input}
-                  aria-label="Phone"
-                  placeholder="01012345678"
-                  placeholderTextColor="#6B7280"
-                  keyboardType="number-pad"
-                  onBlur={onBlur}
-                  onChangeText={(text) => onChange(text.replace(/[^0-9]/g, ''))}
-                  value={value}
-                />
-              )}
-            />
-          </View>
-        )}
-
-        {/* Role — only if canEditRole */}
-        {canRole && availableRoles.length > 0 && (
-          <View style={styles.field}>
-            <Text style={styles.label}>Role</Text>
-            <Controller
-              control={control}
-              name="role"
-              render={({ field: { onChange, value } }) => (
-                <View style={styles.roleGrid} role="radiogroup" aria-label="Role">
-                  {availableRoles.map((option) => (
-                    <Pressable
-                      key={option.value}
-                      role="radio"
-                      aria-checked={value === option.value}
-                      style={[
-                        styles.rolePill,
-                        value === option.value && styles.rolePillSelected,
-                      ]}
-                      onPress={() => onChange(option.value)}
-                    >
-                      <Text
-                        style={[
-                          styles.rolePillText,
-                          value === option.value && styles.rolePillTextSelected,
-                        ]}
-                      >
-                        {option.label}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              )}
-            />
-          </View>
-        )}
-
-        {/* Location — only if canEditLocation */}
-        {canLocation && (
-          <View style={styles.field}>
-            <Text style={styles.label}>Location</Text>
-            <Controller
-              control={control}
-              name="locationIds"
-              render={({ field: { onChange, value } }) =>
-                locations.length === 0 ? (
-                  <View style={[styles.input, styles.inputDisabled]}>
-                    <Text style={styles.inputDisabledText}>No locations available</Text>
-                  </View>
-                ) : (
-                  <View style={styles.locationList} role="group" aria-label="Location">
-                    {locations.map((loc) => {
-                      const selected = value.includes(loc.id);
-                      return (
-                        <Pressable
-                          key={loc.id}
-                          role="checkbox"
-                          aria-checked={selected}
-                          style={[
-                            styles.locationRow,
-                            selected && styles.locationRowSelected,
-                          ]}
-                          onPress={() =>
-                            onChange(
-                              selected
-                                ? value.filter((id) => id !== loc.id)
-                                : [...value, loc.id],
-                            )
-                          }
-                        >
-                          <Text
-                            style={[
-                              styles.locationRowText,
-                              selected && styles.locationRowTextSelected,
-                            ]}
-                          >
-                            {loc.name}
-                          </Text>
-                          {selected && (
-                            <Text style={styles.checkmark} aria-hidden>✓</Text>
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                )
-              }
-            />
-          </View>
-        )}
-
-        {/* Active status — only if canDeactivate */}
-        {canDeactivate && (
-          <View style={[styles.field, styles.switchRow]}>
-            <View style={styles.switchLabel}>
-              <Text style={styles.label}>Active</Text>
-              <Text style={styles.switchHint}>
-                Inactive employees cannot log in.
-              </Text>
-            </View>
-            <Controller
-              control={control}
-              name="isActive"
-              render={({ field: { onChange, value } }) => (
-                <Switch
-                  aria-label="Active"
-                  value={value}
-                  onValueChange={onChange}
-                  trackColor={{ false: '#6B7280', true: '#111827' }}
-                  thumbColor="#fff"
-                />
-              )}
-            />
-          </View>
-        )}
-
-        <Pressable
-          role="button"
-          aria-label="Save"
-          style={[styles.submitButton, (!isDirty || isSubmitting) && styles.submitButtonDisabled]}
-          onPress={handleSubmit(onSubmit)}
-          disabled={!isDirty || isSubmitting}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator aria-label="Loading" color="#fff" />
-          ) : (
-            <Text style={styles.submitText}>Save</Text>
           )}
-        </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        />
+      )}
+
+      {canSelf && (
+        <Controller
+          control={control}
+          name="phone"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextField
+              label="Phone"
+              errorId="edit-employee-phone-error"
+              error={errors.phone?.message}
+              placeholder="01012345678"
+              keyboardType="number-pad"
+              onBlur={onBlur}
+              onChangeText={(text) => onChange(text.replace(/[^0-9]/g, ''))}
+              value={value}
+            />
+          )}
+        />
+      )}
+
+      {canRole && availableRoles.length > 0 && (
+        <FormField label="Role">
+          <Controller
+            control={control}
+            name="role"
+            render={({ field: { onChange, value } }) => (
+              <PillRadioGroup
+                label="Role"
+                options={availableRoles}
+                value={value}
+                onChange={onChange}
+              />
+            )}
+          />
+        </FormField>
+      )}
+
+      {canLocation && (
+        <FormField label="Location">
+          <Controller
+            control={control}
+            name="locationIds"
+            render={({ field: { onChange, value } }) =>
+              locations.length === 0 ? (
+                <ReadOnlyValue>No locations available</ReadOnlyValue>
+              ) : (
+                <OptionList
+                  label="Location"
+                  selectionMode="multiple"
+                  options={locations}
+                  selectedIds={value}
+                  onToggle={(locationId) =>
+                    onChange(
+                      value.includes(locationId)
+                        ? value.filter((v) => v !== locationId)
+                        : [...value, locationId],
+                    )
+                  }
+                />
+              )
+            }
+          />
+        </FormField>
+      )}
+
+      {canDeactivate && (
+        <Controller
+          control={control}
+          name="isActive"
+          render={({ field: { onChange, value } }) => (
+            <SwitchField
+              label="Active"
+              hint="Inactive employees cannot log in."
+              value={value}
+              onChange={onChange}
+            />
+          )}
+        />
+      )}
+
+      <SubmitButton
+        label="Save"
+        onPress={handleSubmit(onSubmit)}
+        isLoading={isPending}
+        disabled={!isDirty}
+      />
+    </FormScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  scroll: { flex: 1 },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 40,
-  },
-  errorBanner: {
-    backgroundColor: '#FEF2F2',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 20,
-  },
-  errorBannerText: { fontSize: 13, color: '#B91C1C' },
-  field: { marginBottom: 24 },
-  label: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#6B7280',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: '#111827',
-    backgroundColor: '#fff',
-  },
-  inputError: { borderColor: '#EF4444' },
-  inputDisabled: { backgroundColor: '#F9FAFB', justifyContent: 'center' },
-  inputDisabledText: { fontSize: 15, color: '#6B7280' },
-  fieldError: { fontSize: 12, color: '#DC2626', marginTop: 4 },
-  roleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  rolePill: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    minHeight: 44,
-    justifyContent: 'center',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#fff',
-  },
-  rolePillSelected: { backgroundColor: '#111827', borderColor: '#111827' },
-  rolePillText: { fontSize: 13, fontWeight: '500', color: '#374151' },
-  rolePillTextSelected: { color: '#fff' },
-  locationList: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    backgroundColor: '#fff',
-  },
-  locationRowSelected: { backgroundColor: '#F9FAFB' },
-  locationRowText: { flex: 1, fontSize: 15, color: '#111827' },
-  locationRowTextSelected: { fontWeight: '600' },
-  checkmark: { fontSize: 15, color: '#111827' },
-  switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  switchLabel: { flex: 1, marginRight: 16 },
-  switchHint: { fontSize: 12, color: '#6B7280', marginTop: 2 },
-  submitButton: {
-    backgroundColor: '#111827',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  submitButtonDisabled: { opacity: 0.5 },
-  submitText: { color: '#fff', fontSize: 15, fontWeight: '600' },
-});

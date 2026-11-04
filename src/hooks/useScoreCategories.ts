@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { getScoreCategories } from '@/services/scoreCategoryService';
 import { ScoreCategory } from '@/types/score';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 import { queryErrorMessage } from '@/utils/errors';
 
 export function useScoreCategories(): {

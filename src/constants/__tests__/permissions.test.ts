@@ -177,7 +177,7 @@ describe('canEditOwnProfile()', () => {
     expect(canEditOwnProfile('user-123', 'user-123')).toBe(true);
   });
 
-  it('user cannot edit another user\'s profile', () => {
+  it("user cannot edit another user's profile", () => {
     expect(canEditOwnProfile('user-123', 'user-456')).toBe(false);
   });
 });

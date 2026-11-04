@@ -1,8 +1,8 @@
+import { BASE_SCORE } from '@/constants/scoring';
 import { supabase } from '@/lib/supabase';
 import { serviceError } from '@/services/serviceError';
-import { LeaderboardEntry } from '@/types/leaderboard';
 import { EmployeeRole } from '@/types/employee';
-import { BASE_SCORE } from '@/constants/scoring';
+import { LeaderboardEntry } from '@/types/leaderboard';
 
 type RpcRow = {
   profile_id: string;

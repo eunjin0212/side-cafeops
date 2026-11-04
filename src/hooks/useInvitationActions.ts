@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { cancelInvitation, resendInvitation } from '@/services/invitationService';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { cancelInvitation, resendInvitation } from '@/services/invitationService';
 
 export function useInvitationActions() {
   const queryClient = useQueryClient();

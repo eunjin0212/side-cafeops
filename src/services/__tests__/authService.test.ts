@@ -1,5 +1,5 @@
-import { signIn, signOut, subscribeToSession } from '@/services/authService';
 import { supabase } from '@/lib/supabase';
+import { signIn, signOut, subscribeToSession } from '@/services/authService';
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {

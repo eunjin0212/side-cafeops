@@ -1,11 +1,8 @@
 import { supabase } from '@/lib/supabase';
-import {
-  ScoreEntry,
-  CreateScoreEntriesBatchInput,
-} from '@/types/score';
-import { serviceError } from '@/services/serviceError';
 import { getCurrentCycleId } from '@/services/scoreCycleService';
+import { serviceError } from '@/services/serviceError';
 import { uploadScoreImages } from '@/services/storageService';
+import { ScoreEntry, CreateScoreEntriesBatchInput } from '@/types/score';
 
 const ENTRY_QUERY =
   'id, cycle_id, profile_id, category_id, points, notes, image_urls, submitted_by, correction_for, location_id, created_at' as const;
@@ -41,10 +38,7 @@ function mapScoreEntry(row: {
 // Read-only fetch for a known cycle — the caller resolves the current
 // cycle (scoreCycleService.getCurrentCycle) so both the cycle summary
 // and these entries always agree on which cycle is "current."
-export async function getMyScoreEntries(
-  profileId: string,
-  cycleId: string,
-): Promise<ScoreEntry[]> {
+export async function getMyScoreEntries(profileId: string, cycleId: string): Promise<ScoreEntry[]> {
   const { data, error } = await supabase
     .from('score_entries')
     .select(ENTRY_QUERY)
@@ -87,10 +81,7 @@ export async function createScoreEntries(
     })),
   );
 
-  const { data, error } = await supabase
-    .from('score_entries')
-    .insert(rows)
-    .select(ENTRY_QUERY);
+  const { data, error } = await supabase.from('score_entries').insert(rows).select(ENTRY_QUERY);
 
   if (error) {
     throw serviceError(

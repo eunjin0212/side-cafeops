@@ -1,21 +1,18 @@
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
 import { router } from 'expo-router';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { useEmployees } from '@/hooks/useEmployees';
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
-import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { ActiveBadge } from '@/components/molecules/ActiveBadge';
+import { CenteredScreen } from '@/components/molecules/CenteredScreen';
 import { EmptyText } from '@/components/molecules/EmptyText';
 import { ErrorText } from '@/components/molecules/ErrorText';
-import { Employee } from '@/types/employee';
-import { ROLE_LABELS } from '@/constants/roles';
+import { LoadingScreen } from '@/components/molecules/LoadingScreen';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
 import { can } from '@/constants/permissions';
+import { ROLE_LABELS } from '@/constants/roles';
+import { colors, fontSizes } from '@/constants/theme';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { useEmployees } from '@/hooks/useEmployees';
+import { Employee } from '@/types/employee';
 
 interface EmployeeRowProps {
   employee: Employee;
@@ -34,9 +31,7 @@ function EmployeeRow({ employee, onPress }: EmployeeRowProps) {
             : ''}
         </Text>
       </View>
-      <View style={[styles.badge, employee.isActive ? styles.badgeActive : styles.badgeInactive]}>
-        <Text style={styles.badgeText}>{employee.isActive ? 'Active' : 'Inactive'}</Text>
-      </View>
+      <ActiveBadge isActive={employee.isActive} />
     </Pressable>
   );
 }
@@ -47,18 +42,14 @@ export default function EmployeeListScreen() {
   const canInvite = profile !== null && can(profile.role, 'inviteEmployee');
 
   if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator aria-label="Loading" size="large" />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (error) {
     return (
-      <View style={styles.center}>
+      <CenteredScreen>
         <ErrorText>{error}</ErrorText>
-      </View>
+      </CenteredScreen>
     );
   }
 
@@ -95,15 +86,12 @@ export default function EmployeeListScreen() {
         data={employees}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <EmployeeRow
-            employee={item}
-            onPress={() => router.navigate(`/employees/${item.id}`)}
-          />
+          <EmployeeRow employee={item} onPress={() => router.navigate(`/employees/${item.id}`)} />
         )}
         ListEmptyComponent={
-          <View style={styles.center}>
+          <CenteredScreen>
             <EmptyText>No employees yet.</EmptyText>
-          </View>
+          </CenteredScreen>
         }
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={employees.length === 0 ? styles.emptyContainer : styles.listContent}
@@ -115,50 +103,44 @@ export default function EmployeeListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   headerLinkButton: {
     minHeight: 44,
     justifyContent: 'center',
   },
   headerLink: {
-    fontSize: 13,
-    color: '#6B7280',
+    fontSize: fontSizes.md,
+    color: colors.textMuted,
   },
   inviteButton: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     minHeight: 44,
     justifyContent: 'center',
-    backgroundColor: '#111827',
+    backgroundColor: colors.text,
     borderRadius: 8,
   },
   inviteButtonText: {
-    fontSize: 13,
+    fontSize: fontSizes.md,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
   },
   list: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   listContent: {
     paddingVertical: 8,
   },
   emptyContainer: {
     flex: 1,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
   },
   row: {
     flexDirection: 'row',
@@ -171,33 +153,17 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   name: {
-    fontSize: 16,
+    fontSize: fontSizes.xxl,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
   },
   role: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  badgeActive: {
-    backgroundColor: '#D1FAE5',
-  },
-  badgeInactive: {
-    backgroundColor: '#F3F4F6',
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#374151',
+    fontSize: fontSizes.md,
+    color: colors.textMuted,
   },
   separator: {
     height: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
     marginHorizontal: 20,
   },
 });

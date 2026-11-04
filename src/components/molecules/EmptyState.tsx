@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
+import { colors, fontSizes } from '@/constants/theme';
+
 export interface EmptyStateProps {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -16,15 +18,15 @@ export function EmptyState({ children, style }: EmptyStateProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
     paddingVertical: 24,
     alignItems: 'center',
   },
   text: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: fontSizes.lg,
+    color: colors.textMuted,
   },
 });

@@ -1,5 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { colors, fontSizes } from '@/constants/theme';
+
 export interface LocationTabsProps {
   locations: { id: string; name: string }[];
   selectedId: string | undefined;
@@ -65,19 +67,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#fff',
+    borderColor: colors.border,
+    backgroundColor: colors.white,
   },
   chipActive: {
-    backgroundColor: '#111827',
-    borderColor: '#111827',
+    backgroundColor: colors.text,
+    borderColor: colors.text,
   },
   chipText: {
-    fontSize: 13,
+    fontSize: fontSizes.md,
     fontWeight: '500',
-    color: '#6B7280',
+    color: colors.textMuted,
   },
   chipTextActive: {
-    color: '#fff',
+    color: colors.white,
   },
 });

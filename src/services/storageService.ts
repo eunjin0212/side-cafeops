@@ -1,21 +1,15 @@
 import { supabase } from '@/lib/supabase';
 import { serviceError } from '@/services/serviceError';
 
-export async function uploadImage(
-  uri: string,
-  bucket: string,
-  path: string,
-): Promise<string> {
+export async function uploadImage(uri: string, bucket: string, path: string): Promise<string> {
   const response = await fetch(uri);
   const blob = await response.blob();
 
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .upload(path, blob, {
-      contentType: blob.type || 'image/jpeg',
-      cacheControl: '3600',
-      upsert: false,
-    });
+  const { data, error } = await supabase.storage.from(bucket).upload(path, blob, {
+    contentType: blob.type || 'image/jpeg',
+    cacheControl: '3600',
+    upsert: false,
+  });
 
   if (error) {
     throw serviceError(
@@ -32,10 +26,7 @@ export async function uploadImage(
   return publicUrl;
 }
 
-export async function uploadScoreImages(
-  uris: string[],
-  userId: string,
-): Promise<string[]> {
+export async function uploadScoreImages(uris: string[], userId: string): Promise<string[]> {
   const timestamp = Date.now();
   return Promise.all(
     uris.map((uri, idx) =>
@@ -44,10 +35,7 @@ export async function uploadScoreImages(
   );
 }
 
-export async function uploadRecipeImages(
-  uris: string[],
-  userId: string,
-): Promise<string[]> {
+export async function uploadRecipeImages(uris: string[], userId: string): Promise<string[]> {
   const timestamp = Date.now();
   return Promise.all(
     uris.map((uri, idx) =>

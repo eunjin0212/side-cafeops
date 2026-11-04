@@ -1,23 +1,19 @@
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
 import { router } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { useScoreCategories } from '@/hooks/useScoreCategories';
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
-import { ScreenHeader } from '@/components/molecules/ScreenHeader';
-import { webOnlyProps } from '@/utils/a11y';
-import { can } from '@/constants/permissions';
-import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
-import { ScoreCategory } from '@/types/score';
-import { formatPoints } from '@/utils/points';
+import { CenteredScreen } from '@/components/molecules/CenteredScreen';
 import { EmptyText } from '@/components/molecules/EmptyText';
 import { ErrorText } from '@/components/molecules/ErrorText';
+import { LoadingScreen } from '@/components/molecules/LoadingScreen';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { can } from '@/constants/permissions';
+import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
+import { colors, fontSizes } from '@/constants/theme';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { useScoreCategories } from '@/hooks/useScoreCategories';
+import { ScoreCategory } from '@/types/score';
+import { webOnlyProps } from '@/utils/a11y';
+import { formatPoints } from '@/utils/points';
 
 interface CategoryRowProps {
   category: ScoreCategory;
@@ -32,7 +28,9 @@ function CategoryRow({ category, canManage, isLast }: CategoryRowProps) {
       role={canManage ? 'link' : undefined}
       focusable={canManage}
       style={[styles.row, !isLast && styles.rowBorder]}
-      onPress={canManage ? () => router.navigate(`/scores/categories/${category.id}/edit`) : undefined}
+      onPress={
+        canManage ? () => router.navigate(`/scores/categories/${category.id}/edit`) : undefined
+      }
       disabled={!canManage}
     >
       <Text style={[styles.rowName, !category.isActive && styles.rowNameInactive]}>
@@ -53,18 +51,14 @@ export default function ScoreCategoriesScreen() {
   const canManage = profile !== null && can(profile.role, 'manageScoreCategories');
 
   if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator aria-label="Loading" size="large" />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (error) {
     return (
-      <View style={styles.center}>
+      <CenteredScreen>
         <ErrorText>{error}</ErrorText>
-      </View>
+      </CenteredScreen>
     );
   }
 
@@ -97,11 +91,7 @@ export default function ScoreCategoriesScreen() {
         if (rows.length === 0 && !canManage) return null;
         return (
           <View key={section} style={styles.section}>
-            <Text
-              role="heading"
-              style={styles.sectionLabel}
-              {...webOnlyProps({ 'aria-level': 2 })}
-            >
+            <Text role="heading" style={styles.sectionLabel} {...webOnlyProps({ 'aria-level': 2 })}>
               {SCORE_SECTION_LABELS[section]}
             </Text>
             <View style={styles.card}>
@@ -128,33 +118,43 @@ export default function ScoreCategoriesScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: {
+  scroll: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
-  scroll: { flex: 1, backgroundColor: '#fff' },
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 40,
   },
-  header: { marginBottom: 28 },
-  addButton: { minWidth: 44, minHeight: 44, alignItems: 'flex-end', justifyContent: 'center' },
-  addText: { fontSize: 15, color: '#111827', fontWeight: '600' },
-  section: { marginBottom: 24 },
-  sectionLabel: {
-    fontSize: 12,
+  header: {
+    marginBottom: 28,
+  },
+  addButton: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  addText: {
+    fontSize: fontSizes.xl,
+    color: colors.text,
     fontWeight: '600',
-    color: '#6B7280',
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionLabel: {
+    fontSize: fontSizes.sm,
+    fontWeight: '600',
+    color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 8,
   },
   card: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -163,15 +163,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   rowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: colors.surfaceMuted,
   },
-  rowName: { flex: 1, fontSize: 15, color: '#111827' },
-  rowNameInactive: { color: '#6B7280' },
-  rowPoints: { fontSize: 15, fontWeight: '600', marginLeft: 12 },
-  pointsPositive: { color: '#166534' },
-  pointsNegative: { color: '#DC2626' },
+  rowName: {
+    flex: 1,
+    fontSize: fontSizes.xl,
+    color: colors.text,
+  },
+  rowNameInactive: {
+    color: colors.textMuted,
+  },
+  rowPoints: {
+    fontSize: fontSizes.xl,
+    fontWeight: '600',
+    marginLeft: 12,
+  },
+  pointsPositive: {
+    color: colors.success,
+  },
+  pointsNegative: {
+    color: colors.danger,
+  },
 });

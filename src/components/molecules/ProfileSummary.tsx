@@ -1,6 +1,7 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { ROLE_LABELS } from '@/constants/roles';
+import { colors, fontSizes } from '@/constants/theme';
 import { CurrentProfile } from '@/types/employee';
 
 function getInitial(fullName: string | null, email: string): string {
@@ -63,25 +64,25 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#111827',
+    backgroundColor: colors.text,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarInitial: {
-    fontSize: 22,
+    fontSize: fontSizes.h3,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.white,
   },
   text: {
     gap: 2,
   },
   greeting: {
-    fontSize: 19,
+    fontSize: fontSizes.h4,
     fontWeight: '700',
-    color: '#111827',
+    color: colors.text,
   },
   subGreeting: {
-    fontSize: 13,
-    color: '#6B7280',
+    fontSize: fontSizes.md,
+    color: colors.textMuted,
   },
 });

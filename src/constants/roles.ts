@@ -18,5 +18,6 @@ export const ROLE_LABELS: Record<EmployeeRole, string> = {
   owner: 'Owner',
 };
 
-export const ROLE_OPTIONS: { value: EmployeeRole; label: string }[] =
-  EMPLOYEE_ROLES.map((role) => ({ value: role, label: ROLE_LABELS[role] }));
+export const ROLE_OPTIONS: { value: EmployeeRole; label: string }[] = EMPLOYEE_ROLES.map(
+  (role) => ({ value: role, label: ROLE_LABELS[role] }),
+);

@@ -24,7 +24,7 @@ CafeOps is an Expo React Native + TypeScript + Supabase application for cafe ope
 * React Native
 * TypeScript
 * Expo Router
-* NativeWind
+* StyleSheet with design tokens from `src/constants/theme.ts`
 
 ### Backend
 
@@ -54,6 +54,8 @@ npm run ios
 npm run android
 npm run web
 npm run lint
+npm run format
+npm test
 ```
 
 ## Architecture
@@ -61,15 +63,13 @@ npm run lint
 ### Source Layout
 
 ```file
-app/
-  (auth)/
-  (tabs)/
-  employees/
-  scores/
-  recipes/
-  notifications/
-
 src/
+  app/
+    (auth)/
+    (app)/
+      employees/
+      scores/
+      notifications/
   components/
     atoms/
     molecules/
@@ -128,7 +128,7 @@ src/
 
 * Use Expo Router.
 * Use functional components only.
-* Prefer NativeWind for styling.
+* Style with `StyleSheet`, using `colors` and `fontSizes` from `src/constants/theme.ts`. Do not hardcode hex colors.
 * Avoid large screens with mixed responsibilities.
 * Prefer composition over inheritance.
 * Use large touch targets.
@@ -337,11 +337,10 @@ Ask:
 
 > Is this solving a real problem right now?
 
-Prefer duplication over premature abstraction.
+Keep the code clean and unified: the same job should look the same everywhere.
 
-Rule of Three applies:
-
-> Only abstract after the same pattern appears at least three times.
+* UI that does the same job shares one component, even with two uses.
+* Logic is only abstracted when the use cases are truly the same; don't merge code that merely looks alike.
 
 ## Task Completion Rules
 

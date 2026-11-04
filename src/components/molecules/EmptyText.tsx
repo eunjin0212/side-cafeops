@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 import { StyleProp, StyleSheet, Text, TextStyle } from 'react-native';
 
+import { colors, fontSizes } from '@/constants/theme';
+
 export interface EmptyTextProps {
   children: ReactNode;
   style?: StyleProp<TextStyle>;
@@ -12,7 +14,7 @@ export function EmptyText({ children, style }: EmptyTextProps) {
 
 const styles = StyleSheet.create({
   text: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: fontSizes.lg,
+    color: colors.textMuted,
   },
 });

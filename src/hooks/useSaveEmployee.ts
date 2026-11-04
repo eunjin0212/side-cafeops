@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { saveEmployee } from '@/services/employeeService';
 import { SaveEmployeeInput } from '@/types/employee';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export function useSaveEmployee(id: string) {
   const queryClient = useQueryClient();

@@ -9,16 +9,17 @@ import {
   View,
 } from 'react-native';
 
+import { EmptyState } from '@/components/molecules/EmptyState';
+import { ErrorText } from '@/components/molecules/ErrorText';
+import { ListCard } from '@/components/molecules/ListCard';
+import { LocationTabs } from '@/components/molecules/LocationTabs';
+import { PhotoViewerModal } from '@/components/molecules/PhotoViewerModal';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { SectionLabel } from '@/components/molecules/SectionLabel';
+import { colors, fontSizes } from '@/constants/theme';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useMyScores } from '@/hooks/useMyScores';
 import { EnrichedEntry } from '@/types/score';
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
-import { ScreenHeader } from '@/components/molecules/ScreenHeader';
-import { LocationTabs } from '@/components/molecules/LocationTabs';
-import { ListCard } from '@/components/molecules/ListCard';
-import { EmptyState } from '@/components/molecules/EmptyState';
-import { SectionLabel } from '@/components/molecules/SectionLabel';
-import { ErrorText } from '@/components/molecules/ErrorText';
-import { PhotoViewerModal } from '@/components/molecules/PhotoViewerModal';
 import { formatMonthDay } from '@/utils/dates';
 import { formatPoints, pointsColor } from '@/utils/points';
 import { computeLocationStats } from '@/utils/scoreStats';
@@ -32,13 +33,11 @@ interface StatColProps {
   large?: boolean;
 }
 
-function StatCol({ label, value, color = '#111827', large = false }: StatColProps) {
+function StatCol({ label, value, color = colors.text, large = false }: StatColProps) {
   return (
     <View style={styles.statCol}>
       <Text style={styles.statLabel}>{label}</Text>
-      <Text style={[styles.statValue, { color }, large && styles.statValueLarge]}>
-        {value}
-      </Text>
+      <Text style={[styles.statValue, { color }, large && styles.statValueLarge]}>{value}</Text>
     </View>
   );
 }
@@ -92,10 +91,9 @@ export default function MyScoreScreen() {
   const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(undefined);
   const [viewingPhotos, setViewingPhotos] = useState<string[] | null>(null);
 
-  const cycleLabel =
-    cycle
-      ? `${formatMonthDay(cycle.startedAt)} – ${formatMonthDay(cycle.endedAt)}`
-      : null;
+  const cycleLabel = cycle
+    ? `${formatMonthDay(cycle.startedAt)} – ${formatMonthDay(cycle.endedAt)}`
+    : null;
 
   const locations = profile?.locations ?? [];
   const effectiveLocationId = selectedLocationId ?? profile?.locationId ?? locations[0]?.id;
@@ -109,10 +107,7 @@ export default function MyScoreScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl
-            refreshing={isFetching && !isLoading}
-            onRefresh={refetch}
-          />
+          <RefreshControl refreshing={isFetching && !isLoading} onRefresh={refetch} />
         }
       >
         <ScreenHeader backHref="/" title="My Scores" subtitle={cycleLabel ?? undefined} />
@@ -139,19 +134,19 @@ export default function MyScoreScreen() {
               <StatCol
                 label="Positive"
                 value={stats.positive > 0 ? `+${stats.positive}` : '0'}
-                color={stats.positive > 0 ? '#166534' : '#6B7280'}
+                color={stats.positive > 0 ? colors.success : colors.textMuted}
               />
               <View style={styles.statDivider} />
               <StatCol
                 label="Negative"
                 value={stats.negative < 0 ? String(stats.negative) : '0'}
-                color={stats.negative < 0 ? '#DC2626' : '#6B7280'}
+                color={stats.negative < 0 ? colors.danger : colors.textMuted}
               />
               <View style={styles.statDivider} />
               <StatCol
                 label="Score"
                 value={String(stats.score)}
-                color={stats.score >= base ? '#111827' : '#DC2626'}
+                color={stats.score >= base ? colors.text : colors.danger}
                 large
               />
             </View>
@@ -182,7 +177,7 @@ export default function MyScoreScreen() {
 const styles = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -199,10 +194,10 @@ const styles = StyleSheet.create({
   },
   statsCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
     paddingVertical: 16,
     paddingHorizontal: 4,
   },
@@ -212,22 +207,22 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: fontSizes.xs,
     fontWeight: '600',
-    color: '#6B7280',
+    color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
   statValue: {
-    fontSize: 18,
+    fontSize: fontSizes.h4,
     fontWeight: '700',
   },
   statValueLarge: {
-    fontSize: 22,
+    fontSize: fontSizes.h3,
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
     marginVertical: 4,
   },
   section: {
@@ -250,9 +245,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   entryName: {
-    fontSize: 14,
+    fontSize: fontSizes.lg,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
     flexShrink: 1,
   },
   photoButton: {
@@ -262,28 +257,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   photoBadge: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
     borderRadius: 4,
     paddingHorizontal: 5,
     paddingVertical: 1,
   },
   photoBadgeText: {
-    fontSize: 10,
+    fontSize: fontSizes.xxs,
     fontWeight: '600',
-    color: '#4B5563',
+    color: colors.textTertiary,
   },
   entryNote: {
-    fontSize: 13,
-    color: '#6B7280',
+    fontSize: fontSizes.md,
+    color: colors.textMuted,
     lineHeight: 18,
   },
   entryDate: {
-    fontSize: 11,
-    color: '#6B7280',
+    fontSize: fontSizes.xs,
+    color: colors.textMuted,
     marginTop: 1,
   },
   entryPoints: {
-    fontSize: 16,
+    fontSize: fontSizes.xxl,
     fontWeight: '700',
     minWidth: 36,
     textAlign: 'right',

@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { getInvitations } from '@/services/invitationService';
 import { Invitation } from '@/types/invitation';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 import { queryErrorMessage } from '@/utils/errors';
 
 export function useInvitations(): {

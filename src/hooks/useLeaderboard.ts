@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { getLeaderboard } from '@/services/leaderboardService';
 import { getCurrentCycle } from '@/services/scoreCycleService';
-import { QUERY_KEYS } from '@/constants/queryKeys';
-import { queryErrorMessage } from '@/utils/errors';
 import { LeaderboardEntry, CycleSummary } from '@/types/leaderboard';
+import { queryErrorMessage } from '@/utils/errors';
 
 export function useLeaderboard(locationId?: string): {
   entries: LeaderboardEntry[];

@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import {
   ActivityIndicator,
   Pressable,
@@ -7,13 +8,13 @@ import {
   Text,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
 
-import { useNotifications } from '@/hooks/useNotifications';
-import { ScreenHeader } from '@/components/molecules/ScreenHeader';
-import { ListCard } from '@/components/molecules/ListCard';
 import { EmptyState } from '@/components/molecules/EmptyState';
 import { ErrorText } from '@/components/molecules/ErrorText';
+import { ListCard } from '@/components/molecules/ListCard';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { colors, fontSizes } from '@/constants/theme';
+import { useNotifications } from '@/hooks/useNotifications';
 import { AppNotification } from '@/types/notification';
 import { formatDateTime } from '@/utils/dates';
 
@@ -104,7 +105,7 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -124,9 +125,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   markAllText: {
-    fontSize: 13,
+    fontSize: fontSizes.md,
     fontWeight: '600',
-    color: '#1D4ED8',
+    color: colors.link,
   },
   row: {
     flexDirection: 'row',
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#3B82F6',
+    backgroundColor: colors.linkAccent,
     marginTop: 6,
   },
   rowContent: {
@@ -147,22 +148,22 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   rowTitle: {
-    fontSize: 14,
+    fontSize: fontSizes.lg,
     fontWeight: '500',
-    color: '#374151',
+    color: colors.textSecondary,
   },
   rowTitleUnread: {
     fontWeight: '700',
-    color: '#111827',
+    color: colors.text,
   },
   rowBody: {
-    fontSize: 13,
-    color: '#6B7280',
+    fontSize: fontSizes.md,
+    color: colors.textMuted,
     lineHeight: 18,
   },
   rowDate: {
-    fontSize: 11,
-    color: '#6B7280',
+    fontSize: fontSizes.xs,
+    color: colors.textMuted,
     marginTop: 1,
   },
 });

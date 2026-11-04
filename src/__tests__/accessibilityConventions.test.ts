@@ -60,7 +60,9 @@ describe('accessibility conventions', () => {
   });
 
   it('gives every Pressable a role, unless it is excluded from the tab order', () => {
-    expect(tagsMissing('Pressable', (tag) => /\brole=/.test(tag) || /focusable=\{false\}/.test(tag))).toEqual([]);
+    expect(
+      tagsMissing('Pressable', (tag) => /\brole=/.test(tag) || /focusable=\{false\}/.test(tag)),
+    ).toEqual([]);
   });
 
   it('gives every TextInput an accessible name', () => {
@@ -80,8 +82,18 @@ describe('accessibility conventions', () => {
     expect(violations.map(({ name }) => name)).toEqual([]);
   });
 
-  it('does not use text colors that fail WCAG AA on light backgrounds', () => {
-    const banned = /(?:\bcolor: |placeholderTextColor=|\btext: )['"]#(?:9CA3AF|D1D5DB|3B82F6|EF4444|10B981|16A34A|208AEF)['"]/gi;
+  it('takes colors from the theme instead of hardcoding them', () => {
+    const violations = files
+      .filter(({ name }) => !/animated-icon|\+html/.test(name))
+      .flatMap(({ name, source }) =>
+        (source.match(/['"]#[0-9a-f]{3,8}['"]/gi) ?? []).map((usage) => `${name}: ${usage}`),
+      );
+    expect(violations).toEqual([]);
+  });
+
+  it('does not use accent colors for text that fail WCAG AA on light backgrounds', () => {
+    const banned =
+      /(?:\bcolor: |placeholderTextColor=\{)colors\.(?:linkAccent|dangerAccent|borderStrong|rankGold)\b/g;
     const violations = files.flatMap(({ name, source }) =>
       (source.match(banned) ?? []).map((usage) => `${name}: ${usage}`),
     );

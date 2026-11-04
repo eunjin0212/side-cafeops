@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ScreenTitle } from '@/components/molecules/ScreenTitle';
+import { colors, fontSizes } from '@/constants/theme';
 
 export interface FormHeaderProps {
   title: string;
@@ -27,9 +28,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   title: {
-    fontSize: 22,
+    fontSize: fontSizes.h3,
     fontWeight: '700',
-    color: '#111827',
+    color: colors.text,
   },
   dismissButton: {
     minWidth: 44,
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   dismissText: {
-    fontSize: 15,
-    color: '#6B7280',
+    fontSize: fontSizes.xl,
+    color: colors.textMuted,
   },
 });

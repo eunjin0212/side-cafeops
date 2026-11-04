@@ -26,9 +26,11 @@ Automated rules passed these controls because a focusable `<div>` with text is n
 | Placeholder contrast | 2.43:1 | 4.63:1 |
 | Input border contrast | 1.47:1 | 4.63:1 or better |
 | Smallest measured target | 50×15 px ("View All") | 44×44 px |
-| Lighthouse accessibility | 93 (login only) | 100 on all 15 screens tested |
+| Lighthouse accessibility | 93 (login only) | 100, with no failed audits, on the 15 screens tested |
 
-The 15 screens were tested with Lighthouse in snapshot mode against the local development server, using mobile emulation and test accounts for the relevant roles. A separate script checked each screen's rendered text contrast, target sizes, roles, names, and heading order, and found no violations in the final pass.
+The 15 screens were tested with Lighthouse in snapshot mode against the local development server, using mobile emulation and test accounts for the relevant roles. A separate script checked each screen's rendered text contrast, target sizes, roles, names, and heading order.
+
+Two lessons from testing. Screens must be audited in their interactive states: the score entry screen passed when first opened, but failed Label in Name once an employee was selected and a section expanded. And the score alone is not enough: that rule does not lower the Lighthouse score, so it stayed at 100 with the failure present. Always read the list of failed audits.
 
 ## Decisions
 

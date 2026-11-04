@@ -1,23 +1,15 @@
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { EmptyText } from '@/components/molecules/EmptyText';
 import { ListCard } from '@/components/molecules/ListCard';
 import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { ROLE_LABELS } from '@/constants/roles';
+import { colors, fontSizes } from '@/constants/theme';
 import { Employee } from '@/types/employee';
 
 function employeeLabel(emp: Employee): string {
   const loc =
-    emp.locations.length > 0
-      ? emp.locations.map((l) => l.locationName).join(', ')
-      : 'Unassigned';
+    emp.locations.length > 0 ? emp.locations.map((l) => l.locationName).join(', ') : 'Unassigned';
   return `${ROLE_LABELS[emp.role]} · ${loc}`;
 }
 
@@ -71,7 +63,9 @@ export function EmployeePicker({
                   <Text style={styles.chipText} numberOfLines={1}>
                     {emp.fullName ?? emp.email}
                   </Text>
-                  <Text style={styles.chipRemove} aria-hidden>×</Text>
+                  <Text style={styles.chipRemove} aria-hidden>
+                    ✕
+                  </Text>
                 </Pressable>
               ))}
             </View>
@@ -82,7 +76,7 @@ export function EmployeePicker({
             aria-label="Search employees"
             style={styles.searchInput}
             placeholder={selectedIds.length > 0 ? 'Search to add more...' : 'Search employees...'}
-            placeholderTextColor="#6B7280"
+            placeholderTextColor={colors.textMuted}
             value={search}
             onChangeText={onSearchChange}
             autoCapitalize="none"
@@ -109,7 +103,11 @@ export function EmployeePicker({
                       onPress={() => onToggle(emp.id)}
                     >
                       <View style={[styles.checkbox, isSelected && styles.checkboxActive]}>
-                        {isSelected && <Text style={styles.checkmark} aria-hidden>✓</Text>}
+                        {isSelected && (
+                          <Text style={styles.checkmark} aria-hidden>
+                            ✓
+                          </Text>
+                        )}
                       </View>
                       <View style={styles.rowContent}>
                         <Text
@@ -146,15 +144,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   countBadge: {
-    backgroundColor: '#111827',
+    backgroundColor: colors.text,
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   countBadgeText: {
-    fontSize: 11,
+    fontSize: fontSizes.xs,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
   },
   chipsRow: {
     flexDirection: 'row',
@@ -164,7 +162,7 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#111827',
+    backgroundColor: colors.text,
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -173,26 +171,26 @@ const styles = StyleSheet.create({
     maxWidth: 180,
   },
   chipText: {
-    fontSize: 13,
+    fontSize: fontSizes.md,
     fontWeight: '500',
-    color: '#fff',
+    color: colors.white,
     flexShrink: 1,
   },
   chipRemove: {
-    fontSize: 15,
-    color: '#E5E7EB',
+    fontSize: fontSizes.xl,
+    color: colors.border,
     lineHeight: 16,
   },
   searchInput: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: '#6B7280',
+    borderColor: colors.textMuted,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
     minHeight: 44,
-    fontSize: 15,
-    color: '#111827',
+    fontSize: fontSizes.xl,
+    color: colors.text,
   },
   employeeRow: {
     flexDirection: 'row',
@@ -202,7 +200,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   rowSelected: {
-    backgroundColor: '#F0FDF4',
+    backgroundColor: colors.successTint,
   },
   checkbox: {
     width: 22,
@@ -212,15 +210,15 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: '#6B7280',
+    borderColor: colors.textMuted,
   },
   checkboxActive: {
-    backgroundColor: '#111827',
-    borderColor: '#111827',
+    backgroundColor: colors.text,
+    borderColor: colors.text,
   },
   checkmark: {
-    fontSize: 12,
-    color: '#fff',
+    fontSize: fontSizes.sm,
+    color: colors.white,
     fontWeight: '700',
   },
   rowContent: {
@@ -228,16 +226,16 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   rowLabel: {
-    fontSize: 14,
-    color: '#374151',
+    fontSize: fontSizes.lg,
+    color: colors.textSecondary,
   },
   rowLabelSelected: {
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
   },
   rowSublabel: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontSize: fontSizes.sm,
+    color: colors.textMuted,
   },
   loader: {
     marginVertical: 16,
@@ -247,8 +245,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   hintText: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: fontSizes.lg,
+    color: colors.textMuted,
     textAlign: 'center',
     paddingVertical: 8,
   },

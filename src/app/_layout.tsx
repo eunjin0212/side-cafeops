@@ -1,7 +1,7 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { Platform, View } from 'react-native';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { useSession } from '@/hooks/useSession';
 import { isUnhandledKeyboardActivation } from '@/utils/a11y';

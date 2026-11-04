@@ -1,13 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import { serviceError } from '@/services/serviceError';
-import {
-  ScoreCategory,
-  CreateScoreCategoryInput,
-  UpdateScoreCategoryInput,
-} from '@/types/score';
+import { ScoreCategory, CreateScoreCategoryInput, UpdateScoreCategoryInput } from '@/types/score';
 
-const CATEGORY_QUERY =
-  'id, name, section, points, is_active, created_at, updated_at' as const;
+const CATEGORY_QUERY = 'id, name, section, points, is_active, created_at, updated_at' as const;
 
 function mapScoreCategory(row: {
   id: string;
@@ -46,9 +41,7 @@ export async function getScoreCategories(): Promise<ScoreCategory[]> {
   return data.map(mapScoreCategory);
 }
 
-export async function createScoreCategory(
-  input: CreateScoreCategoryInput,
-): Promise<ScoreCategory> {
+export async function createScoreCategory(input: CreateScoreCategoryInput): Promise<ScoreCategory> {
   const { data, error } = await supabase
     .from('score_categories')
     .insert({ name: input.name, section: input.section, points: input.points })

@@ -62,9 +62,6 @@ export function canScoreEmployee(
   return ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY[targetUserRole];
 }
 
-export function canEditOwnProfile(
-  currentUserId: string,
-  targetUserId: string,
-): boolean {
+export function canEditOwnProfile(currentUserId: string, targetUserId: string): boolean {
   return currentUserId === targetUserId;
 }

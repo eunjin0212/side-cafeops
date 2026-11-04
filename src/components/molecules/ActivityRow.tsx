@@ -1,14 +1,15 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { SCORE_SECTION_LABELS } from '@/constants/scoreSections';
+import { colors, fontSizes } from '@/constants/theme';
 import { EnrichedEntry } from '@/types/score';
 import { formatRelativeDateTime } from '@/utils/dates';
 import { formatPoints, pointsColor } from '@/utils/points';
 
 function pointsBg(pts: number): string {
-  if (pts > 0) return '#DCFCE7';
-  if (pts < 0) return '#FEE2E2';
-  return '#F3F4F6';
+  if (pts > 0) return colors.successBadge;
+  if (pts < 0) return colors.dangerBadge;
+  return colors.surfaceMuted;
 }
 
 export interface ActivityRowProps {
@@ -45,11 +46,15 @@ export function ActivityRow({ entry, onViewPhotos }: ActivityRowProps) {
             onPress={() => onViewPhotos(entry.imageUrls)}
             hitSlop={4}
           >
-            <Text style={styles.icon} aria-hidden>📷</Text>
+            <Text style={styles.icon} aria-hidden>
+              📷
+            </Text>
           </Pressable>
         )}
         {entry.notes !== null && (
-          <Text style={styles.icon} role="img" aria-label="Has a note">📝</Text>
+          <Text style={styles.icon} role="img" aria-label="Has a note">
+            📝
+          </Text>
         )}
       </View>
     </View>
@@ -71,7 +76,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pointsBadgeText: {
-    fontSize: 13,
+    fontSize: fontSizes.md,
     fontWeight: '700',
   },
   main: {
@@ -79,13 +84,13 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   name: {
-    fontSize: 14,
+    fontSize: fontSizes.lg,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
   },
   meta: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontSize: fontSizes.sm,
+    color: colors.textMuted,
   },
   icons: {
     flexDirection: 'row',
@@ -98,6 +103,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   icon: {
-    fontSize: 14,
+    fontSize: fontSizes.lg,
   },
 });

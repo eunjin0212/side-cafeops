@@ -1,20 +1,13 @@
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { useEmployee } from '@/hooks/useEmployee';
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
-import { ScreenHeader } from '@/components/molecules/ScreenHeader';
-import { ScreenTitle } from '@/components/molecules/ScreenTitle';
+import { ActiveBadge } from '@/components/molecules/ActiveBadge';
+import { CenteredScreen } from '@/components/molecules/CenteredScreen';
 import { EmptyText } from '@/components/molecules/EmptyText';
 import { ErrorText } from '@/components/molecules/ErrorText';
-import { ROLE_LABELS } from '@/constants/roles';
+import { LoadingScreen } from '@/components/molecules/LoadingScreen';
+import { ScreenHeader } from '@/components/molecules/ScreenHeader';
+import { ScreenTitle } from '@/components/molecules/ScreenTitle';
 import {
   canEditEmployeeRole,
   canEditEmployeeLocation,
@@ -22,6 +15,10 @@ import {
   canScoreEmployee,
   can,
 } from '@/constants/permissions';
+import { ROLE_LABELS } from '@/constants/roles';
+import { colors, fontSizes } from '@/constants/theme';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { useEmployee } from '@/hooks/useEmployee';
 import { formatDotDate } from '@/utils/dates';
 
 interface InfoRowProps {
@@ -58,26 +55,22 @@ export default function EmployeeDetailScreen() {
     canScoreEmployee(currentProfile.role, employee.role);
 
   if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator aria-label="Loading" size="large" />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (error) {
     return (
-      <View style={styles.center}>
+      <CenteredScreen>
         <ErrorText>{error}</ErrorText>
-      </View>
+      </CenteredScreen>
     );
   }
 
   if (!employee) {
     return (
-      <View style={styles.center}>
+      <CenteredScreen>
         <EmptyText>Employee not found.</EmptyText>
-      </View>
+      </CenteredScreen>
     );
   }
 
@@ -121,16 +114,7 @@ export default function EmployeeDetailScreen() {
           <View style={styles.roleBadge}>
             <Text style={styles.roleBadgeText}>{ROLE_LABELS[employee.role]}</Text>
           </View>
-          <View
-            style={[
-              styles.statusBadge,
-              employee.isActive ? styles.statusActive : styles.statusInactive,
-            ]}
-          >
-            <Text style={styles.statusBadgeText}>
-              {employee.isActive ? 'Active' : 'Inactive'}
-            </Text>
-          </View>
+          <ActiveBadge isActive={employee.isActive} />
         </View>
       </View>
 
@@ -155,15 +139,9 @@ export default function EmployeeDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
   scroll: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -180,13 +158,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scoreText: {
-    fontSize: 15,
-    color: '#111827',
+    fontSize: fontSizes.xl,
+    color: colors.text,
     fontWeight: '600',
   },
   editText: {
-    fontSize: 15,
-    color: '#111827',
+    fontSize: fontSizes.xl,
+    color: colors.text,
     fontWeight: '600',
   },
   profile: {
@@ -194,9 +172,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   name: {
-    fontSize: 24,
+    fontSize: fontSizes.h3,
     fontWeight: '700',
-    color: '#111827',
+    color: colors.text,
   },
   badges: {
     flexDirection: 'row',
@@ -205,33 +183,17 @@ const styles = StyleSheet.create({
   roleBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
     borderRadius: 10,
   },
   roleBadgeText: {
-    fontSize: 12,
+    fontSize: fontSizes.sm,
     fontWeight: '600',
-    color: '#374151',
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  statusActive: {
-    backgroundColor: '#D1FAE5',
-  },
-  statusInactive: {
-    backgroundColor: '#F3F4F6',
-  },
-  statusBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#374151',
+    color: colors.textSecondary,
   },
   section: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -243,20 +205,20 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   infoLabel: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: fontSizes.lg,
+    color: colors.textMuted,
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: fontSizes.lg,
     fontWeight: '500',
-    color: '#111827',
+    color: colors.text,
     flexShrink: 1,
     textAlign: 'right',
     marginLeft: 16,
   },
   divider: {
     height: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
     marginHorizontal: 16,
   },
 });

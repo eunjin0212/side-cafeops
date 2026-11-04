@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { createInvitation } from '@/services/invitationService';
 import { CreateInvitationInput, Invitation } from '@/types/invitation';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export function useCreateInvitation() {
   const queryClient = useQueryClient();

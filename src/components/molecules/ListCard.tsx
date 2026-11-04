@@ -1,6 +1,8 @@
 import { Children, Fragment, ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { colors } from '@/constants/theme';
+
 export interface ListCardProps {
   children: ReactNode;
   dividerInset?: number;
@@ -22,14 +24,14 @@ export function ListCard({ children, dividerInset = 16 }: ListCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
     overflow: 'hidden',
   },
   divider: {
     height: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
   },
 });

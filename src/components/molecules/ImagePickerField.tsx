@@ -1,7 +1,9 @@
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { Image } from 'expo-image';
+
+import { colors, fontSizes } from '@/constants/theme';
 
 export interface ImagePickerFieldProps {
   images: string[];
@@ -57,7 +59,9 @@ export function ImagePickerField({
             disabled={disabled}
           >
             <View style={styles.removeBtnCircle}>
-              <Text style={styles.removeBtnText} aria-hidden>×</Text>
+              <Text style={styles.removeBtnText} aria-hidden>
+                ✕
+              </Text>
             </View>
           </Pressable>
         </View>
@@ -71,10 +75,10 @@ export function ImagePickerField({
           onPress={handleAdd}
           disabled={busy || disabled}
         >
-          <Text style={styles.addIcon} aria-hidden>📷</Text>
-          <Text style={styles.addLabel}>
-            {busy ? '...' : 'Photo'}
+          <Text style={styles.addIcon} aria-hidden>
+            📷
           </Text>
+          <Text style={styles.addLabel}>{busy ? '...' : 'Photo'}</Text>
         </Pressable>
       )}
     </View>
@@ -99,7 +103,7 @@ const styles = StyleSheet.create({
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: 8,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
   },
   removeBtn: {
     position: 'absolute',
@@ -114,13 +118,13 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#111827',
+    backgroundColor: colors.text,
     alignItems: 'center',
     justifyContent: 'center',
   },
   removeBtnText: {
-    color: '#fff',
-    fontSize: 13,
+    color: colors.white,
+    fontSize: fontSizes.md,
     lineHeight: 14,
     fontWeight: '700',
   },
@@ -129,22 +133,22 @@ const styles = StyleSheet.create({
     height: THUMB_SIZE,
     borderRadius: 8,
     borderWidth: 1.5,
-    borderColor: '#D1D5DB',
+    borderColor: colors.borderStrong,
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   addBtnDisabled: {
     opacity: 0.4,
   },
   addIcon: {
-    fontSize: 20,
+    fontSize: fontSizes.h4,
   },
   addLabel: {
-    fontSize: 11,
-    color: '#6B7280',
+    fontSize: fontSizes.xs,
+    color: colors.textMuted,
     fontWeight: '500',
   },
 });

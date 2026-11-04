@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { createScoreEntries } from '@/services/scoreEntryService';
 import { CreateScoreEntriesBatchInput, ScoreEntry } from '@/types/score';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export function useCreateScoreEntry() {
   const queryClient = useQueryClient();

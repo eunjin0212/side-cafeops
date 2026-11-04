@@ -1,16 +1,16 @@
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
-import { getMyScoreEntries } from '@/services/scoreEntryService';
-import { getCurrentCycle } from '@/services/scoreCycleService';
-import { useCurrentProfile } from '@/hooks/useCurrentProfile';
-import { useScoreCategories } from '@/hooks/useScoreCategories';
-import { useLocations } from '@/hooks/useLocations';
 import { QUERY_KEYS } from '@/constants/queryKeys';
-import { queryErrorMessage } from '@/utils/errors';
 import { BASE_SCORE } from '@/constants/scoring';
-import { EnrichedEntry } from '@/types/score';
+import { useCurrentProfile } from '@/hooks/useCurrentProfile';
+import { useLocations } from '@/hooks/useLocations';
+import { useScoreCategories } from '@/hooks/useScoreCategories';
+import { getCurrentCycle } from '@/services/scoreCycleService';
+import { getMyScoreEntries } from '@/services/scoreEntryService';
 import { CycleSummary } from '@/types/leaderboard';
+import { EnrichedEntry } from '@/types/score';
+import { queryErrorMessage } from '@/utils/errors';
 
 export type MyScores = {
   cycle: CycleSummary | null;
@@ -30,6 +30,7 @@ export function useMyScores(): MyScores {
   const cycleResult = useQuery({
     queryKey: QUERY_KEYS.currentCycle,
     queryFn: getCurrentCycle,
+    enabled: !!profile,
   });
 
   const cycleId = cycleResult.data?.id;

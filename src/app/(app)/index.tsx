@@ -1,13 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { ActivityRow } from '@/components/molecules/ActivityRow';
 import { EmptyState } from '@/components/molecules/EmptyState';
@@ -22,6 +15,7 @@ import { ScreenTitle } from '@/components/molecules/ScreenTitle';
 import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { can } from '@/constants/permissions';
 import { BASE_SCORE } from '@/constants/scoring';
+import { colors, fontSizes } from '@/constants/theme';
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { useMyLocationRanks } from '@/hooks/useMyLocationRanks';
 import { useMyScores } from '@/hooks/useMyScores';
@@ -52,9 +46,7 @@ export default function HomeScreen() {
   const showScoreDashboard = profile !== null && can(profile.role, 'viewScoreDashboard');
 
   const effectiveLocationId = selectedLocationId ?? profile?.locationId ?? locations[0]?.id;
-  const recentEntries = entries
-    .filter((e) => e.locationId === effectiveLocationId)
-    .slice(0, 3);
+  const recentEntries = entries.filter((e) => e.locationId === effectiveLocationId).slice(0, 3);
   const activeLocation = locations.find((l) => l.id === effectiveLocationId);
   const activeRank = myLocationRanks.find((r) => r.locationId === effectiveLocationId);
 
@@ -68,19 +60,17 @@ export default function HomeScreen() {
           </ScreenTitle>
           <Pressable
             role="link"
-            aria-label={
-              unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'
-            }
+            aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
             style={styles.bellButton}
             onPress={() => router.navigate('/notifications')}
             hitSlop={8}
           >
-            <Text style={styles.bellIcon} aria-hidden>🔔</Text>
+            <Text style={styles.bellIcon} aria-hidden>
+              🔔
+            </Text>
             {unreadCount > 0 && (
               <View style={styles.bellBadge} aria-hidden>
-                <Text style={styles.bellBadgeText}>
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </Text>
+                <Text style={styles.bellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
               </View>
             )}
           </Pressable>
@@ -94,7 +84,9 @@ export default function HomeScreen() {
             onPress={requestWebPushPermission}
           >
             <Text style={styles.notifyBannerText}>🔔 Turn on notifications</Text>
-            <Text style={styles.notifyBannerChevron} aria-hidden>›</Text>
+            <Text style={styles.notifyBannerChevron} aria-hidden>
+              ›
+            </Text>
           </Pressable>
         )}
         {subscribeError !== null && (
@@ -159,11 +151,7 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <SectionLabel>Manage</SectionLabel>
           <View style={styles.navGrid}>
-            <NavCard
-              label="Employees"
-              icon="👥"
-              onPress={() => router.navigate('/employees')}
-            />
+            <NavCard label="Employees" icon="👥" onPress={() => router.navigate('/employees')} />
             <NavCard
               label="Leaderboard"
               icon="🏆"
@@ -186,9 +174,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {signOutError !== null && (
-          <ErrorText style={styles.errorText}>{signOutError}</ErrorText>
-        )}
+        {signOutError !== null && <ErrorText style={styles.errorText}>{signOutError}</ErrorText>}
 
         <Pressable
           role="button"
@@ -198,7 +184,7 @@ export default function HomeScreen() {
           disabled={isSigningOut}
         >
           {isSigningOut ? (
-            <ActivityIndicator aria-label="Loading" color="#EF4444" />
+            <ActivityIndicator aria-label="Loading" color={colors.dangerAccent} />
           ) : (
             <Text style={styles.signOutText}>Sign Out</Text>
           )}
@@ -212,7 +198,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -226,9 +212,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   appTitle: {
-    fontSize: 28,
+    fontSize: fontSizes.h2,
     fontWeight: '700',
-    color: '#111827',
+    color: colors.text,
   },
   bellButton: {
     width: 44,
@@ -237,7 +223,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bellIcon: {
-    fontSize: 22,
+    fontSize: fontSizes.h3,
   },
   bellBadge: {
     position: 'absolute',
@@ -246,34 +232,34 @@ const styles = StyleSheet.create({
     minWidth: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#DC2626',
+    backgroundColor: colors.danger,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 3,
   },
   bellBadgeText: {
-    fontSize: 9,
+    fontSize: fontSizes.xxs,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.white,
   },
   notifyBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: colors.linkSurface,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     minHeight: 44,
   },
   notifyBannerText: {
-    fontSize: 14,
+    fontSize: fontSizes.lg,
     fontWeight: '600',
-    color: '#1D4ED8',
+    color: colors.link,
   },
   notifyBannerChevron: {
-    fontSize: 16,
-    color: '#1D4ED8',
+    fontSize: fontSizes.xxl,
+    color: colors.link,
   },
   notifyError: {
     marginTop: 6,
@@ -293,15 +279,15 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   viewAllText: {
-    fontSize: 13,
+    fontSize: fontSizes.md,
     fontWeight: '600',
-    color: '#1D4ED8',
+    color: colors.link,
   },
   loader: {
     marginVertical: 16,
   },
   errorText: {
-    fontSize: 13,
+    fontSize: fontSizes.md,
     textAlign: 'center',
   },
   navGrid: {
@@ -314,16 +300,16 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#EF4444',
-    backgroundColor: '#fff',
+    borderColor: colors.dangerAccent,
+    backgroundColor: colors.white,
     alignItems: 'center',
   },
   signOutButtonDisabled: {
     opacity: 0.5,
   },
   signOutText: {
-    color: '#DC2626',
-    fontSize: 15,
+    color: colors.danger,
+    fontSize: fontSizes.xl,
     fontWeight: '600',
   },
 });

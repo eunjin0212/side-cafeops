@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { getEmployees } from '@/services/employeeService';
 import { Employee } from '@/types/employee';
-import { QUERY_KEYS } from '@/constants/queryKeys';
 import { queryErrorMessage } from '@/utils/errors';
 
 export function useEmployees(): {

@@ -1,7 +1,7 @@
+import Constants from 'expo-constants';
+import * as Notifications from 'expo-notifications';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
 
 import { useCurrentProfile } from '@/hooks/useCurrentProfile';
 import { registerPushToken, registerWebPushSubscription } from '@/services/notificationService';

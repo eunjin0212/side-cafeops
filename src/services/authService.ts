@@ -63,7 +63,10 @@ export function subscribeToSession(onChange: (session: Session | null) => void):
 }
 
 export async function getCurrentProfile(): Promise<CurrentProfile | null> {
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
   if (userError) {
     // AuthSessionMissingError is the expected signal for "not signed in"
     // (login screen, app boot before a session restores) -- not a bug.

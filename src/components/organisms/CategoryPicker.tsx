@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { ListCard } from '@/components/molecules/ListCard';
 import { SectionLabel } from '@/components/molecules/SectionLabel';
 import { SCORE_SECTIONS, SCORE_SECTION_LABELS } from '@/constants/scoreSections';
+import { colors, fontSizes } from '@/constants/theme';
 import { ScoreCategory, ScoreSection } from '@/types/score';
 import { formatPoints, pointsColor } from '@/utils/points';
 
@@ -51,7 +52,6 @@ export function CategoryPicker({
                 <Pressable
                   role="button"
                   aria-expanded={isExpanded}
-                  aria-label={`${SCORE_SECTION_LABELS[section]}, ${selectedInSection.length} selected`}
                   style={styles.accordionHeader}
                   onPress={() => onToggleSection(section)}
                 >
@@ -60,11 +60,10 @@ export function CategoryPicker({
                     {selectedInSection.length > 0 && (
                       <View style={styles.sectionBadge}>
                         <Text style={styles.sectionBadgeText}>{selectedInSection.length}</Text>
+                        <Text style={styles.visuallyHidden}> selected</Text>
                       </View>
                     )}
-                    <Text style={styles.chevron} aria-hidden>
-                      {isExpanded ? '▲' : '▼'}
-                    </Text>
+                    <View style={[styles.chevron, isExpanded && styles.chevronExpanded]} />
                   </View>
                 </Pressable>
 
@@ -82,10 +81,17 @@ export function CategoryPicker({
                           onPress={() => onToggle(cat.id)}
                         >
                           <View style={[styles.checkbox, isSelected && styles.checkboxActive]}>
-                            {isSelected && <Text style={styles.checkmark} aria-hidden>✓</Text>}
+                            {isSelected && (
+                              <Text style={styles.checkmark} aria-hidden>
+                                ✓
+                              </Text>
+                            )}
                           </View>
                           <Text
-                            style={[styles.categoryLabel, isSelected && styles.categoryLabelSelected]}
+                            style={[
+                              styles.categoryLabel,
+                              isSelected && styles.categoryLabelSelected,
+                            ]}
                             numberOfLines={1}
                           >
                             {cat.name}
@@ -116,15 +122,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   countBadge: {
-    backgroundColor: '#111827',
+    backgroundColor: colors.text,
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   countBadgeText: {
-    fontSize: 11,
+    fontSize: fontSizes.xs,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
   },
   loader: {
     marginVertical: 16,
@@ -137,9 +143,9 @@ const styles = StyleSheet.create({
   },
   accordionLabel: {
     flex: 1,
-    fontSize: 14,
+    fontSize: fontSizes.lg,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
   },
   accordionRight: {
     flexDirection: 'row',
@@ -147,7 +153,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   sectionBadge: {
-    backgroundColor: '#111827',
+    backgroundColor: colors.text,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -156,17 +162,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   sectionBadgeText: {
-    fontSize: 11,
+    fontSize: fontSizes.xs,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.white,
+  },
+  visuallyHidden: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    overflow: 'hidden',
+    opacity: 0,
   },
   chevron: {
-    fontSize: 10,
-    color: '#6B7280',
+    width: 0,
+    height: 0,
+    borderLeftWidth: 5,
+    borderRightWidth: 5,
+    borderTopWidth: 7,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: colors.textMuted,
+  },
+  chevronExpanded: {
+    transform: [{ rotate: '180deg' }],
   },
   divider: {
     height: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surfaceMuted,
     marginLeft: 48,
     marginRight: 14,
   },
@@ -176,10 +198,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     gap: 12,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   rowSelected: {
-    backgroundColor: '#F0FDF4',
+    backgroundColor: colors.successTint,
   },
   checkbox: {
     width: 22,
@@ -189,28 +211,28 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: '#6B7280',
+    borderColor: colors.textMuted,
   },
   checkboxActive: {
-    backgroundColor: '#111827',
-    borderColor: '#111827',
+    backgroundColor: colors.text,
+    borderColor: colors.text,
   },
   checkmark: {
-    fontSize: 12,
-    color: '#fff',
+    fontSize: fontSizes.sm,
+    color: colors.white,
     fontWeight: '700',
   },
   categoryLabel: {
     flex: 1,
-    fontSize: 14,
-    color: '#374151',
+    fontSize: fontSizes.lg,
+    color: colors.textSecondary,
   },
   categoryLabelSelected: {
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text,
   },
   pointsLabel: {
-    fontSize: 14,
+    fontSize: fontSizes.lg,
     fontWeight: '700',
     minWidth: 36,
     textAlign: 'right',

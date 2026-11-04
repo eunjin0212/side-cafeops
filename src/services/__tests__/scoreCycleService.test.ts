@@ -1,5 +1,5 @@
-import { getCurrentCycle, getCurrentCycleId } from '@/services/scoreCycleService';
 import { supabase } from '@/lib/supabase';
+import { getCurrentCycle, getCurrentCycleId } from '@/services/scoreCycleService';
 
 jest.mock('@/lib/supabase', () => ({
   supabase: { rpc: jest.fn(), from: jest.fn() },

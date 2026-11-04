@@ -1,5 +1,7 @@
-import { Modal, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { Image } from 'expo-image';
+import { Modal, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+
+import { colors, fontSizes } from '@/constants/theme';
 
 export interface PhotoViewerModalProps {
   imageUrls: string[] | null;
@@ -8,12 +10,7 @@ export interface PhotoViewerModalProps {
 
 export function PhotoViewerModal({ imageUrls, onClose }: PhotoViewerModalProps) {
   return (
-    <Modal
-      visible={imageUrls !== null}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={imageUrls !== null} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} focusable={false}>
         <ScrollView
           style={styles.scrollArea}
@@ -37,7 +34,9 @@ export function PhotoViewerModal({ imageUrls, onClose }: PhotoViewerModalProps) 
           onPress={onClose}
           hitSlop={10}
         >
-          <Text style={styles.closeText} aria-hidden>×</Text>
+          <Text style={styles.closeText} aria-hidden>
+            ✕
+          </Text>
         </Pressable>
       </Pressable>
     </Modal>
@@ -79,8 +78,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   closeText: {
-    color: '#fff',
-    fontSize: 22,
+    color: colors.white,
+    fontSize: fontSizes.h3,
     lineHeight: 24,
     fontWeight: '600',
   },
