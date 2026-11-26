@@ -1,12 +1,13 @@
 name: Keep Supabase awake
 
-# Supabase pauses free projects after a period of inactivity.
-# This sends a tiny read request twice a week so the database stays active.
+# Supabase pauses free projects after 7 days without sufficient activity.
+# This calls the ping() function twice a week, which writes one row to the
+# keep_alive table (see supabase/migrations/20261126000000_add_keep_alive.sql).
 
 on:
   schedule:
-    # Mondays and Thursdays at 13:00 UTC (9:00 AM Toronto during EDT)
-    - cron: "0 13 * * 1,4"
+    # Mondays and Thursdays at 13:17 UTC. Off the hour, since GitHub delays top-of-hour runs most.
+    - cron: "17 13 * * 1,4"
   workflow_dispatch: # lets you run it manually from the Actions tab
 
 jobs:
@@ -18,23 +19,24 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          PING_TABLE: ${{ vars.SUPABASE_PING_TABLE }}
         run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ] || [ -z "$PING_TABLE" ]; then
-            echo "Missing SUPABASE_URL, SUPABASE_ANON_KEY, or SUPABASE_PING_TABLE."
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Missing SUPABASE_URL or SUPABASE_ANON_KEY."
             exit 1
           fi
 
           status=$(curl -s -o response.txt -w "%{http_code}" \
-            "$SUPABASE_URL/rest/v1/$PING_TABLE?select=*&limit=1" \
+            -X POST "$SUPABASE_URL/rest/v1/rpc/ping" \
             -H "apikey: $SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}')
 
           echo "HTTP status: $status"
+          echo "Response: $(cat response.txt)"
 
           if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
-            echo "Ping failed. Response:"
-            cat response.txt
+            echo "Ping failed."
             exit 1
           fi
 
